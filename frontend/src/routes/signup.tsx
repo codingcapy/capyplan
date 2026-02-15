@@ -41,21 +41,33 @@ function SignupPage() {
         <div className="text-center mb-5 md:mb-10">
           Your financial plan, in your hands
         </div>
-        <form action="" className="flex flex-col w-[50%] mx-auto mb-5">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col w-[50%] mx-auto mb-5"
+        >
           <input
             type="text"
+            id="username"
+            name="username"
             placeholder="username"
             className="border rounded p-2 my-2"
+            required
           />
           <input
             type="email"
+            id="email"
+            name="email"
             placeholder="email"
             className="border rounded p-2 my-2"
+            required
           />
           <input
-            type="text"
+            type="password"
+            id="password"
+            name="password"
             placeholder="password"
             className="border rounded p-2 my-2"
+            required
           />
           <button className="my-2 px-5 py-3 bg-cyan-500 font-bold">
             SIGN UP
