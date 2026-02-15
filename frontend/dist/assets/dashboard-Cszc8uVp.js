@@ -1,0 +1,1 @@
+import{c as r,r as s,j as a}from"./index-KnzlChhJ.js";import{u as i}from"./AuthStore-BKc0lUI1.js";function u(){const{logoutService:o,user:t}=i(),e=r();return s.useEffect(()=>{t||e({to:"/"})}),a.jsx("div",{onClick:o,children:'Hello "/dashboard"!'})}export{u as component};

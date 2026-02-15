@@ -1,11 +1,34 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import capylogo from "/capyness.png";
+import useAuthStore from "../store/AuthStore";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: IndexPage,
 });
 
 function IndexPage() {
+  const { loginService, authLoading, user } = useAuthStore();
+  const [notification, setNotification] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!!user) navigate({ to: "/dashboard" });
+  }, [user]);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = (e.target as HTMLFormElement).email.value;
+    const password = (e.target as HTMLFormElement).password.value;
+    loginService(email, password);
+    if (authLoading) setNotification("Loading...");
+    if (!user) {
+      setTimeout(() => {
+        setNotification("Invalid login credentials");
+      }, 700);
+    }
+  }
+
   return (
     <div className="pt-5 md:flex items-center h-screen bg-[#242424] text-white">
       <div className="md:w-[50vw]">
@@ -13,14 +36,21 @@ function IndexPage() {
         <div className="text-center mb-5 md:mb-10">
           Your financial plan, in your hands
         </div>
-        <form action="" className="flex flex-col w-[50%] mx-auto mb-5">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col w-[50%] mx-auto mb-5"
+        >
           <input
             type="email"
+            id="email"
+            name="email"
             placeholder="email"
             className="border rounded p-2 my-2"
           />
           <input
             type="text"
+            id="password"
+            name="password"
             placeholder="password"
             className="border rounded p-2 my-2"
           />

@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import capylogo from "/capyness.png";
 import { useCreateUserMutation } from "../lib/api/users";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useAuthStore from "../store/AuthStore";
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
@@ -11,6 +12,12 @@ function SignupPage() {
   const { mutate: createUser, isPending: createUserPending } =
     useCreateUserMutation();
   const [notification, setNotification] = useState("");
+  const { loginService, authLoading, user } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!!user) navigate({ to: "/dashboard" });
+  }, [user]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,8 +33,8 @@ function SignupPage() {
       { username, password, email },
       {
         onSuccess: () => {
-          // loginService(email, password);
-          // if (authLoading) setNotification("Loading...");
+          loginService(email, password);
+          if (authLoading) setNotification("Loading...");
         },
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       },
@@ -73,6 +80,7 @@ function SignupPage() {
             SIGN UP
           </button>
         </form>
+        <div>{notification}</div>
 
         <div className="text-center">
           Already have an account?{" "}
