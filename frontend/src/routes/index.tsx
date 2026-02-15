@@ -7,13 +7,13 @@ export const Route = createFileRoute("/")({
 
 function IndexPage() {
   return (
-    <div className="md:flex items-center h-screen bg-[#242424] text-white">
+    <div className="pt-5 md:flex items-center h-screen bg-[#242424] text-white">
       <div className="md:w-[50vw]">
         <div className="text-4xl text-center mb-2 font-bold">CapyPlan</div>
-        <div className="text-center mb-10">
+        <div className="text-center mb-5 md:mb-10">
           Your financial plan, in your hands
         </div>
-        <form action="" className="flex flex-col w-[50%] mx-auto mb-10">
+        <form action="" className="flex flex-col w-[50%] mx-auto mb-5">
           <input
             type="email"
             placeholder="email"
@@ -28,7 +28,6 @@ function IndexPage() {
             LOGIN
           </button>
         </form>
-
         <div className="text-center">
           Don't have an account?{" "}
           <Link to="/signup" className="text-cyan-500 font-bold">
@@ -36,8 +35,8 @@ function IndexPage() {
           </Link>
         </div>
       </div>
-      <div className="md:w-[50vw]">
-        <img src={capylogo} alt="" className="" />
+      <div className="mt-5 md:mt-0 flex flex-col">
+        <img src={capylogo} alt="" className="mx-auto" />
       </div>
     </div>
   );
