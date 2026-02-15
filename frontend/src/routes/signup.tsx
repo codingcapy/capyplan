@@ -9,8 +9,16 @@ function SignupPage() {
   return (
     <div className="md:flex items-center h-screen bg-[#242424] text-white">
       <div className="md:w-[50vw]">
-        <div className="text-4xl text-center mb-10 font-bold">CapyPlan</div>
+        <div className="text-4xl text-center mb-2 font-bold">CapyPlan</div>
+        <div className="text-center mb-10">
+          Your financial plan, in your hands
+        </div>
         <form action="" className="flex flex-col w-[50%] mx-auto mb-10">
+          <input
+            type="text"
+            placeholder="username"
+            className="border rounded p-2 my-2"
+          />
           <input
             type="email"
             placeholder="email"
