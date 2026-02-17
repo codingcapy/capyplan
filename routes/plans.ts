@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
+import { eq } from "drizzle-orm";
 
 const createPlanSchema = z.object({
   title: z.string(),
@@ -25,10 +26,8 @@ export function requireUser(c: Context) {
   }
 }
 
-export const plansRouter = new Hono().post(
-  "/",
-  zValidator("json", createPlanSchema),
-  async (c) => {
+export const plansRouter = new Hono()
+  .post("/", zValidator("json", createPlanSchema), async (c) => {
     const decodedUser = requireUser(c);
     const insertValues = c.req.valid("json");
     if (insertValues.title && insertValues.title.length > 400)
@@ -52,5 +51,20 @@ export const plansRouter = new Hono().post(
       });
     }
     return c.json({ plan: planInsertResult[0] }, 200);
-  },
-);
+  })
+  .get("/", async (c) => {
+    const decodedUser = requireUser(c);
+    const { error: plansQueryError, result: plansQueryResult } =
+      await mightFail(
+        db
+          .select()
+          .from(plansTable)
+          .where(eq(plansTable.userId, decodedUser.id)),
+      );
+    if (plansQueryError)
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching plans",
+        cause: plansQueryError,
+      });
+    return c.json({ plans: plansQueryResult });
+  });

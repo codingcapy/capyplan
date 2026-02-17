@@ -10,4 +10,4 @@ export const plans = pgTable("plans", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export type User = InferSelectModel<typeof plans>;
+export type Plan = InferSelectModel<typeof plans>;
