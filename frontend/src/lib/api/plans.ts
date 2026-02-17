@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { Plan } from "../../../../schemas/plans";
 import { ArgumentTypes, client, ExtractData } from "./client";
 
@@ -70,3 +74,28 @@ export const useCreatePlanMutation = (onError?: (message: string) => void) => {
     },
   });
 };
+
+async function getPlans() {
+  const token = getSession();
+  const res = await client.api.v0.plans.$get(
+    {},
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    throw new Error("Error getting plans");
+  }
+  const { plans } = await res.json();
+  return plans.map(mapSerializedPlanToSchema);
+}
+
+export const getCommentsByPostIdQueryOptions = () =>
+  queryOptions({
+    queryKey: ["plans"],
+    queryFn: () => getPlans(),
+  });
