@@ -94,7 +94,7 @@ async function getPlans() {
   return plans.map(mapSerializedPlanToSchema);
 }
 
-export const getCommentsByPostIdQueryOptions = () =>
+export const getPlansQueryOptions = () =>
   queryOptions({
     queryKey: ["plans"],
     queryFn: () => getPlans(),
