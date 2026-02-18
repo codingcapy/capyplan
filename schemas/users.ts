@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, integer } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 
 export const users = pgTable("users", {
@@ -11,6 +11,7 @@ export const users = pgTable("users", {
   status: varchar("status").default("active").notNull(),
   preference: varchar("preference").default("light").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  currentPlan: integer("current_plan").default(0).notNull(),
 });
 
 export type User = InferSelectModel<typeof users>;

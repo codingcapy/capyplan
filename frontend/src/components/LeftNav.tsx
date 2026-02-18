@@ -17,6 +17,7 @@ export function LeftNav() {
   } = useQuery(getPlansQueryOptions());
   const { mutate: createPlan, isPending: createPlanPending } =
     useCreatePlanMutation();
+  const [notification, setNotification] = useState("");
 
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -24,10 +25,31 @@ export function LeftNav() {
     }
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (createPlanPending) return;
+    const title = (e.target as HTMLFormElement).plantitle.value;
+    if (title.length > 400) return setNotification("Title is too long!");
+    createPlan(
+      { title },
+      {
+        onSuccess: () => {
+          setShowCreatePlanModal(false);
+        },
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
+
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (plans && plans.length < 1)
+      createPlan({ title: `${user && user.username}'s plan` });
+  }, [plans]);
 
   return (
     <div className="fixed top-0 left-0 h-screen bg-[#101010] w-[250px]">
@@ -50,17 +72,18 @@ export function LeftNav() {
       </div>
       {showDropdown && (
         <div className="relative bg-[#303030] rounded m-2 px-3 py-2 max-h-[175px] overflow-y-auto">
-          <div className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300">
-            {user && user.username}'s plan
-          </div>
+          <div className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"></div>
           {plansLoading ? (
             <div>Loading plans...</div>
           ) : plansError ? (
             <div>Error loading plans</div>
           ) : plans ? (
             plans.map((p) => (
-              <div className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300">
-                {p.title}'s plan
+              <div
+                key={p.planId}
+                className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+              >
+                {p.title}
               </div>
             ))
           ) : (
@@ -79,12 +102,14 @@ export function LeftNav() {
           <div className="text-xl font-bold mb-5">
             Create a new financial plan
           </div>
-          <form action="" className="flex flex-col">
+          <form onSubmit={handleSubmit} className="flex flex-col">
             <label htmlFor="" className="text-left mb-2">
               Financial plan name
             </label>
             <input
               type="text"
+              name="plantitle"
+              id="plantitle"
               className="border border-[#909090] rounded p-1 mb-2"
             />
             <div className="flex justify-end">
@@ -95,10 +120,10 @@ export function LeftNav() {
                 CANCEL
               </div>
               <button
-                onClick={() => createPlan({ title: "" })}
+                type="submit"
                 className="px-3 py-1 mx-1 bg-cyan-500 rounded"
               >
-                CREATE
+                {createPlanPending ? "Creating..." : "CREATE"}
               </button>
             </div>
           </form>

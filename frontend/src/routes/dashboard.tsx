@@ -14,7 +14,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
-  });
+  }, [user]);
 
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">

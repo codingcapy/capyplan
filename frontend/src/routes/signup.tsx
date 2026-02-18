@@ -77,7 +77,7 @@ function SignupPage() {
             required
           />
           <button className="my-2 px-5 py-3 bg-cyan-500 font-bold">
-            SIGN UP
+            {createUserPending ? "Signing up..." : "SIGN UP"}
           </button>
         </form>
         <div>{notification}</div>
