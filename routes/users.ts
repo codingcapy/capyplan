@@ -9,6 +9,7 @@ import { mightFail } from "might-fail";
 import { users as usersTable } from "../schemas/users";
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { requireUser } from "./plans";
 
 const scryptAsync = promisify(scrypt);
 
@@ -24,10 +25,12 @@ const createUserSchema = z.object({
   password: z.string(),
 });
 
-export const usersRouter = new Hono().post(
-  "/",
-  zValidator("json", createUserSchema),
-  async (c) => {
+const updateCurrentPlanSchema = z.object({
+  currentPlan: z.number(),
+});
+
+export const usersRouter = new Hono()
+  .post("/", zValidator("json", createUserSchema), async (c) => {
     const insertValues = c.req.valid("json");
     const { error: emailQueryError, result: emailQueryResult } =
       await mightFail(
@@ -89,5 +92,26 @@ export const usersRouter = new Hono().post(
       });
     }
     return c.json({ user: userInsertResult[0] }, 200);
-  },
-);
+  })
+  .post(
+    "/update/currentplan",
+    zValidator("json", updateCurrentPlanSchema),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { error: updateError, result: updateResult } = await mightFail(
+        db
+          .update(usersTable)
+          .set({ currentPlan: updateValues.currentPlan })
+          .where(eq(usersTable.userId, decodedUser.id))
+          .returning(),
+      );
+      if (updateError) {
+        throw new HTTPException(500, {
+          message: "Error while updating current plan",
+          cause: updateError,
+        });
+      }
+      return c.json({ user: updateResult[0] }, 200);
+    },
+  );
