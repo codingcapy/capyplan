@@ -99,3 +99,30 @@ export const getPlansQueryOptions = () =>
     queryKey: ["plans"],
     queryFn: () => getPlans(),
   });
+
+async function getPlanById(planId: string) {
+  const token = getSession();
+  const res = await client.api.v0.plans[":planId"].$get(
+    {
+      param: { planId },
+    },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    throw new Error("Error getting plan by id");
+  }
+  const { plan } = await res.json();
+  return plan;
+}
+
+export const getPlanByIdQueryOptions = (planId: string) =>
+  queryOptions({
+    queryKey: ["plan", planId],
+    queryFn: () => getPlanById(planId),
+  });
