@@ -4,9 +4,14 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { getSession } from "./plans";
 
 type CreateUserArgs = ArgumentTypes<
   typeof client.api.v0.users.$post
+>[0]["json"];
+
+type UpdateCurrentPlanArgs = ArgumentTypes<
+  typeof client.api.v0.users.update.currentplan.$post
 >[0]["json"];
 
 async function createUser(args: CreateUserArgs) {
@@ -41,6 +46,52 @@ export const useCreateUserMutation = (onError?: (message: string) => void) => {
     mutationFn: createUser,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function updateCurrentPlan(args: UpdateCurrentPlanArgs) {
+  const token = getSession();
+  const res = await client.api.v0.users.update.currentplan.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your plan :( We'll look into it ASAP!";
+    console.log(args);
+    try {
+    } catch (error) {
+      console.log(error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useUpdateCurrentPlanMutation = (
+  onError?: (message: string) => void,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateCurrentPlan,
+    onSettled: (_data, _error) => {
+      if (!_data) return console.log("No data, returning");
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
     },
     onError: (error) => {
       if (onError) {
