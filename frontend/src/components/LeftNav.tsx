@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import useAuthStore from "../store/AuthStore";
 import logo from "/capyness.png";
 import { PiCaretDownBold } from "react-icons/pi";
-import { getPlansQueryOptions, useCreatePlanMutation } from "../lib/api/plans";
+import {
+  getPlanByIdQueryOptions,
+  getPlansQueryOptions,
+  useCreatePlanMutation,
+} from "../lib/api/plans";
 import { useQuery } from "@tanstack/react-query";
+import { useUpdateCurrentPlanMutation } from "../lib/api/users";
 
 export function LeftNav() {
   const { user } = useAuthStore();
@@ -18,6 +23,15 @@ export function LeftNav() {
   const { mutate: createPlan, isPending: createPlanPending } =
     useCreatePlanMutation();
   const [notification, setNotification] = useState("");
+  const {
+    data: plan,
+    isLoading: planLoading,
+    error: planError,
+  } = useQuery(
+    getPlanByIdQueryOptions((user && user.currentPlan.toString()) || "0"),
+  );
+  const { mutate: updateCurrentPlan, isPending: updateCurrentPlanPending } =
+    useUpdateCurrentPlanMutation();
 
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -47,8 +61,11 @@ export function LeftNav() {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
     if (plans && plans.length < 1)
       createPlan({ title: `${user && user.username}'s plan` });
+    if (user.currentPlan === 0)
+      updateCurrentPlan({ currentPlan: plans ? plans[0].planId : 0 });
   }, [plans]);
 
   return (
@@ -64,7 +81,15 @@ export function LeftNav() {
         className="border border-[#555555] rounded m-2 px-3 py-2 flex cursor-pointer hover:bg-[#202020] transition-all ease-in-out duration-300"
       >
         <div className="w-[175px] line-clamp-1">
-          {user && user.username}'s plan
+          {planLoading ? (
+            <div>Loading...</div>
+          ) : planError ? (
+            <div>Error loading plan</div>
+          ) : plan ? (
+            plan.title
+          ) : (
+            <div></div>
+          )}
         </div>
         <div className="ml-5 mt-1">
           <PiCaretDownBold />
