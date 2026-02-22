@@ -23,7 +23,10 @@ export function TopNav() {
       className="fixed top-0 left-0 p-5 w-screen flex justify-between"
     >
       <div></div>
-      <div onClick={() => setShowMenu(!showMenu)} className="cursor-pointer">
+      <div
+        onClick={() => setShowMenu(!showMenu)}
+        className="pr-4 cursor-pointer"
+      >
         {user && user.username}
       </div>
       {showMenu && (

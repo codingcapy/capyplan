@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { getSession } from "./plans";
+import useAuthStore from "../../store/AuthStore";
 
 type CreateUserArgs = ArgumentTypes<
   typeof client.api.v0.users.$post
@@ -85,12 +86,17 @@ export const useUpdateCurrentPlanMutation = (
   onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
   return useMutation({
     mutationFn: updateCurrentPlan,
     onSettled: (_data, _error) => {
       if (!_data) return console.log("No data, returning");
+      setUser({ ..._data.user, createdAt: new Date(_data.user.createdAt) });
       queryClient.invalidateQueries({
         queryKey: ["users"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["plan", _data.user.currentPlan.toString()],
       });
     },
     onError: (error) => {

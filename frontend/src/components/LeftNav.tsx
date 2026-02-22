@@ -105,6 +105,7 @@ export function LeftNav() {
           ) : plans ? (
             plans.map((p) => (
               <div
+                onClick={() => updateCurrentPlan({ currentPlan: p.planId })}
                 key={p.planId}
                 className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
               >

@@ -1,0 +1,21 @@
+import {
+  pgTable,
+  varchar,
+  timestamp,
+  serial,
+  integer,
+} from "drizzle-orm/pg-core";
+import type { InferSelectModel } from "drizzle-orm";
+
+export const incomes = pgTable("incomes", {
+  incomeId: serial("income_id").primaryKey(),
+  planId: integer("plan_id").notNull(),
+  company: varchar("company"),
+  position: varchar("position"),
+  amount: integer("amount").notNull(), // Stored as cents to avoid floating point issues
+  tax: integer("tax"),
+  status: varchar("status").default("active").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Plan = InferSelectModel<typeof incomes>;

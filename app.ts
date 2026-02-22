@@ -6,6 +6,7 @@ import { serve } from "@hono/node-server";
 import { usersRouter } from "./routes/users";
 import { userRouter } from "./routes/user";
 import { plansRouter } from "./routes/plans";
+import { incomesRouter } from "./routes/incomes";
 
 const app = new Hono();
 
@@ -18,7 +19,8 @@ const apiRoutes = app
   .basePath("/api/v0")
   .route("/users", usersRouter)
   .route("/user", userRouter)
-  .route("/plans", plansRouter);
+  .route("/plans", plansRouter)
+  .route("/incomes", incomesRouter);
 
 export type ApiRoutes = typeof apiRoutes;
 export default app;
