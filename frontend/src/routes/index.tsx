@@ -68,6 +68,9 @@ function IndexPage() {
       <div className="mt-5 md:mt-0 flex flex-col">
         <img src={capylogo} alt="" className="mx-auto" />
       </div>
+      <div className="absolute top-10 right-10 font-bold hover:text-cyan-500 transition-all ease-in-out duration-300">
+        <Link to="/demo">Try Now!</Link>
+      </div>
     </div>
   );
 }
