@@ -14,6 +14,15 @@ type Plan = {
   title: string;
 };
 
+type Income = {
+  incomeId: string;
+  planId: string;
+  company: string;
+  position: string;
+  amount: number;
+  tax: number;
+};
+
 function DemoPage() {
   const initialPlanId = uuidv4();
   const initialPlan: Plan = {
@@ -26,10 +35,14 @@ function DemoPage() {
   const [currentPlan, setCurrentPlan] = useState(initialPlan.planId);
   const [showCreatePlanModal, setShowCreatePlanModal] = useState(false);
   const [plan, setPlan] = useState<Plan | null>(initialPlan);
-  const [incomes, setIncomes] = useState([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenditures, setExpenditures] = useState([]);
   const [assets, setAssets] = useState([]);
   const [liabilities, setLiabilities] = useState([]);
+  const [createIncomeMode, setCreateIncomeMode] = useState(false);
+  const [createExpenditureMode, setCreateExpenditureMode] = useState(false);
+  const [createAssetMode, setCreateAssetMode] = useState(false);
+  const [createLiabilityMode, setCreateLiabilityMode] = useState(false);
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,6 +53,20 @@ function DemoPage() {
     setPlans([...plans, newPlan]);
     setCurrentPlan(newPlan.planId);
     setPlan(newPlan);
+    setShowCreatePlanModal(false);
+  }
+
+  function handleSubmitCreateIncome(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newIncome: Income = {
+      incomeId: uuidv4(),
+      planId: currentPlan,
+      company: (e.target as HTMLFormElement).company.value,
+      position: (e.target as HTMLFormElement).position.value,
+      amount: parseFloat((e.target as HTMLFormElement).amount.value),
+      tax: parseFloat((e.target as HTMLFormElement).tax.value),
+    };
+    setIncomes([...incomes, newIncome]);
     setShowCreatePlanModal(false);
   }
 
@@ -164,9 +191,82 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Income</div>
-            <div className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
-              + Add income
-            </div>
+            {incomes
+              .filter((i) => i.planId === currentPlan)
+              .map((income) => (
+                <div key={income.incomeId} className="flex justify-between">
+                  <div className="font-bold">{income.company}</div>
+                  <div>{income.position}</div>
+                  <div>Amount: ${income.amount}</div>
+                  <div>Tax: ${income.tax}</div>
+                </div>
+              ))}
+            {createIncomeMode ? (
+              <div className="my-2">
+                <div className="hidden xl:flex justify-between pr-5 my-2">
+                  <div className="w-[25%]">Company (optional)</div>
+                  <div className="w-[25%]">Position (optional)</div>
+                  <div className="w-[25%]">Amount</div>
+                  <div className="w-[25%]">Tax %</div>
+                </div>
+                <div className="hidden xl:flex justify-between pr-5 mt-2 mb-5">
+                  <div className="w-[25%]">
+                    <input
+                      type="text"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="w-[25%]">
+                    <input
+                      type="text"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="w-[25%]">
+                    <input
+                      type="text"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="w-[25%]">
+                    <input
+                      type="text"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                </div>
+                <div className="xl:hidden justify-between pr-5 my-2">
+                  <div className="flex">
+                    <div className="mr-5 ">Company (optional):</div>
+                    <input
+                      type="text"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="">Position (optional)</div>
+                  <div className="">Amount</div>
+                  <div className="">Tax %</div>
+                </div>
+                <div className="flex">
+                  <div
+                    onClick={() => setCreateIncomeMode(false)}
+                    className="cursor-pointer py-1 px-2 mr-1 bg-[#777777] rounded"
+                  >
+                    Cancel
+                  </div>
+                  <div className="cursor-pointer py-1 px-2 ml-1 bg-cyan-500 rounded">
+                    Create
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => setCreateIncomeMode(true)}
+                className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+              >
+                + Add income
+              </div>
+            )}
             <div className="pt-5">Total income: $0</div>
           </div>
         </div>
@@ -179,7 +279,7 @@ function DemoPage() {
             <div className="pt-5">Total expenditure: $0</div>
           </div>
         </div>
-        <div className="border-b border-b-[#777777] pb-5">
+        <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
           <div className="pl-5">
             <div className="pt-5 font-bold">Total cashflow: $0</div>
           </div>
@@ -202,7 +302,7 @@ function DemoPage() {
             <div className="pt-5">Total liabilities: $0</div>
           </div>
         </div>
-        <div className="border-b border-b-[#777777] pb-5">
+        <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
           <div className="pl-5">
             <div className="pt-5 font-bold">Total net worth: $0</div>
           </div>
