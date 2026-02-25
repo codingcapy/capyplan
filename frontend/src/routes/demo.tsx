@@ -23,6 +23,13 @@ type Income = {
   tax: number;
 };
 
+type Expenditure = {
+  expenditureId: string;
+  planId: string;
+  name: string;
+  amount: number;
+};
+
 function DemoPage() {
   const initialPlanId = uuidv4();
   const initialPlan: Plan = {
@@ -36,7 +43,7 @@ function DemoPage() {
   const [showCreatePlanModal, setShowCreatePlanModal] = useState(false);
   const [plan, setPlan] = useState<Plan | null>(initialPlan);
   const [incomes, setIncomes] = useState<Income[]>([]);
-  const [expenditures, setExpenditures] = useState([]);
+  const [expenditures, setExpenditures] = useState<Expenditure[]>([]);
   const [assets, setAssets] = useState([]);
   const [liabilities, setLiabilities] = useState([]);
   const [createIncomeMode, setCreateIncomeMode] = useState(false);
@@ -68,6 +75,18 @@ function DemoPage() {
     };
     setIncomes([...incomes, newIncome]);
     setCreateIncomeMode(false);
+  }
+
+  function handleSubmitCreateExpenditure(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newExpenditure: Expenditure = {
+      expenditureId: uuidv4(),
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).expenditurename.value,
+      amount: parseFloat((e.target as HTMLFormElement).expenditureamount.value),
+    };
+    setExpenditures([...expenditures, newExpenditure]);
+    setCreateExpenditureMode(false);
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -206,8 +225,8 @@ function DemoPage() {
                 >
                   <div className="w-[25%]">{income.company}</div>
                   <div className="w-[25%]">{income.position}</div>
-                  <div className="w-[25%]">Amount: ${income.amount}</div>
-                  <div className="w-[25%]">Tax: ${income.tax}</div>
+                  <div className="w-[25%]">${income.amount}</div>
+                  <div className="w-[25%]">{income.tax}%</div>
                 </div>
               ))}
             {createIncomeMode ? (
@@ -280,21 +299,110 @@ function DemoPage() {
                 + Add income
               </div>
             )}
-            <div className="pt-5">Total income: $0</div>
+            <div className="pt-5">
+              Total income: $
+              {incomes.reduce(
+                (sum, income) =>
+                  sum + (income.amount * (100 - income.tax)) / 100,
+                0,
+              )}
+            </div>
           </div>
         </div>
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Expenditure</div>
-            <div className="mt-5 py-1 w-[160px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
-              + Add expenditure
+            <div className="hidden xl:flex justify-between my-2">
+              <div className="w-[50%]">Name</div>
+              <div className="w-[50%]">Amount (Monthly)</div>
             </div>
-            <div className="pt-5">Total expenditure: $0</div>
+            {expenditures
+              .filter((e) => e.planId === currentPlan)
+              .map((expenditure) => (
+                <div
+                  key={expenditure.expenditureId}
+                  className="flex justify-between my-2"
+                >
+                  <div className="w-[50%]">{expenditure.name}</div>
+                  <div className="w-[50%]">${expenditure.amount}</div>
+                </div>
+              ))}
+            {createExpenditureMode ? (
+              <form onSubmit={handleSubmitCreateExpenditure} className="my-2">
+                <div className="hidden xl:flex justify-between pr-5 mt-2 mb-5">
+                  <div className="w-[50%]">
+                    <input
+                      type="text"
+                      name="expenditurename"
+                      id="expenditurename"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="w-[50%]">
+                    <input
+                      type="number"
+                      name="expenditureamount"
+                      id="expenditureamount"
+                      required
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                </div>
+                <div className="xl:hidden justify-between pr-5 my-2">
+                  <div className="flex">
+                    <div className="mr-5 ">Company (optional):</div>
+                    <input
+                      type="text"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="">Position (optional)</div>
+                  <div className="">Amount</div>
+                  <div className="">Tax %</div>
+                </div>
+                <div className="flex">
+                  <div
+                    onClick={() => setCreateExpenditureMode(false)}
+                    className="cursor-pointer py-1 px-2 mr-1 bg-[#777777] rounded"
+                  >
+                    Cancel
+                  </div>
+                  <button className="cursor-pointer py-1 px-2 ml-1 bg-cyan-500 rounded">
+                    Create
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div
+                onClick={() => setCreateExpenditureMode(true)}
+                className="mt-5 py-1 w-[160px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+              >
+                + Add expenditure
+              </div>
+            )}
+            <div className="pt-5">
+              Total expenditure: $
+              {expenditures.reduce(
+                (sum, expenditure) => sum + expenditure.amount,
+                0,
+              )}
+            </div>
           </div>
         </div>
         <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
           <div className="pl-5">
-            <div className="pt-5 font-bold">Total cashflow: $0</div>
+            <div className="pt-5 font-bold">
+              Total cashflow: $
+              {incomes.reduce(
+                (sum, income) =>
+                  sum + (income.amount * (100 - income.tax)) / 100,
+                0,
+              ) -
+                expenditures.reduce(
+                  (sum, expenditure) => sum + expenditure.amount,
+                  0,
+                )}
+            </div>
           </div>
         </div>
         <div className="border-b border-b-[#777777] pb-5">
