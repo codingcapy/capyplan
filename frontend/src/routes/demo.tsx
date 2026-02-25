@@ -107,7 +107,7 @@ function DemoPage() {
 
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">
-      <div className="fixed top-0 left-0 h-screen bg-[#101010] w-[250px]">
+      <div className="hidden sm:block fixed top-0 left-0 h-screen bg-[#101010] w-[250px]">
         <div className="flex items-center p-5 pt-16 mb-5">
           <img src={logo} alt="" className="w-[25px]" />
           <div className="ml-2 text-lg">CapyPlan</div>
@@ -182,11 +182,11 @@ function DemoPage() {
       <div className="fixed top-0 left-0 p-2.5 w-screen flex justify-between bg-[#242424]">
         <div className="hover:text-cyan-500 transition-all ease-in-out duration-300 flex justify-center items-center">
           <FaArrowLeft />
-          <Link to="/" className="pl-2">
+          <Link to="/" className="hidden sm:block sm:pl-2">
             Back to login
           </Link>
         </div>
-        <div className="">
+        <div className="text-xs sm:text-base max-w-[300px] sm:max-w-full">
           <b>Note</b>: This is a demo. All of your data is temporary and will be
           deleted when you leave this page. To save your financial plans, please{" "}
           <Link
@@ -203,14 +203,14 @@ function DemoPage() {
         </div>
         <div></div>
       </div>
-      <div className="pl-[240px]">
+      <div className="sm:pl-[240px]">
         <div className="pl-5 pt-12 text-4xl font-bold">
           {plan ? plan.title : "No plan found"}
         </div>
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Income</div>
-            <div className="hidden xl:flex justify-between my-2">
+            <div className="flex justify-between my-2">
               <div className="w-[25%]">Company</div>
               <div className="w-[25%]">Position</div>
               <div className="w-[25%]">Amount (Monthly)</div>
@@ -231,55 +231,51 @@ function DemoPage() {
               ))}
             {createIncomeMode ? (
               <form onSubmit={handleSubmitCreateIncome} className="my-2">
-                <div className="hidden xl:flex justify-between pr-5 mt-2 mb-5">
-                  <div className="w-[25%]">
+                <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
+                  <div className="xl:w-[25%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Company:
+                    </div>
                     <input
                       type="text"
                       name="company"
-                      id="company"
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
-                  <div className="w-[25%]">
+                  <div className="xl:w-[25%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Position:
+                    </div>
                     <input
                       type="text"
                       name="position"
-                      id="position"
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
-                  <div className="w-[25%]">
+                  <div className="xl:w-[25%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Amount:
+                    </div>
                     <input
                       type="number"
                       name="amount"
-                      id="amount"
                       required
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
-                  <div className="w-[25%]">
+                  <div className="xl:w-[25%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Tax %:
+                    </div>
                     <input
                       type="number"
                       name="tax"
-                      id="tax"
                       required
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
                 </div>
-                <div className="xl:hidden justify-between pr-5 my-2">
-                  <div className="flex">
-                    <div className="mr-5 ">Company (optional):</div>
-                    <input
-                      type="text"
-                      className="px-2 border border-[#777777] rounded"
-                    />
-                  </div>
-                  <div className="">Position (optional)</div>
-                  <div className="">Amount</div>
-                  <div className="">Tax %</div>
-                </div>
-                <div className="flex">
+                <div className="flex mt-2">
                   <div
                     onClick={() => setCreateIncomeMode(false)}
                     className="cursor-pointer py-1 px-2 mr-1 bg-[#777777] rounded"
