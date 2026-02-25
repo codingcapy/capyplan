@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { PiCaretDownBold } from "react-icons/pi";
 import { FaArrowLeft } from "react-icons/fa6";
 import { v4 as uuidv4 } from "uuid";
+import { MdModeEditOutline } from "react-icons/md";
+import { FaTrashCan } from "react-icons/fa6";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -215,6 +217,7 @@ function DemoPage() {
               <div className="w-[25%]">Position</div>
               <div className="w-[25%]">Amount (Monthly)</div>
               <div className="w-[25%]">Tax %</div>
+              <div className="w-[70px]"></div>
             </div>
             {incomes
               .filter((i) => i.planId === currentPlan)
@@ -227,6 +230,14 @@ function DemoPage() {
                   <div className="w-[25%]">{income.position}</div>
                   <div className="w-[25%]">${income.amount}</div>
                   <div className="w-[25%]">{income.tax}%</div>
+                  <MdModeEditOutline
+                    size={20}
+                    className="w-[35px] cursor-pointer"
+                  />
+                  <FaTrashCan
+                    size={20}
+                    className="text-red-400 w-[35px] cursor-pointer"
+                  />
                 </div>
               ))}
             {createIncomeMode ? (
@@ -274,6 +285,7 @@ function DemoPage() {
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
+                  <div className="w-[70px]"></div>
                 </div>
                 <div className="flex mt-2">
                   <div
@@ -311,6 +323,7 @@ function DemoPage() {
             <div className="flex justify-between my-2">
               <div className="w-[50%]">Name</div>
               <div className="w-[50%]">Amount (Monthly)</div>
+              <div className="w-[70px]"></div>
             </div>
             {expenditures
               .filter((e) => e.planId === currentPlan)
@@ -321,6 +334,14 @@ function DemoPage() {
                 >
                   <div className="w-[50%]">{expenditure.name}</div>
                   <div className="w-[50%]">${expenditure.amount}</div>
+                  <MdModeEditOutline
+                    size={20}
+                    className="w-[35px] cursor-pointer"
+                  />
+                  <FaTrashCan
+                    size={20}
+                    className="text-red-400 w-[35px] cursor-pointer"
+                  />
                 </div>
               ))}
             {createExpenditureMode ? (
@@ -347,6 +368,7 @@ function DemoPage() {
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
+                  <div className="w-[70px]"></div>
                 </div>
                 <div className="flex mt-2">
                   <div
