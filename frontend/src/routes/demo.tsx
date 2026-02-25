@@ -67,7 +67,7 @@ function DemoPage() {
       tax: parseFloat((e.target as HTMLFormElement).tax.value),
     };
     setIncomes([...incomes, newIncome]);
-    setShowCreatePlanModal(false);
+    setCreateIncomeMode(false);
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -191,46 +191,59 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Income</div>
+            <div className="hidden xl:flex justify-between my-2">
+              <div className="w-[25%]">Company</div>
+              <div className="w-[25%]">Position</div>
+              <div className="w-[25%]">Amount (Monthly)</div>
+              <div className="w-[25%]">Tax %</div>
+            </div>
             {incomes
               .filter((i) => i.planId === currentPlan)
               .map((income) => (
-                <div key={income.incomeId} className="flex justify-between">
-                  <div className="font-bold">{income.company}</div>
-                  <div>{income.position}</div>
-                  <div>Amount: ${income.amount}</div>
-                  <div>Tax: ${income.tax}</div>
+                <div
+                  key={income.incomeId}
+                  className="flex justify-between my-2"
+                >
+                  <div className="w-[25%]">{income.company}</div>
+                  <div className="w-[25%]">{income.position}</div>
+                  <div className="w-[25%]">Amount: ${income.amount}</div>
+                  <div className="w-[25%]">Tax: ${income.tax}</div>
                 </div>
               ))}
             {createIncomeMode ? (
-              <div className="my-2">
-                <div className="hidden xl:flex justify-between pr-5 my-2">
-                  <div className="w-[25%]">Company (optional)</div>
-                  <div className="w-[25%]">Position (optional)</div>
-                  <div className="w-[25%]">Amount</div>
-                  <div className="w-[25%]">Tax %</div>
-                </div>
+              <form onSubmit={handleSubmitCreateIncome} className="my-2">
                 <div className="hidden xl:flex justify-between pr-5 mt-2 mb-5">
                   <div className="w-[25%]">
                     <input
                       type="text"
+                      name="company"
+                      id="company"
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
                   <div className="w-[25%]">
                     <input
                       type="text"
+                      name="position"
+                      id="position"
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
                   <div className="w-[25%]">
                     <input
-                      type="text"
+                      type="number"
+                      name="amount"
+                      id="amount"
+                      required
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
                   <div className="w-[25%]">
                     <input
-                      type="text"
+                      type="number"
+                      name="tax"
+                      id="tax"
+                      required
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
@@ -254,11 +267,11 @@ function DemoPage() {
                   >
                     Cancel
                   </div>
-                  <div className="cursor-pointer py-1 px-2 ml-1 bg-cyan-500 rounded">
+                  <button className="cursor-pointer py-1 px-2 ml-1 bg-cyan-500 rounded">
                     Create
-                  </div>
+                  </button>
                 </div>
-              </div>
+              </form>
             ) : (
               <div
                 onClick={() => setCreateIncomeMode(true)}
