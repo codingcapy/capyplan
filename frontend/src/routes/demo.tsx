@@ -308,7 +308,7 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Expenditure</div>
-            <div className="hidden xl:flex justify-between my-2">
+            <div className="flex justify-between my-2">
               <div className="w-[50%]">Name</div>
               <div className="w-[50%]">Amount (Monthly)</div>
             </div>
@@ -325,38 +325,30 @@ function DemoPage() {
               ))}
             {createExpenditureMode ? (
               <form onSubmit={handleSubmitCreateExpenditure} className="my-2">
-                <div className="hidden xl:flex justify-between pr-5 mt-2 mb-5">
-                  <div className="w-[50%]">
+                <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
+                  <div className="xl:w-[50%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Name:
+                    </div>
                     <input
                       type="text"
                       name="expenditurename"
-                      id="expenditurename"
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
-                  <div className="w-[50%]">
+                  <div className="xl:w-[50%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Amount (Monthly):
+                    </div>
                     <input
                       type="number"
                       name="expenditureamount"
-                      id="expenditureamount"
                       required
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
                 </div>
-                <div className="xl:hidden justify-between pr-5 my-2">
-                  <div className="flex">
-                    <div className="mr-5 ">Company (optional):</div>
-                    <input
-                      type="text"
-                      className="px-2 border border-[#777777] rounded"
-                    />
-                  </div>
-                  <div className="">Position (optional)</div>
-                  <div className="">Amount</div>
-                  <div className="">Tax %</div>
-                </div>
-                <div className="flex">
+                <div className="flex mt-2">
                   <div
                     onClick={() => setCreateExpenditureMode(false)}
                     className="cursor-pointer py-1 px-2 mr-1 bg-[#777777] rounded"
