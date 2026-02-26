@@ -539,7 +539,7 @@ function DemoPage() {
                 <div key={asset.assetId} className="flex justify-between my-2">
                   <div className="w-[33%]">{asset.name}</div>
                   <div className="w-[33%]">${asset.value}</div>
-                  <div className="w-[33%]">${asset.roi}</div>
+                  <div className="w-[33%]">{asset.roi}</div>
                   <MdModeEditOutline
                     size={20}
                     className="w-8.75 cursor-pointer"
@@ -636,7 +636,7 @@ function DemoPage() {
                 >
                   <div className="w-[33%]">{liability.name}</div>
                   <div className="w-[33%]">${liability.amount}</div>
-                  <div className="w-[33%]">${liability.interest}</div>
+                  <div className="w-[33%]">{liability.interest}</div>
                   <MdModeEditOutline
                     size={20}
                     className="w-8.75 cursor-pointer"
