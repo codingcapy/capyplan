@@ -2,12 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import logo from "/capyness.png";
 import { useEffect, useRef, useState } from "react";
 import { PiCaretDownBold } from "react-icons/pi";
-import { FaArrowLeft } from "react-icons/fa6";
+import { FaArrowLeft, FaCheck, FaXmark } from "react-icons/fa6";
 import { v4 as uuidv4 } from "uuid";
 import { MdModeEditOutline } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
+import { DemoEditIncome } from "../components/DemoEditIncome";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -174,7 +175,7 @@ function DemoPage() {
     setCreateFinancialGoalMode(false);
   }
 
-  function handleEditIncome(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmitEditIncome(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const newIncome: Income = {
       incomeId: editIncomePointer,
@@ -187,6 +188,7 @@ function DemoPage() {
     setIncomes((prev) =>
       prev.map((i) => (i.incomeId === editIncomePointer ? newIncome : i)),
     );
+    setEditIncomePointer("none");
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -319,31 +321,39 @@ function DemoPage() {
             </div>
             {incomes
               .filter((i) => i.planId === currentPlan)
-              .map((income) => (
-                <div
-                  key={income.incomeId}
-                  className="flex justify-between my-2"
-                >
-                  <div className="w-[25%]">{income.company}</div>
-                  <div className="w-[25%]">{income.position}</div>
-                  <div className="w-[25%]">${income.amount}</div>
-                  <div className="w-[25%]">{income.tax}%</div>
-                  <MdModeEditOutline
-                    size={20}
-                    onClick={() => setEditIncomePointer(income.planId)}
-                    className="w-[35px] cursor-pointer"
+              .map((income) =>
+                editIncomePointer === income.incomeId ? (
+                  <DemoEditIncome
+                    income={income}
+                    handleSubmitEditIncome={handleSubmitEditIncome}
+                    setEditIncomePointer={setEditIncomePointer}
                   />
-                  <FaTrashCan
-                    size={20}
-                    onClick={() =>
-                      setIncomes((prev) =>
-                        prev.filter((i) => i.incomeId !== income.incomeId),
-                      )
-                    }
-                    className="text-red-400 w-[35px] cursor-pointer"
-                  />
-                </div>
-              ))}
+                ) : (
+                  <div
+                    key={income.incomeId}
+                    className="flex justify-between my-2"
+                  >
+                    <div className="w-[25%]">{income.company}</div>
+                    <div className="w-[25%]">{income.position}</div>
+                    <div className="w-[25%]">${income.amount}</div>
+                    <div className="w-[25%]">{income.tax}%</div>
+                    <MdModeEditOutline
+                      size={20}
+                      onClick={() => setEditIncomePointer(income.incomeId)}
+                      className="w-[35px] cursor-pointer"
+                    />
+                    <FaTrashCan
+                      size={20}
+                      onClick={() =>
+                        setIncomes((prev) =>
+                          prev.filter((i) => i.incomeId !== income.incomeId),
+                        )
+                      }
+                      className="text-red-400 w-[35px] cursor-pointer"
+                    />
+                  </div>
+                ),
+              )}
             {createIncomeMode ? (
               <form onSubmit={handleSubmitCreateIncome} className="my-2">
                 <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
