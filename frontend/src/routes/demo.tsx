@@ -523,9 +523,91 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Assets</div>
-            <div className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
-              + Add asset
+            <div className="flex justify-between my-2">
+              <div className="w-[33%]">Name</div>
+              <div className="w-[33%]">Value</div>
+              <div className="w-[33%]">Return on invesment %</div>
+              <div className="w-17.5"></div>
             </div>
+            {assets
+              .filter((a) => a.planId === currentPlan)
+              .map((asset) => (
+                <div key={asset.assetId} className="flex justify-between my-2">
+                  <div className="w-[33%]">{asset.name}</div>
+                  <div className="w-[33%]">${asset.value}</div>
+                  <div className="w-[33%]">${asset.roi}</div>
+                  <MdModeEditOutline
+                    size={20}
+                    className="w-8.75 cursor-pointer"
+                  />
+                  <FaTrashCan
+                    size={20}
+                    onClick={() =>
+                      setAssets((prev) =>
+                        prev.filter((a) => a.assetId !== asset.assetId),
+                      )
+                    }
+                    className="text-red-400 w-8.75 cursor-pointer"
+                  />
+                </div>
+              ))}
+            {createAssetMode ? (
+              <form onSubmit={handleSubmitCreateAsset} className="my-2">
+                <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Name:
+                    </div>
+                    <input
+                      type="text"
+                      name="assetname"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Value:
+                    </div>
+                    <input
+                      type="number"
+                      name="assetvalue"
+                      required
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Return on investment %:
+                    </div>
+                    <input
+                      type="number"
+                      name="roi"
+                      required
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="w-[70px]"></div>
+                </div>
+                <div className="flex mt-2">
+                  <div
+                    onClick={() => setCreateAssetMode(false)}
+                    className="cursor-pointer py-1 px-2 mr-1 bg-[#777777] rounded"
+                  >
+                    Cancel
+                  </div>
+                  <button className="cursor-pointer py-1 px-2 ml-1 bg-cyan-500 rounded">
+                    Create
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div
+                onClick={() => setCreateAssetMode(true)}
+                className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+              >
+                + Add asset
+              </div>
+            )}
             <div className="pt-5">Total assets: $0</div>
           </div>
         </div>
