@@ -608,21 +608,124 @@ function DemoPage() {
                 + Add asset
               </div>
             )}
-            <div className="pt-5">Total assets: $0</div>
+            <div className="pt-5">
+              Total assets: $
+              {assets.reduce((sum, asset) => sum + asset.value, 0)}
+            </div>
           </div>
         </div>
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Liabilities</div>
-            <div className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
-              + Add liability
+            <div className="flex justify-between my-2">
+              <div className="w-[33%]">Name</div>
+              <div className="w-[33%]">Amount</div>
+              <div className="w-[33%]">Monthly Interest %</div>
+              <div className="w-17.5"></div>
             </div>
-            <div className="pt-5">Total liabilities: $0</div>
+            {liabilities
+              .filter((l) => l.planId === currentPlan)
+              .map((liability) => (
+                <div
+                  key={liability.liabilityId}
+                  className="flex justify-between my-2"
+                >
+                  <div className="w-[33%]">{liability.name}</div>
+                  <div className="w-[33%]">${liability.amount}</div>
+                  <div className="w-[33%]">${liability.interest}</div>
+                  <MdModeEditOutline
+                    size={20}
+                    className="w-8.75 cursor-pointer"
+                  />
+                  <FaTrashCan
+                    size={20}
+                    onClick={() =>
+                      setLiabilities((prev) =>
+                        prev.filter(
+                          (l) => l.liabilityId !== liability.liabilityId,
+                        ),
+                      )
+                    }
+                    className="text-red-400 w-8.75 cursor-pointer"
+                  />
+                </div>
+              ))}
+            {createLiabilityMode ? (
+              <form onSubmit={handleSubmitCreateLiability} className="my-2">
+                <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Name:
+                    </div>
+                    <input
+                      type="text"
+                      name="liabilityname"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Amount:
+                    </div>
+                    <input
+                      type="number"
+                      name="liabilityamount"
+                      required
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Monthly Interest %:
+                    </div>
+                    <input
+                      type="number"
+                      name="interest"
+                      required
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="w-[70px]"></div>
+                </div>
+                <div className="flex mt-2">
+                  <div
+                    onClick={() => setCreateLiabilityMode(false)}
+                    className="cursor-pointer py-1 px-2 mr-1 bg-[#777777] rounded"
+                  >
+                    Cancel
+                  </div>
+                  <button className="cursor-pointer py-1 px-2 ml-1 bg-cyan-500 rounded">
+                    Create
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div
+                onClick={() => setCreateLiabilityMode(true)}
+                className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+              >
+                + Add liability
+              </div>
+            )}
+            <div className="pt-5">
+              Total liabilities: $
+              {liabilities.reduce(
+                (sum, liability) => sum + liability.amount,
+                0,
+              )}
+            </div>
           </div>
         </div>
         <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
           <div className="pl-5">
-            <div className="pt-5 font-bold">Total net worth: $0</div>
+            <div className="pt-5 font-bold">
+              Total net worth: $
+              {assets.reduce((sum, asset) => sum + asset.value, 0) -
+                liabilities.reduce(
+                  (sum, liability) => sum + liability.amount,
+                  0,
+                )}
+            </div>
           </div>
         </div>
         <div className="border-b border-b-[#777777] pb-5">
