@@ -6,6 +6,8 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { v4 as uuidv4 } from "uuid";
 import { MdModeEditOutline } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
+import { DayPicker } from "react-day-picker";
+import { format } from "date-fns";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -88,6 +90,8 @@ function DemoPage() {
   const [createFinancialGoalMode, setCreateFinancialGoalMode] = useState(false);
   const [editIncomePointer, setEditIncomePointer] = useState("none");
   const [modalMode, setModalMode] = useState<ModalMode>("none");
+  const [targetDate, setTargetDate] = useState<Date>(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -164,7 +168,7 @@ function DemoPage() {
       amount: parseFloat(
         (e.target as HTMLFormElement).financialgoalamount.value,
       ),
-      target: new Date((e.target as HTMLFormElement).targetdate.value),
+      target: targetDate,
     };
     setFinancialGoals([...financialGoals, newFinancialGoal]);
     setCreateFinancialGoalMode(false);
@@ -731,9 +735,112 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Financial Goals</div>
-            <div className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
-              + Add financial goal
+            <div className="flex justify-between my-2">
+              <div className="w-[33%]">Name</div>
+              <div className="w-[33%]">Amount</div>
+              <div className="w-[33%]">Target Date</div>
+              <div className="w-17.5"></div>
             </div>
+            {financialGoals
+              .filter((f) => f.planId === currentPlan)
+              .map((financialGoal) => (
+                <div
+                  key={financialGoal.financialGoalId}
+                  className="flex justify-between my-2"
+                >
+                  <div className="w-[33%]">{financialGoal.name}</div>
+                  <div className="w-[33%]">${financialGoal.amount}</div>
+                  <div className="w-[33%]">
+                    {format(financialGoal.target, "yyyy-MM-dd")}
+                  </div>
+                  <MdModeEditOutline
+                    size={20}
+                    className="w-8.75 cursor-pointer"
+                  />
+                  <FaTrashCan
+                    size={20}
+                    onClick={() =>
+                      setFinancialGoals((prev) =>
+                        prev.filter(
+                          (f) =>
+                            f.financialGoalId !== financialGoal.financialGoalId,
+                        ),
+                      )
+                    }
+                    className="text-red-400 w-8.75 cursor-pointer"
+                  />
+                </div>
+              ))}
+            {createFinancialGoalMode ? (
+              <form onSubmit={handleSubmitCreateFinancialGoal} className="my-2">
+                <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Name:
+                    </div>
+                    <input
+                      type="text"
+                      name="financialgoalname"
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="xl:w-[33%]">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Amount:
+                    </div>
+                    <input
+                      type="number"
+                      name="financialgoalamount"
+                      required
+                      className="px-2 border border-[#777777] rounded"
+                    />
+                  </div>
+                  <div className="xl:w-[33%] relative">
+                    <div className="xl:hidden w-[100px] inline-block">
+                      Target Date:
+                    </div>
+                    <div
+                      onClick={() => setShowCalendar(!showCalendar)}
+                      className="inline-block px-2 border border-[#777777] rounded w-[100px] text-left cursor-pointer"
+                    >
+                      {format(targetDate, "yyyy-MM-dd")}
+                    </div>
+                    {showCalendar && (
+                      <div className="absolute bottom-[10px] md:bottom-[25px] md:right-[200px] scale-75">
+                        <DayPicker
+                          mode="single"
+                          selected={targetDate}
+                          onSelect={(date) => {
+                            setTargetDate((date && date) || new Date());
+                            setShowCalendar(false);
+                          }}
+                          className="text-xs bg-[#404040] p-2"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-[70px]"></div>
+                </div>
+                <div className="flex mt-2">
+                  <div
+                    onClick={() => setCreateFinancialGoalMode(false)}
+                    className="cursor-pointer py-1 px-2 mr-1 bg-[#777777] rounded"
+                  >
+                    Cancel
+                  </div>
+                  <button className="cursor-pointer py-1 px-2 ml-1 bg-cyan-500 rounded">
+                    Create
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div
+                onClick={() => setCreateFinancialGoalMode(true)}
+                className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+              >
+                + Add financial goal
+              </div>
+            )}
           </div>
         </div>
       </div>

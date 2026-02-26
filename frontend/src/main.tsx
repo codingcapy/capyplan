@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Auth from "./components/auth/Auth";
+import "react-day-picker/dist/style.css";
 
 export const queryClient = new QueryClient();
 
