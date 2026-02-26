@@ -32,6 +32,38 @@ type Expenditure = {
   amount: number;
 };
 
+type Asset = {
+  assetId: string;
+  planId: string;
+  name: string;
+  value: number;
+  roi: number;
+};
+
+type Liability = {
+  liabilityId: string;
+  planId: string;
+  name: string;
+  amount: number;
+  interest: number;
+};
+
+type FinancialGoal = {
+  financialGoalId: string;
+  planId: string;
+  name: string;
+  amount: number;
+  target: Date;
+};
+
+type ModalMode =
+  | "none"
+  | "createPlan"
+  | "deleteIncome"
+  | "deleteExpenditure"
+  | "deleteAsset"
+  | "deleteLiability";
+
 function DemoPage() {
   const initialPlanId = uuidv4();
   const initialPlan: Plan = {
@@ -46,12 +78,16 @@ function DemoPage() {
   const [plan, setPlan] = useState<Plan | null>(initialPlan);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenditures, setExpenditures] = useState<Expenditure[]>([]);
-  const [assets, setAssets] = useState([]);
-  const [liabilities, setLiabilities] = useState([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [liabilities, setLiabilities] = useState<Liability[]>([]);
+  const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>([]);
   const [createIncomeMode, setCreateIncomeMode] = useState(false);
   const [createExpenditureMode, setCreateExpenditureMode] = useState(false);
   const [createAssetMode, setCreateAssetMode] = useState(false);
   const [createLiabilityMode, setCreateLiabilityMode] = useState(false);
+  const [createFinancialGoalMode, setCreateFinancialGoalMode] = useState(false);
+  const [editIncomePointer, setEditIncomePointer] = useState("none");
+  const [modalMode, setModalMode] = useState<ModalMode>("none");
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -89,6 +125,49 @@ function DemoPage() {
     };
     setExpenditures([...expenditures, newExpenditure]);
     setCreateExpenditureMode(false);
+  }
+
+  function handleSubmitCreateAsset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newAsset: Asset = {
+      assetId: uuidv4(),
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).assetname.value,
+      value: parseFloat((e.target as HTMLFormElement).assetvalue.value),
+      roi: parseFloat((e.target as HTMLFormElement).roi.value),
+    };
+    setAssets([...assets, newAsset]);
+    setCreateAssetMode(false);
+  }
+
+  function handleSubmitCreateLiability(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newLiability: Liability = {
+      liabilityId: uuidv4(),
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).liabilityname.value,
+      amount: parseFloat((e.target as HTMLFormElement).liabilityamount.value),
+      interest: parseFloat((e.target as HTMLFormElement).interest.value),
+    };
+    setLiabilities([...liabilities, newLiability]);
+    setCreateLiabilityMode(false);
+  }
+
+  function handleSubmitCreateFinancialGoal(
+    e: React.FormEvent<HTMLFormElement>,
+  ) {
+    e.preventDefault();
+    const newFinancialGoal: FinancialGoal = {
+      financialGoalId: uuidv4(),
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).financialgoalname.value,
+      amount: parseFloat(
+        (e.target as HTMLFormElement).financialgoalamount.value,
+      ),
+      target: new Date((e.target as HTMLFormElement).targetdate.value),
+    };
+    setFinancialGoals([...financialGoals, newFinancialGoal]);
+    setCreateFinancialGoalMode(false);
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -232,10 +311,16 @@ function DemoPage() {
                   <div className="w-[25%]">{income.tax}%</div>
                   <MdModeEditOutline
                     size={20}
+                    onClick={() => setEditIncomePointer(income.planId)}
                     className="w-[35px] cursor-pointer"
                   />
                   <FaTrashCan
                     size={20}
+                    onClick={() =>
+                      setIncomes((prev) =>
+                        prev.filter((i) => i.incomeId !== income.incomeId),
+                      )
+                    }
                     className="text-red-400 w-[35px] cursor-pointer"
                   />
                 </div>
@@ -323,7 +408,7 @@ function DemoPage() {
             <div className="flex justify-between my-2">
               <div className="w-[50%]">Name</div>
               <div className="w-[50%]">Amount (Monthly)</div>
-              <div className="w-[70px]"></div>
+              <div className="w-17.5"></div>
             </div>
             {expenditures
               .filter((e) => e.planId === currentPlan)
@@ -336,11 +421,18 @@ function DemoPage() {
                   <div className="w-[50%]">${expenditure.amount}</div>
                   <MdModeEditOutline
                     size={20}
-                    className="w-[35px] cursor-pointer"
+                    className="w-8.75 cursor-pointer"
                   />
                   <FaTrashCan
                     size={20}
-                    className="text-red-400 w-[35px] cursor-pointer"
+                    onClick={() =>
+                      setExpenditures((prev) =>
+                        prev.filter(
+                          (e) => e.expenditureId !== expenditure.expenditureId,
+                        ),
+                      )
+                    }
+                    className="text-red-400 w-8.75 cursor-pointer"
                   />
                 </div>
               ))}
@@ -348,9 +440,7 @@ function DemoPage() {
               <form onSubmit={handleSubmitCreateExpenditure} className="my-2">
                 <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
                   <div className="xl:w-[50%]">
-                    <div className="xl:hidden w-[100px] inline-block">
-                      Name:
-                    </div>
+                    <div className="xl:hidden w-25 inline-block">Name:</div>
                     <input
                       type="text"
                       name="expenditurename"
@@ -358,7 +448,7 @@ function DemoPage() {
                     />
                   </div>
                   <div className="xl:w-[50%]">
-                    <div className="xl:hidden w-[100px] inline-block">
+                    <div className="xl:hidden w-25 inline-block">
                       Amount (Monthly):
                     </div>
                     <input
@@ -368,7 +458,7 @@ function DemoPage() {
                       className="px-2 border border-[#777777] rounded"
                     />
                   </div>
-                  <div className="w-[70px]"></div>
+                  <div className="w-17.5"></div>
                 </div>
                 <div className="flex mt-2">
                   <div
@@ -385,7 +475,7 @@ function DemoPage() {
             ) : (
               <div
                 onClick={() => setCreateExpenditureMode(true)}
-                className="mt-5 py-1 w-[160px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
               >
                 + Add expenditure
               </div>
@@ -418,7 +508,7 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Assets</div>
-            <div className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+            <div className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
               + Add asset
             </div>
             <div className="pt-5">Total assets: $0</div>
@@ -427,7 +517,7 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Liabilities</div>
-            <div className="mt-5 py-1 w-[160px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+            <div className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
               + Add liability
             </div>
             <div className="pt-5">Total liabilities: $0</div>
@@ -436,6 +526,14 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
           <div className="pl-5">
             <div className="pt-5 font-bold">Total net worth: $0</div>
+          </div>
+        </div>
+        <div className="border-b border-b-[#777777] pb-5">
+          <div className="pl-5">
+            <div className="pt-5 text-3xl font-bold">Financial Goals</div>
+            <div className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+              + Add financial goal
+            </div>
           </div>
         </div>
       </div>
