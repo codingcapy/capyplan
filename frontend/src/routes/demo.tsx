@@ -170,6 +170,21 @@ function DemoPage() {
     setCreateFinancialGoalMode(false);
   }
 
+  function handleEditIncome(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newIncome: Income = {
+      incomeId: editIncomePointer,
+      planId: currentPlan,
+      company: (e.target as HTMLFormElement).company.value,
+      position: (e.target as HTMLFormElement).position.value,
+      amount: parseFloat((e.target as HTMLFormElement).amount.value),
+      tax: parseFloat((e.target as HTMLFormElement).tax.value),
+    };
+    setIncomes((prev) =>
+      prev.map((i) => (i.incomeId === editIncomePointer ? newIncome : i)),
+    );
+  }
+
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
       setShowDropdown(false);
@@ -189,7 +204,7 @@ function DemoPage() {
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">
       <div className="hidden sm:block fixed top-0 left-0 h-screen bg-[#101010] w-[250px]">
-        <div className="flex items-center p-5 pt-16 mb-5">
+        <div className="flex items-center p-5 pt-20 xl:pt-16 mb-5">
           <img src={logo} alt="" className="w-[25px]" />
           <div className="ml-2 text-lg">CapyPlan</div>
         </div>
@@ -262,9 +277,9 @@ function DemoPage() {
       </div>
       <div className="fixed top-0 left-0 p-2.5 w-screen flex justify-between bg-[#242424]">
         <div className="hover:text-cyan-500 transition-all ease-in-out duration-300 flex justify-center items-center">
-          <FaArrowLeft />
-          <Link to="/" className="hidden sm:block sm:pl-2">
-            Back to login
+          <Link to="/" className="flex justify-center items-center">
+            <FaArrowLeft />
+            <div className="hidden sm:block sm:pl-2">Back to login</div>
           </Link>
         </div>
         <div className="text-xs sm:text-base max-w-[300px] sm:max-w-full">
@@ -285,7 +300,7 @@ function DemoPage() {
         <div></div>
       </div>
       <div className="sm:pl-[240px]">
-        <div className="pl-5 pt-12 text-4xl font-bold">
+        <div className="pl-5 pt-20 xl:pt-12 text-4xl font-bold">
           {plan ? plan.title : "No plan found"}
         </div>
         <div className="border-b border-b-[#777777] pb-5">
