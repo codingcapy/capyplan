@@ -9,6 +9,7 @@ import { FaTrashCan } from "react-icons/fa6";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 import { DemoEditIncome } from "../components/DemoEditIncome";
+import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -90,6 +91,7 @@ function DemoPage() {
   const [createLiabilityMode, setCreateLiabilityMode] = useState(false);
   const [createFinancialGoalMode, setCreateFinancialGoalMode] = useState(false);
   const [editIncomePointer, setEditIncomePointer] = useState("none");
+  const [editExpenditurePointer, setEditExpenditurePointer] = useState("none");
   const [modalMode, setModalMode] = useState<ModalMode>("none");
   const [targetDate, setTargetDate] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
@@ -189,6 +191,22 @@ function DemoPage() {
       prev.map((i) => (i.incomeId === editIncomePointer ? newIncome : i)),
     );
     setEditIncomePointer("none");
+  }
+
+  function handleSubmitEditExpenditure(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newExpenditure: Expenditure = {
+      expenditureId: editExpenditurePointer,
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).expenditurename.value,
+      amount: (e.target as HTMLFormElement).expenditureamount.value,
+    };
+    setExpenditures((prev) =>
+      prev.map((e) =>
+        e.expenditureId === editExpenditurePointer ? newExpenditure : e,
+      ),
+    );
+    setEditExpenditurePointer("none");
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -324,6 +342,7 @@ function DemoPage() {
               .map((income) =>
                 editIncomePointer === income.incomeId ? (
                   <DemoEditIncome
+                    key={income.incomeId}
                     income={income}
                     handleSubmitEditIncome={handleSubmitEditIncome}
                     setEditIncomePointer={setEditIncomePointer}
@@ -441,30 +460,43 @@ function DemoPage() {
             </div>
             {expenditures
               .filter((e) => e.planId === currentPlan)
-              .map((expenditure) => (
-                <div
-                  key={expenditure.expenditureId}
-                  className="flex justify-between my-2"
-                >
-                  <div className="w-[50%]">{expenditure.name}</div>
-                  <div className="w-[50%]">${expenditure.amount}</div>
-                  <MdModeEditOutline
-                    size={20}
-                    className="w-8.75 cursor-pointer"
+              .map((expenditure) =>
+                editExpenditurePointer === expenditure.expenditureId ? (
+                  <DemoEditExpenditure
+                    key={expenditure.expenditureId}
+                    expenditure={expenditure}
+                    handleSubmitEditExpenditure={handleSubmitEditExpenditure}
+                    setEditExpenditurePointer={setEditExpenditurePointer}
                   />
-                  <FaTrashCan
-                    size={20}
-                    onClick={() =>
-                      setExpenditures((prev) =>
-                        prev.filter(
-                          (e) => e.expenditureId !== expenditure.expenditureId,
-                        ),
-                      )
-                    }
-                    className="text-red-400 w-8.75 cursor-pointer"
-                  />
-                </div>
-              ))}
+                ) : (
+                  <div
+                    key={expenditure.expenditureId}
+                    className="flex justify-between my-2"
+                  >
+                    <div className="w-[50%]">{expenditure.name}</div>
+                    <div className="w-[50%]">${expenditure.amount}</div>
+                    <MdModeEditOutline
+                      size={20}
+                      onClick={() =>
+                        setEditExpenditurePointer(expenditure.expenditureId)
+                      }
+                      className="w-8.75 cursor-pointer"
+                    />
+                    <FaTrashCan
+                      size={20}
+                      onClick={() =>
+                        setExpenditures((prev) =>
+                          prev.filter(
+                            (e) =>
+                              e.expenditureId !== expenditure.expenditureId,
+                          ),
+                        )
+                      }
+                      className="text-red-400 w-8.75 cursor-pointer"
+                    />
+                  </div>
+                ),
+              )}
             {createExpenditureMode ? (
               <form onSubmit={handleSubmitCreateExpenditure} className="my-2">
                 <div className="flex flex-col xl:flex-row xl:justify-between gap-2">

@@ -47,7 +47,7 @@ export function DemoEditIncome(props: {
             type="number"
             name="amount"
             value={amountContent}
-            onChange={(e) => setAmountContent(e.target.value)}
+            onChange={(e) => setAmountContent(e.target.valueAsNumber)}
             required
             className="px-2 border border-[#777777] rounded"
           />
@@ -58,12 +58,11 @@ export function DemoEditIncome(props: {
             type="number"
             name="tax"
             value={taxContent}
-            onChange={(e) => setTaxContent(e.target.value)}
+            onChange={(e) => setTaxContent(e.target.valueAsNumber)}
             required
             className="px-2 border border-[#777777] rounded"
           />
         </div>
-        <div className="w-[70px]"></div>
         <button className="w-[35px] cursor-pointer text-green-500 flex items-center justify-center">
           <FaCheck />
         </button>
