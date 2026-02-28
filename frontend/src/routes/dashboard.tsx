@@ -30,52 +30,98 @@ function Dashboard() {
       <LeftNav />
       <TopNav />
       {planLoading ? (
-        <div className="pl-[300px] pt-4 text-lg">Loading...</div>
+        <div className="sm:pl-[300px] pt-4 text-lg">Loading...</div>
       ) : planError ? (
-        <div className="pl-[300px] pt-4 text-lg">
+        <div className="sm:pl-[300px] pt-4 text-lg">
           There was an error loading your plan. Please try again later.
         </div>
       ) : (
-        <div className="pl-[240px]">
+        <div className="sm:pl-[240px]">
           <div className="pl-5 pt-10 text-4xl font-bold">
             {plan ? plan.title : "No plan found"}
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             <div className="pl-5">
               <div className="pt-5 text-3xl font-bold">Income</div>
-              <div className="pt-5">+ Add income</div>
+              <div className="flex justify-between my-2">
+                <div className="w-[25%]">Company</div>
+                <div className="w-[25%]">Position</div>
+                <div className="w-[25%]">Amount (Monthly)</div>
+                <div className="w-[25%]">Tax %</div>
+                <div className="w-[70px]"></div>
+              </div>
+              <div className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+                + Add income
+              </div>
               <div className="pt-5">Total income: $0</div>
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             <div className="pl-5">
               <div className="pt-5 text-3xl font-bold">Expenditure</div>
-              <div className="pt-5">+ Add expenditure</div>
+              <div className="flex justify-between my-2">
+                <div className="w-[50%]">Name</div>
+                <div className="w-[50%]">Amount (Monthly)</div>
+                <div className="w-17.5"></div>
+              </div>
+              <div className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+                + Add expenditure
+              </div>
               <div className="pt-5">Total expenditure: $0</div>
             </div>
           </div>
-          <div className="border-b border-b-[#777777] pb-5">
+          <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
             <div className="pl-5">
-              <div className="pt-5">Total cashflow: $0</div>
+              <div className="pt-5 font-bold">Total cashflow: $0</div>
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             <div className="pl-5">
               <div className="pt-5 text-3xl font-bold">Assets</div>
-              <div className="pt-5">+ Add asset</div>
+              <div className="flex justify-between my-2">
+                <div className="w-[33%]">Name</div>
+                <div className="w-[33%]">Value</div>
+                <div className="w-[33%]">Return on invesment %</div>
+                <div className="w-17.5"></div>
+              </div>
+              <div className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+                + Add asset
+              </div>
               <div className="pt-5">Total assets: $0</div>
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             <div className="pl-5">
               <div className="pt-5 text-3xl font-bold">Liabilities</div>
-              <div className="pt-5">+ Add liability</div>
+              <div className="flex justify-between my-2">
+                <div className="w-[33%]">Name</div>
+                <div className="w-[33%]">Amount</div>
+                <div className="w-[33%]">Monthly Interest %</div>
+                <div className="w-17.5"></div>
+              </div>
+              <div className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+                + Add liability
+              </div>
               <div className="pt-5">Total liabilities: $0</div>
+            </div>
+          </div>
+          <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
+            <div className="pl-5">
+              <div className="pt-5 font-bold">Total net worth: $0</div>
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             <div className="pl-5">
-              <div className="pt-5">Total net worth: $0</div>
+              <div className="pt-5 text-3xl font-bold">Financial Goals</div>
+              <div className="flex justify-between my-2">
+                <div className="w-[33%]">Name</div>
+                <div className="w-[33%]">Amount</div>
+                <div className="w-[33%]">Target Date</div>
+                <div className="w-17.5"></div>
+              </div>
+              <div className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
+                + Add financial goal
+              </div>
             </div>
           </div>
         </div>
