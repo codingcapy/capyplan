@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useAuthStore from "../store/AuthStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LeftNav } from "../components/LeftNav";
 import { TopNav } from "../components/TopNav";
 import { useQuery } from "@tanstack/react-query";
 import { getPlanByIdQueryOptions } from "../lib/api/plans";
+import { CreateIncome } from "../components/CreateIncome";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -20,6 +21,11 @@ function Dashboard() {
   } = useQuery(
     getPlanByIdQueryOptions((user && user.currentPlan.toString()) || "0"),
   );
+  const [createIncomeMode, setCreateIncomeMode] = useState(false);
+  const [createExpenditureMode, setCreateExpenditureMode] = useState(false);
+  const [createAssetMode, setCreateAssetMode] = useState(false);
+  const [createLiabilityMode, setCreateLiabilityMode] = useState(false);
+  const [createFinancialGoalMode, setCreateFinancialGoalMode] = useState(false);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -50,9 +56,16 @@ function Dashboard() {
                 <div className="w-[25%]">Tax %</div>
                 <div className="w-[70px]"></div>
               </div>
-              <div className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded">
-                + Add income
-              </div>
+              {createIncomeMode ? (
+                <CreateIncome setCreateIncomeMode={setCreateIncomeMode} />
+              ) : (
+                <div
+                  onClick={() => setCreateIncomeMode(true)}
+                  className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                >
+                  + Add income
+                </div>
+              )}
               <div className="pt-5">Total income: $0</div>
             </div>
           </div>
