@@ -45,6 +45,7 @@ export function DemoEditIncome(props: {
           <div className="xl:hidden w-[100px] inline-block">Amount:</div>
           <input
             type="number"
+            step="any"
             name="amount"
             value={amountContent}
             onChange={(e) => setAmountContent(e.target.valueAsNumber)}
@@ -56,6 +57,7 @@ export function DemoEditIncome(props: {
           <div className="xl:hidden w-[100px] inline-block">Tax %:</div>
           <input
             type="number"
+            step="any"
             name="tax"
             value={taxContent}
             onChange={(e) => setTaxContent(e.target.valueAsNumber)}

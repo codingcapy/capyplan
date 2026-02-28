@@ -31,6 +31,7 @@ export function DemoEditExpenditure(props: {
           <div className="xl:hidden w-[100px] inline-block">Amount:</div>
           <input
             type="number"
+            step="any"
             name="expenditureamount"
             value={amountContent}
             onChange={(e) => setAmountContent(e.target.valueAsNumber)}

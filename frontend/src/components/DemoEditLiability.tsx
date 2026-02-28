@@ -1,56 +1,56 @@
 import { FormEvent, SetStateAction, useState } from "react";
 import { FaCheck, FaXmark } from "react-icons/fa6";
 
-export function DemoEditAsset(props: {
-  asset: {
-    assetId: string;
+export function DemoEditLiability(props: {
+  liability: {
+    liabilityId: string;
     planId: string;
     name: string;
-    value: number;
-    roi: number;
+    amount: number;
+    interest: number;
   };
-  handleSubmitEditAsset: (e: FormEvent<HTMLFormElement>) => void;
-  setEditAssetPointer: (value: SetStateAction<string>) => void;
+  handleSubmitEditLiability: (e: FormEvent<HTMLFormElement>) => void;
+  setEditLiabilityPointer: (value: SetStateAction<string>) => void;
 }) {
-  const [nameContent, setNameContent] = useState(props.asset.name);
-  const [valueContent, setValueContent] = useState(props.asset.value);
-  const [roiContent, setRoiContent] = useState(props.asset.roi);
+  const [nameContent, setNameContent] = useState(props.liability.name);
+  const [amountContent, setAmountContent] = useState(props.liability.amount);
+  const [interestContent, setInterestContent] = useState(
+    props.liability.interest,
+  );
 
   return (
-    <form onSubmit={props.handleSubmitEditAsset} className="my-2">
+    <form onSubmit={props.handleSubmitEditLiability} className="my-2">
       <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
         <div className="xl:w-[50%]">
           <div className="xl:hidden w-[100px] inline-block">Name:</div>
           <input
             type="text"
-            name="assetname"
+            name="liabilityname"
             value={nameContent}
             onChange={(e) => setNameContent(e.target.value)}
             className="px-2 border border-[#777777] rounded"
           />
         </div>
         <div className="xl:w-[50%]">
-          <div className="xl:hidden w-[100px] inline-block">Value:</div>
+          <div className="xl:hidden w-[100px] inline-block">Amount:</div>
           <input
             type="number"
             step="any"
-            name="assetvalue"
-            value={valueContent}
-            onChange={(e) => setValueContent(e.target.valueAsNumber)}
+            name="liabilityamount"
+            value={amountContent}
+            onChange={(e) => setAmountContent(e.target.valueAsNumber)}
             required
             className="px-2 border border-[#777777] rounded"
           />
         </div>
         <div className="xl:w-[50%]">
-          <div className="xl:hidden w-[100px] inline-block">
-            Return on Investment:
-          </div>
+          <div className="xl:hidden w-[100px] inline-block">Interest %:</div>
           <input
             type="number"
             step="any"
-            name="assetroi"
-            value={roiContent}
-            onChange={(e) => setRoiContent(e.target.valueAsNumber)}
+            name="liabilityinterest"
+            value={interestContent}
+            onChange={(e) => setInterestContent(e.target.valueAsNumber)}
             required
             className="px-2 border border-[#777777] rounded"
           />
@@ -59,7 +59,7 @@ export function DemoEditAsset(props: {
           <FaCheck />
         </button>
         <div
-          onClick={() => props.setEditAssetPointer("none")}
+          onClick={() => props.setEditLiabilityPointer("none")}
           className="w-[35px] cursor-pointer text-red-500 flex items-center justify-center"
         >
           <FaXmark />

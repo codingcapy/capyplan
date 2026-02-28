@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { DemoEditIncome } from "../components/DemoEditIncome";
 import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
 import { DemoEditAsset } from "../components/DemoEditAsset";
+import { DemoEditLiability } from "../components/DemoEditLiability";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -229,6 +230,25 @@ function DemoPage() {
     setEditAssetPointer("none");
   }
 
+  function handleSubmitEditLiability(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newLiability: Liability = {
+      liabilityId: editLiabilityPointer,
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).liabilityname.value,
+      amount: parseFloat((e.target as HTMLFormElement).liabilityamount.value),
+      interest: parseFloat(
+        (e.target as HTMLFormElement).liabilityinterest.value,
+      ),
+    };
+    setLiabilities((prev) =>
+      prev.map((l) =>
+        l.liabilityId === editLiabilityPointer ? newLiability : l,
+      ),
+    );
+    setEditLiabilityPointer("none");
+  }
+
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
       setShowDropdown(false);
@@ -422,6 +442,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="amount"
                       required
                       className="px-2 border border-[#777777] rounded"
@@ -433,6 +454,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="tax"
                       required
                       className="px-2 border border-[#777777] rounded"
@@ -534,6 +556,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="expenditureamount"
                       required
                       className="px-2 border border-[#777777] rounded"
@@ -648,6 +671,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="assetvalue"
                       required
                       className="px-2 border border-[#777777] rounded"
@@ -659,6 +683,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="roi"
                       required
                       className="px-2 border border-[#777777] rounded"
@@ -703,31 +728,42 @@ function DemoPage() {
             </div>
             {liabilities
               .filter((l) => l.planId === currentPlan)
-              .map((liability) => (
-                <div
-                  key={liability.liabilityId}
-                  className="flex justify-between my-2"
-                >
-                  <div className="w-[33%]">{liability.name}</div>
-                  <div className="w-[33%]">${liability.amount}</div>
-                  <div className="w-[33%]">{liability.interest}</div>
-                  <MdModeEditOutline
-                    size={20}
-                    className="w-8.75 cursor-pointer"
+              .map((liability) =>
+                editLiabilityPointer === liability.liabilityId ? (
+                  <DemoEditLiability
+                    liability={liability}
+                    handleSubmitEditLiability={handleSubmitEditLiability}
+                    setEditLiabilityPointer={setEditLiabilityPointer}
                   />
-                  <FaTrashCan
-                    size={20}
-                    onClick={() =>
-                      setLiabilities((prev) =>
-                        prev.filter(
-                          (l) => l.liabilityId !== liability.liabilityId,
-                        ),
-                      )
-                    }
-                    className="text-red-400 w-8.75 cursor-pointer"
-                  />
-                </div>
-              ))}
+                ) : (
+                  <div
+                    key={liability.liabilityId}
+                    className="flex justify-between my-2"
+                  >
+                    <div className="w-[33%]">{liability.name}</div>
+                    <div className="w-[33%]">${liability.amount}</div>
+                    <div className="w-[33%]">{liability.interest}</div>
+                    <MdModeEditOutline
+                      onClick={() =>
+                        setEditLiabilityPointer(liability.liabilityId)
+                      }
+                      size={20}
+                      className="w-8.75 cursor-pointer"
+                    />
+                    <FaTrashCan
+                      size={20}
+                      onClick={() =>
+                        setLiabilities((prev) =>
+                          prev.filter(
+                            (l) => l.liabilityId !== liability.liabilityId,
+                          ),
+                        )
+                      }
+                      className="text-red-400 w-8.75 cursor-pointer"
+                    />
+                  </div>
+                ),
+              )}
             {createLiabilityMode ? (
               <form onSubmit={handleSubmitCreateLiability} className="my-2">
                 <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
@@ -747,6 +783,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="liabilityamount"
                       required
                       className="px-2 border border-[#777777] rounded"
@@ -758,6 +795,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="interest"
                       required
                       className="px-2 border border-[#777777] rounded"
@@ -864,6 +902,7 @@ function DemoPage() {
                     </div>
                     <input
                       type="number"
+                      step="any"
                       name="financialgoalamount"
                       required
                       className="px-2 border border-[#777777] rounded"
