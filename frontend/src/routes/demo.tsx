@@ -10,6 +10,7 @@ import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 import { DemoEditIncome } from "../components/DemoEditIncome";
 import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
+import { DemoEditAsset } from "../components/DemoEditAsset";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -92,6 +93,10 @@ function DemoPage() {
   const [createFinancialGoalMode, setCreateFinancialGoalMode] = useState(false);
   const [editIncomePointer, setEditIncomePointer] = useState("none");
   const [editExpenditurePointer, setEditExpenditurePointer] = useState("none");
+  const [editAssetPointer, setEditAssetPointer] = useState("none");
+  const [editLiabilityPointer, setEditLiabilityPointer] = useState("none");
+  const [editFinancialPlanPointer, setEditFinancialPlanPointer] =
+    useState("none");
   const [modalMode, setModalMode] = useState<ModalMode>("none");
   const [targetDate, setTargetDate] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
@@ -199,7 +204,7 @@ function DemoPage() {
       expenditureId: editExpenditurePointer,
       planId: currentPlan,
       name: (e.target as HTMLFormElement).expenditurename.value,
-      amount: (e.target as HTMLFormElement).expenditureamount.value,
+      amount: parseFloat((e.target as HTMLFormElement).expenditureamount.value),
     };
     setExpenditures((prev) =>
       prev.map((e) =>
@@ -207,6 +212,21 @@ function DemoPage() {
       ),
     );
     setEditExpenditurePointer("none");
+  }
+
+  function handleSubmitEditAsset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newAsset: Asset = {
+      assetId: editAssetPointer,
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).assetname.value,
+      value: parseFloat((e.target as HTMLFormElement).assetvalue.value),
+      roi: parseFloat((e.target as HTMLFormElement).assetroi.value),
+    };
+    setAssets((prev) =>
+      prev.map((a) => (a.assetId === editAssetPointer ? newAsset : a)),
+    );
+    setEditAssetPointer("none");
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -577,26 +597,38 @@ function DemoPage() {
             </div>
             {assets
               .filter((a) => a.planId === currentPlan)
-              .map((asset) => (
-                <div key={asset.assetId} className="flex justify-between my-2">
-                  <div className="w-[33%]">{asset.name}</div>
-                  <div className="w-[33%]">${asset.value}</div>
-                  <div className="w-[33%]">{asset.roi}</div>
-                  <MdModeEditOutline
-                    size={20}
-                    className="w-8.75 cursor-pointer"
+              .map((asset) =>
+                editAssetPointer === asset.assetId ? (
+                  <DemoEditAsset
+                    asset={asset}
+                    handleSubmitEditAsset={handleSubmitEditAsset}
+                    setEditAssetPointer={setEditAssetPointer}
                   />
-                  <FaTrashCan
-                    size={20}
-                    onClick={() =>
-                      setAssets((prev) =>
-                        prev.filter((a) => a.assetId !== asset.assetId),
-                      )
-                    }
-                    className="text-red-400 w-8.75 cursor-pointer"
-                  />
-                </div>
-              ))}
+                ) : (
+                  <div
+                    key={asset.assetId}
+                    className="flex justify-between my-2"
+                  >
+                    <div className="w-[33%]">{asset.name}</div>
+                    <div className="w-[33%]">${asset.value}</div>
+                    <div className="w-[33%]">{asset.roi}</div>
+                    <MdModeEditOutline
+                      onClick={() => setEditAssetPointer(asset.assetId)}
+                      size={20}
+                      className="w-8.75 cursor-pointer"
+                    />
+                    <FaTrashCan
+                      size={20}
+                      onClick={() =>
+                        setAssets((prev) =>
+                          prev.filter((a) => a.assetId !== asset.assetId),
+                        )
+                      }
+                      className="text-red-400 w-8.75 cursor-pointer"
+                    />
+                  </div>
+                ),
+              )}
             {createAssetMode ? (
               <form onSubmit={handleSubmitCreateAsset} className="my-2">
                 <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
