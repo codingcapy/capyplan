@@ -12,6 +12,7 @@ import { DemoEditIncome } from "../components/DemoEditIncome";
 import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
 import { DemoEditAsset } from "../components/DemoEditAsset";
 import { DemoEditLiability } from "../components/DemoEditLiability";
+import { DemoEditFinancialGoal } from "../components/DemoEditFinancialGoal";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -96,7 +97,7 @@ function DemoPage() {
   const [editExpenditurePointer, setEditExpenditurePointer] = useState("none");
   const [editAssetPointer, setEditAssetPointer] = useState("none");
   const [editLiabilityPointer, setEditLiabilityPointer] = useState("none");
-  const [editFinancialPlanPointer, setEditFinancialPlanPointer] =
+  const [editFinancialGoalPointer, setEditFinancialGoalPointer] =
     useState("none");
   const [modalMode, setModalMode] = useState<ModalMode>("none");
   const [targetDate, setTargetDate] = useState<Date>(new Date());
@@ -247,6 +248,25 @@ function DemoPage() {
       ),
     );
     setEditLiabilityPointer("none");
+  }
+
+  function handleSubmitEditFinancialGoal(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newFinancialGoal: FinancialGoal = {
+      financialGoalId: editFinancialGoalPointer,
+      planId: currentPlan,
+      name: (e.target as HTMLFormElement).financialgoalname.value,
+      amount: parseFloat(
+        (e.target as HTMLFormElement).financialgoalamount.value,
+      ),
+      target: targetDate,
+    };
+    setFinancialGoals((prev) =>
+      prev.map((f) =>
+        f.financialGoalId === editFinancialGoalPointer ? newFinancialGoal : f,
+      ),
+    );
+    setEditFinancialGoalPointer("none");
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -855,34 +875,54 @@ function DemoPage() {
             </div>
             {financialGoals
               .filter((f) => f.planId === currentPlan)
-              .map((financialGoal) => (
-                <div
-                  key={financialGoal.financialGoalId}
-                  className="flex justify-between my-2"
-                >
-                  <div className="w-[33%]">{financialGoal.name}</div>
-                  <div className="w-[33%]">${financialGoal.amount}</div>
-                  <div className="w-[33%]">
-                    {format(financialGoal.target, "yyyy-MM-dd")}
-                  </div>
-                  <MdModeEditOutline
-                    size={20}
-                    className="w-8.75 cursor-pointer"
-                  />
-                  <FaTrashCan
-                    size={20}
-                    onClick={() =>
-                      setFinancialGoals((prev) =>
-                        prev.filter(
-                          (f) =>
-                            f.financialGoalId !== financialGoal.financialGoalId,
-                        ),
-                      )
+              .map((financialGoal) =>
+                editFinancialGoalPointer === financialGoal.financialGoalId ? (
+                  <DemoEditFinancialGoal
+                    financialGoal={financialGoal}
+                    targetDate={targetDate}
+                    setTargetDate={setTargetDate}
+                    showCalendar={showCalendar}
+                    setShowCalendar={setShowCalendar}
+                    handleSubmitEditFinancialGoal={
+                      handleSubmitEditFinancialGoal
                     }
-                    className="text-red-400 w-8.75 cursor-pointer"
+                    setEditFinancialGoalPointer={setEditFinancialGoalPointer}
                   />
-                </div>
-              ))}
+                ) : (
+                  <div
+                    key={financialGoal.financialGoalId}
+                    className="flex justify-between my-2"
+                  >
+                    <div className="w-[33%]">{financialGoal.name}</div>
+                    <div className="w-[33%]">${financialGoal.amount}</div>
+                    <div className="w-[33%]">
+                      {format(financialGoal.target, "yyyy-MM-dd")}
+                    </div>
+                    <MdModeEditOutline
+                      onClick={() =>
+                        setEditFinancialGoalPointer(
+                          financialGoal.financialGoalId,
+                        )
+                      }
+                      size={20}
+                      className="w-8.75 cursor-pointer"
+                    />
+                    <FaTrashCan
+                      size={20}
+                      onClick={() =>
+                        setFinancialGoals((prev) =>
+                          prev.filter(
+                            (f) =>
+                              f.financialGoalId !==
+                              financialGoal.financialGoalId,
+                          ),
+                        )
+                      }
+                      className="text-red-400 w-8.75 cursor-pointer"
+                    />
+                  </div>
+                ),
+              )}
             {createFinancialGoalMode ? (
               <form onSubmit={handleSubmitCreateFinancialGoal} className="my-2">
                 <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
