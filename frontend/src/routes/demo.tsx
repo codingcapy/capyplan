@@ -285,6 +285,28 @@ function DemoPage() {
     setPlan(selectedPlan || null);
   }, [currentPlan, plans]);
 
+  const totalIncome = incomes.reduce(
+    (sum, income) => sum + (income.amount * (100 - income.tax)) / 100,
+    0,
+  );
+  const totalExpenditure = expenditures.reduce(
+    (sum, expenditure) => sum + expenditure.amount,
+    0,
+  );
+  const cashflow =
+    incomes.reduce(
+      (sum, income) => sum + (income.amount * (100 - income.tax)) / 100,
+      0,
+    ) - expenditures.reduce((sum, expenditure) => sum + expenditure.amount, 0);
+  const totalAssets = assets.reduce((sum, asset) => sum + asset.value, 0);
+  const totalLiabilities = liabilities.reduce(
+    (sum, liability) => sum + liability.amount,
+    0,
+  );
+  const netWorth =
+    assets.reduce((sum, asset) => sum + asset.value, 0) -
+    liabilities.reduce((sum, liability) => sum + liability.amount, 0);
+
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">
       <div className="hidden sm:block fixed top-0 left-0 h-screen bg-[#101010] w-[250px]">
@@ -994,6 +1016,72 @@ function DemoPage() {
                 + Add financial goal
               </div>
             )}
+          </div>
+        </div>
+        <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
+          <div className="pl-5">
+            <div className="pt-5 text-3xl font-bold">Recommendations</div>
+            <div className="mt-2 text-xs">
+              Disclaimer: The information provided here is for general
+              informational purposes only and does not constitute financial
+              advice. You should consult a qualified financial professional
+              before making financial decisions.
+            </div>
+            <div className="pt-5">
+              <ol>
+                {incomes.length > 0 || expenditures.length > 0 ? (
+                  totalExpenditure > totalIncome ? (
+                    <li>
+                      <b>1. Improve your cashflow</b> - you are spending more
+                      than you are making. Try to reduce your spending or if a
+                      raise or promotion is not on the horizon, consider
+                      creating additional sources of income.
+                    </li>
+                  ) : cashflow < totalIncome * 0.1 ? (
+                    <li>
+                      <b>1. Your cashflow is semi-healthy</b> - you are spending
+                      within your means but you are saving less than 10% of your
+                      income. Try to reduce your spending or if a raise or
+                      promotion is not on the horizon, consider creating
+                      additional sources of income for additional savings.
+                    </li>
+                  ) : (
+                    <li>
+                      <b>1. Your cashflow is healthy</b> - you are able to save
+                      more 10% or more of your income. If you are not already,
+                      consider investing your savings.
+                    </li>
+                  )
+                ) : (
+                  <li></li>
+                )}
+                {incomes.length > 0 || expenditures.length > 0 ? (
+                  netWorth < 0 ? (
+                    <li className="my-2">
+                      <b>2. Payoff your debts</b> - your priority is to payoff
+                      your debts with high interest. Once your debts are paid
+                      off, we can start working on long-term savings plan.
+                    </li>
+                  ) : netWorth < totalIncome * 3 ? (
+                    <li className="my-2">
+                      <b>2. Build an emergency fund</b> - save up until you have
+                      at least 3 months' worth of salary in your savings
+                      account. Once you have an emergency fund set up, we can
+                      start working on long-term savings plan for your financial
+                      goals.
+                    </li>
+                  ) : (
+                    <li className="my-2">
+                      <b>2. Your net worth is healthy</b> - you have sufficient
+                      assets to ensure your immediate needs are met and work on
+                      any financial goals you may have.
+                    </li>
+                  )
+                ) : (
+                  <li></li>
+                )}
+              </ol>
+            </div>
           </div>
         </div>
       </div>
