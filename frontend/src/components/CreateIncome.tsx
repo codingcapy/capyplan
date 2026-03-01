@@ -1,8 +1,33 @@
-import { SetStateAction } from "react";
+import { SetStateAction, useState } from "react";
+import { useCreateIncomeMutation } from "../lib/api/incomes";
+import { Plan } from "../../../schemas/plans";
 
 export function CreateIncome(props: {
+  plan: Plan;
   setCreateIncomeMode: (value: SetStateAction<boolean>) => void;
 }) {
+  const { mutate: createIncome, isPending: createIncomePending } =
+    useCreateIncomeMutation();
+  const [notification, setNotification] = useState("");
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (createIncomePending) return;
+    const company = (e.target as HTMLFormElement).company.value;
+    const position = (e.target as HTMLFormElement).position.value;
+    const amount = parseFloat((e.target as HTMLFormElement).amount.value);
+    const tax = parseFloat((e.target as HTMLFormElement).tax.value);
+    createIncome(
+      { planId: props.plan.planId, company, position, amount, tax },
+      {
+        onSuccess: () => {
+          props.setCreateIncomeMode(false);
+        },
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
+
   return (
     <form className="my-2">
       <div className="flex flex-col xl:flex-row xl:justify-between gap-2">

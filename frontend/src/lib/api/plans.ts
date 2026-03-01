@@ -118,7 +118,7 @@ async function getPlanById(planId: string) {
     throw new Error("Error getting plan by id");
   }
   const { plan } = await res.json();
-  return plan;
+  return mapSerializedPlanToSchema(plan);
 }
 
 export const getPlanByIdQueryOptions = (planId: string) =>
