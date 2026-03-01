@@ -98,6 +98,9 @@ export const useUpdateCurrentPlanMutation = (
       queryClient.invalidateQueries({
         queryKey: ["plan", _data.user.currentPlan.toString()],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["incomes", _data.user.currentPlan],
+      });
     },
     onError: (error) => {
       if (onError) {

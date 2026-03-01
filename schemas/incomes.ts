@@ -13,7 +13,7 @@ export const incomes = pgTable("incomes", {
   company: varchar("company"),
   position: varchar("position"),
   amount: integer("amount").notNull(), // Stored as cents to avoid floating point issues
-  tax: integer("tax"),
+  tax: integer("tax").notNull().default(0),
   status: varchar("status").default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

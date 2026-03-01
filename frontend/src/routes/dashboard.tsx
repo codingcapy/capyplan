@@ -34,7 +34,10 @@ function Dashboard() {
     data: incomes,
     isLoading: incomesLoading,
     error: incomesError,
-  } = useQuery(getIncomesByPlanIdQueryOptions((plan && plan.planId) || 0));
+  } = useQuery({
+    ...getIncomesByPlanIdQueryOptions(plan?.planId ?? 0),
+    enabled: !!plan?.planId,
+  });
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -54,29 +57,29 @@ function Dashboard() {
         <div className="sm:pl-[240px]">
           <div className="pl-5 pt-10 text-4xl font-bold">{plan.title}</div>
           <div className="border-b border-b-[#777777] pb-5">
-            <div className="pl-5">
-              <div className="pt-5 text-3xl font-bold">Income</div>
-              <div className="flex justify-between my-2">
-                <div className="w-[25%]">Company</div>
-                <div className="w-[25%]">Position</div>
-                <div className="w-[25%]">Amount (Monthly)</div>
-                <div className="w-[25%]">Tax %</div>
-                <div className="w-[70px]"></div>
-              </div>
-              {incomesLoading ? (
-                <div>Loading income items...</div>
-              ) : incomesError ? (
-                <div>Error loading income items</div>
-              ) : incomes ? (
-                incomes.map((income) => (
+            {incomesLoading ? (
+              <div>Loading income items...</div>
+            ) : incomesError ? (
+              <div>Error loading income items</div>
+            ) : incomes ? (
+              <div className="pl-5">
+                <div className="pt-5 text-3xl font-bold">Income</div>
+                <div className="flex justify-between my-2">
+                  <div className="w-[25%]">Company</div>
+                  <div className="w-[25%]">Position</div>
+                  <div className="w-[25%]">Amount (Monthly)</div>
+                  <div className="w-[25%]">Tax %</div>
+                  <div className="w-[70px]"></div>
+                </div>
+                {incomes.map((income) => (
                   <div
                     key={income.incomeId}
                     className="flex justify-between my-2"
                   >
                     <div className="w-[25%]">{income.company}</div>
                     <div className="w-[25%]">{income.position}</div>
-                    <div className="w-[25%]">${income.amount}</div>
-                    <div className="w-[25%]">{income.tax}%</div>
+                    <div className="w-[25%]">${income.amount / 100}</div>
+                    <div className="w-[25%]">{income.tax / 100}%</div>
                     <MdModeEditOutline
                       size={20}
                       className="w-[35px] cursor-pointer"
@@ -86,25 +89,36 @@ function Dashboard() {
                       className="text-red-400 w-[35px] cursor-pointer"
                     />
                   </div>
-                ))
-              ) : (
-                <div></div>
-              )}
-              {createIncomeMode ? (
-                <CreateIncome
-                  setCreateIncomeMode={setCreateIncomeMode}
-                  plan={plan}
-                />
-              ) : (
-                <div
-                  onClick={() => setCreateIncomeMode(true)}
-                  className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-                >
-                  + Add income
+                ))}
+                {createIncomeMode ? (
+                  <CreateIncome
+                    setCreateIncomeMode={setCreateIncomeMode}
+                    plan={plan}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setCreateIncomeMode(true)}
+                    className="mt-5 py-1 w-[130px] text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                  >
+                    + Add income
+                  </div>
+                )}
+                <div className="pt-5">
+                  Total income: $
+                  {incomes
+                    .reduce(
+                      (sum, income) =>
+                        sum +
+                        ((income.amount / 100) * (100 - income.tax / 100)) /
+                          100,
+                      0,
+                    )
+                    .toFixed(2)}
                 </div>
-              )}
-              <div className="pt-5">Total income: $0</div>
-            </div>
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             <div className="pl-5">

@@ -84,6 +84,6 @@ async function getIncomesByPlanId(planId: number) {
 
 export const getIncomesByPlanIdQueryOptions = (planId: number) =>
   queryOptions({
-    queryKey: ["incomes"],
+    queryKey: ["incomes", planId],
     queryFn: () => getIncomesByPlanId(planId),
   });
