@@ -7,6 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getPlanByIdQueryOptions } from "../lib/api/plans";
 import { CreateIncome } from "../components/CreateIncome";
 import { CreateExpenditure } from "../components/CreateExpenditure";
+import { getIncomesByPlanIdQueryOptions } from "../lib/api/incomes";
+import { MdModeEditOutline } from "react-icons/md";
+import { FaTrashCan } from "react-icons/fa6";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -27,6 +30,11 @@ function Dashboard() {
   const [createAssetMode, setCreateAssetMode] = useState(false);
   const [createLiabilityMode, setCreateLiabilityMode] = useState(false);
   const [createFinancialGoalMode, setCreateFinancialGoalMode] = useState(false);
+  const {
+    data: incomes,
+    isLoading: incomesLoading,
+    error: incomesError,
+  } = useQuery(getIncomesByPlanIdQueryOptions((plan && plan.planId) || 0));
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -55,6 +63,33 @@ function Dashboard() {
                 <div className="w-[25%]">Tax %</div>
                 <div className="w-[70px]"></div>
               </div>
+              {incomesLoading ? (
+                <div>Loading income items...</div>
+              ) : incomesError ? (
+                <div>Error loading income items</div>
+              ) : incomes ? (
+                incomes.map((income) => (
+                  <div
+                    key={income.incomeId}
+                    className="flex justify-between my-2"
+                  >
+                    <div className="w-[25%]">{income.company}</div>
+                    <div className="w-[25%]">{income.position}</div>
+                    <div className="w-[25%]">${income.amount}</div>
+                    <div className="w-[25%]">{income.tax}%</div>
+                    <MdModeEditOutline
+                      size={20}
+                      className="w-[35px] cursor-pointer"
+                    />
+                    <FaTrashCan
+                      size={20}
+                      className="text-red-400 w-[35px] cursor-pointer"
+                    />
+                  </div>
+                ))
+              ) : (
+                <div></div>
+              )}
               {createIncomeMode ? (
                 <CreateIncome
                   setCreateIncomeMode={setCreateIncomeMode}

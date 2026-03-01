@@ -15,8 +15,8 @@ export function CreateIncome(props: {
     if (createIncomePending) return;
     const company = (e.target as HTMLFormElement).company.value;
     const position = (e.target as HTMLFormElement).position.value;
-    const amount = parseFloat((e.target as HTMLFormElement).amount.value);
-    const tax = parseFloat((e.target as HTMLFormElement).tax.value);
+    const amount = parseFloat((e.target as HTMLFormElement).amount.value) * 100;
+    const tax = parseFloat((e.target as HTMLFormElement).tax.value) * 100;
     createIncome(
       { planId: props.plan.planId, company, position, amount, tax },
       {
@@ -29,7 +29,7 @@ export function CreateIncome(props: {
   }
 
   return (
-    <form className="my-2">
+    <form onSubmit={handleSubmit} className="my-2">
       <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
         <div className="xl:w-[25%]">
           <div className="xl:hidden w-[100px] inline-block">Company:</div>
@@ -80,6 +80,7 @@ export function CreateIncome(props: {
           Create
         </button>
       </div>
+      <div>{notification}</div>
     </form>
   );
 }

@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { ArgumentTypes, client } from "./client";
 import { getSession } from "./plans";
 
@@ -55,3 +59,31 @@ export const useCreateIncomeMutation = (
     },
   });
 };
+
+async function getIncomesByPlanId(planId: number) {
+  const token = getSession();
+  const res = await client.api.v0.incomes[":planId"].$get(
+    {
+      param: { planId: planId.toString() },
+    },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+
+  if (!res.ok) {
+    throw new Error("Error getting incomes by plan id");
+  }
+  const { incomes } = await res.json();
+  return incomes;
+}
+
+export const getIncomesByPlanIdQueryOptions = (planId: number) =>
+  queryOptions({
+    queryKey: ["incomes"],
+    queryFn: () => getIncomesByPlanId(planId),
+  });

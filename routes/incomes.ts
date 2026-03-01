@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { requireUser } from "./plans";
+import { assertIsParsableInt, requireUser } from "./plans";
 import { zValidator } from "@hono/zod-validator";
 import { createInsertSchema } from "drizzle-zod";
 import { incomes as incomesTable } from "../schemas/incomes";
@@ -41,9 +41,25 @@ export const incomesRouter = new Hono()
       await mightFail(
         db.select().from(incomesTable).where(eq(incomesTable.planId, 5)),
       );
+    if (incomesQueryError)
+      throw new HTTPException(500, {
+        message: "error querying incomes",
+        cause: incomesQueryError,
+      });
     return c.json({ incomes: incomesQueryResult });
   })
   .get("/:planId", async (c) => {
     const { planId: planIdString } = c.req.param();
+    const planId = assertIsParsableInt(planIdString);
     const decodedUser = requireUser(c);
+    const { result: incomesQueryResult, error: incomesQueryError } =
+      await mightFail(
+        db.select().from(incomesTable).where(eq(incomesTable.planId, planId)),
+      );
+    if (incomesQueryError)
+      throw new HTTPException(500, {
+        message: "error querying incomes",
+        cause: incomesQueryError,
+      });
+    return c.json({ incomes: incomesQueryResult });
   });
