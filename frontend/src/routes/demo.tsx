@@ -1084,12 +1084,12 @@ function DemoPage() {
                 )}
               </ol>
             </div>
-            {/* <div
+            <div
               onClick={() => setShowRedirectModal(true)}
               className="py-2 rounded bg-linear-to-r from-blue-500 via-teal-500 to-green-500 w-[300px] text-center cursor-pointer hover:from-blue-400 hover:via-teal-400 hover:to-green-400 transition-all ease-in-out duration-300"
             >
               Generate AI Recommendations
-            </div> */}
+            </div>
           </div>
         </div>
       </div>
