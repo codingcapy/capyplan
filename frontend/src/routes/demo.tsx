@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import logo from "/capyness.png";
 import { useEffect, useRef, useState } from "react";
 import { PiCaretDownBold } from "react-icons/pi";
@@ -102,6 +102,8 @@ function DemoPage() {
   const [modalMode, setModalMode] = useState<ModalMode>("none");
   const [targetDate, setTargetDate] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
+  const navigate = useNavigate();
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -1027,7 +1029,7 @@ function DemoPage() {
               advice. You should consult a qualified financial professional
               before making financial decisions.
             </div>
-            <div className="pt-5">
+            <div className="py-5">
               <ol>
                 {incomes.length > 0 || expenditures.length > 0 ? (
                   totalExpenditure > totalIncome ? (
@@ -1048,8 +1050,8 @@ function DemoPage() {
                   ) : (
                     <li>
                       <b>1. Your cashflow is healthy</b> - you are able to save
-                      more 10% or more of your income. If you are not already,
-                      consider investing your savings.
+                      more than 10% or more of your income. If you are not
+                      already, consider investing your savings.
                     </li>
                   )
                 ) : (
@@ -1082,9 +1084,48 @@ function DemoPage() {
                 )}
               </ol>
             </div>
+            {/* <div
+              onClick={() => setShowRedirectModal(true)}
+              className="py-2 rounded bg-linear-to-r from-blue-500 via-teal-500 to-green-500 w-[300px] text-center cursor-pointer hover:from-blue-400 hover:via-teal-400 hover:to-green-400 transition-all ease-in-out duration-300"
+            >
+              Generate AI Recommendations
+            </div> */}
           </div>
         </div>
       </div>
+      {showRedirectModal && (
+        <div
+          className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md z-100`}
+        >
+          <div className="text-2xl font-bold">Heads-up</div>
+          <div className="my-5">
+            You're about to leave this page - all the income, expenditure,
+            assets, liabilities and financial goals you added here will be gone.
+            Continue?
+          </div>
+          <div className="my-5 flex justify-end">
+            <div
+              onClick={() => {
+                navigate({ to: "/dashboard" });
+              }}
+              className="p-2 mr-1 bg-cyan-600 rounded text-white bold secondary-font font-bold cursor-pointer"
+            >
+              Let's Go!
+            </div>
+            <div
+              onClick={() => {
+                setShowRedirectModal(false);
+              }}
+              className="p-2 ml-1 bg-[#5c5c5c] rounded bold secondary-font font-bold cursor-pointer"
+            >
+              CANCEL
+            </div>
+          </div>
+        </div>
+      )}
+      {showRedirectModal && (
+        <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
+      )}
     </div>
   );
 }

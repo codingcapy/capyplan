@@ -3,12 +3,26 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ArgumentTypes, client } from "./client";
+import { ArgumentTypes, client, ExtractData } from "./client";
 import { getSession } from "./plans";
+import { Income } from "../../../../schemas/incomes";
 
 type CreateIncomeArgs = ArgumentTypes<
   typeof client.api.v0.incomes.$post
 >[0]["json"];
+
+type SerializeIncome = ExtractData<
+  Awaited<ReturnType<typeof client.api.v0.incomes.$get>>
+>["incomes"][number];
+
+export function mapSerializedIncomeToSchema(
+  serialized: SerializeIncome,
+): Income {
+  return {
+    ...serialized,
+    createdAt: new Date(serialized.createdAt),
+  };
+}
 
 async function createIncome(args: CreateIncomeArgs) {
   const token = getSession();
@@ -79,7 +93,7 @@ async function getIncomesByPlanId(planId: number) {
     throw new Error("Error getting incomes by plan id");
   }
   const { incomes } = await res.json();
-  return incomes;
+  return incomes.map(mapSerializedIncomeToSchema);
 }
 
 export const getIncomesByPlanIdQueryOptions = (planId: number) =>

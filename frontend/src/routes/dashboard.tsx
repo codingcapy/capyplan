@@ -10,6 +10,7 @@ import { CreateExpenditure } from "../components/CreateExpenditure";
 import { getIncomesByPlanIdQueryOptions } from "../lib/api/incomes";
 import { MdModeEditOutline } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
+import { IncomeItem } from "../components/IncomeItem";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -72,23 +73,7 @@ function Dashboard() {
                   <div className="w-[70px]"></div>
                 </div>
                 {incomes.map((income) => (
-                  <div
-                    key={income.incomeId}
-                    className="flex justify-between my-2"
-                  >
-                    <div className="w-[25%]">{income.company}</div>
-                    <div className="w-[25%]">{income.position}</div>
-                    <div className="w-[25%]">${income.amount / 100}</div>
-                    <div className="w-[25%]">{income.tax / 100}%</div>
-                    <MdModeEditOutline
-                      size={20}
-                      className="w-[35px] cursor-pointer"
-                    />
-                    <FaTrashCan
-                      size={20}
-                      className="text-red-400 w-[35px] cursor-pointer"
-                    />
-                  </div>
+                  <IncomeItem income={income} />
                 ))}
                 {createIncomeMode ? (
                   <CreateIncome
