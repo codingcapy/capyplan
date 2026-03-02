@@ -8,8 +8,6 @@ import { getPlanByIdQueryOptions } from "../lib/api/plans";
 import { CreateIncome } from "../components/CreateIncome";
 import { CreateExpenditure } from "../components/CreateExpenditure";
 import { getIncomesByPlanIdQueryOptions } from "../lib/api/incomes";
-import { MdModeEditOutline } from "react-icons/md";
-import { FaTrashCan } from "react-icons/fa6";
 import { IncomeItem } from "../components/IncomeItem";
 
 export const Route = createFileRoute("/dashboard")({
@@ -39,6 +37,7 @@ function Dashboard() {
     ...getIncomesByPlanIdQueryOptions(plan?.planId ?? 0),
     enabled: !!plan?.planId,
   });
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -202,11 +201,41 @@ function Dashboard() {
               </div>
               <div className="pt-5"></div>
               <ol></ol>
+              {incomes && incomes.length > 0 && (
+                <div
+                  onClick={() => setShowRedirectModal(true)}
+                  className="py-2 rounded bg-linear-to-r from-blue-500 via-teal-500 to-green-500 w-[300px] text-center cursor-pointer hover:from-blue-400 hover:via-teal-400 hover:to-green-400 transition-all ease-in-out duration-300"
+                >
+                  Generate AI Recommendations
+                </div>
+              )}
             </div>
           </div>
         </div>
       ) : (
         <div></div>
+      )}
+      {showRedirectModal && (
+        <div
+          className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md z-100`}
+        >
+          <div className="text-2xl font-bold">COMING SOON</div>
+          <div className="my-5">
+            The back-end AI generation pipeline is being constructed, and the
+            front-end will be built for you :)
+          </div>
+          <div className="my-5 flex justify-end">
+            <div
+              onClick={() => setShowRedirectModal(false)}
+              className="p-2 mr-1 bg-cyan-600 rounded text-white bold secondary-font font-bold cursor-pointer"
+            >
+              I will wait patiently
+            </div>
+          </div>
+        </div>
+      )}
+      {showRedirectModal && (
+        <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
       )}
     </div>
   );

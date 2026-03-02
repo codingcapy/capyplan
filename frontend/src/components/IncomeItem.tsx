@@ -2,6 +2,7 @@ import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
 import { MdModeEditOutline } from "react-icons/md";
 import { Income } from "../../../schemas/incomes";
 import { useState } from "react";
+import { useDeleteIncomeMutation } from "../lib/api/incomes";
 
 export function IncomeItem(props: { income: Income }) {
   const [editMode, setEditMode] = useState(false);
@@ -9,13 +10,20 @@ export function IncomeItem(props: { income: Income }) {
   const [positionContent, setPositionContent] = useState(props.income.position);
   const [amountContent, setAmountContent] = useState(props.income.amount);
   const [taxContent, setTaxContent] = useState(props.income.tax);
+  const { mutate: deleteIncome, isPending: deleteIncomePending } =
+    useDeleteIncomeMutation();
 
-  function handleSubmit() {}
+  function handleSubmitEditIncome() {}
+
+  function handleSubmitDeleteIncome() {
+    if (deleteIncomePending) return;
+    deleteIncome({ incomeId: props.income.incomeId });
+  }
 
   return (
     <div>
       {editMode ? (
-        <form onSubmit={handleSubmit} className="my-2">
+        <form onSubmit={handleSubmitEditIncome} className="my-2">
           <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
             <div className="xl:w-[25%]">
               <div className="xl:hidden w-[100px] inline-block">Company:</div>
@@ -84,6 +92,7 @@ export function IncomeItem(props: { income: Income }) {
             className="w-[35px] cursor-pointer"
           />
           <FaTrashCan
+            onClick={handleSubmitDeleteIncome}
             size={20}
             className="text-red-400 w-[35px] cursor-pointer"
           />
