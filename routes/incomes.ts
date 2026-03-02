@@ -6,7 +6,13 @@ import { incomes as incomesTable } from "../schemas/incomes";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import z from "zod";
+import { plans as plansTable } from "../schemas/plans";
+
+const deleteIncomeSchema = z.object({
+  incomeId: z.number(),
+});
 
 export const incomesRouter = new Hono()
   .post(
@@ -22,6 +28,20 @@ export const incomesRouter = new Hono()
     async (c) => {
       const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
+      const { result: plan, error: planError } = await mightFail(
+        db
+          .select()
+          .from(plansTable)
+          .where(
+            and(
+              eq(plansTable.planId, insertValues.planId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          ),
+      );
+      if (planError)
+        throw new HTTPException(500, { message: "Plan lookup failed" });
+      if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
       const { error: incomeInsertError, result: incomeInsertResult } =
         await mightFail(
           db.insert(incomesTable).values(insertValues).returning(),
@@ -52,6 +72,20 @@ export const incomesRouter = new Hono()
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);
     const decodedUser = requireUser(c);
+    const { result: plan, error: planError } = await mightFail(
+      db
+        .select()
+        .from(plansTable)
+        .where(
+          and(
+            eq(plansTable.planId, planId),
+            eq(plansTable.userId, decodedUser.id),
+          ),
+        ),
+    );
+    if (planError)
+      throw new HTTPException(500, { message: "Plan lookup failed" });
+    if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
     const { result: incomesQueryResult, error: incomesQueryError } =
       await mightFail(
         db.select().from(incomesTable).where(eq(incomesTable.planId, planId)),
@@ -62,4 +96,40 @@ export const incomesRouter = new Hono()
         cause: incomesQueryError,
       });
     return c.json({ incomes: incomesQueryResult });
+  })
+  .post("/delete", zValidator("json", deleteIncomeSchema), async (c) => {
+    const decodedUser = requireUser(c);
+    const deleteValues = c.req.valid("json");
+    const { result: ownershipCheck, error: ownershipCheckError } =
+      await mightFail(
+        db
+          .select()
+          .from(incomesTable)
+          .innerJoin(plansTable, eq(incomesTable.planId, plansTable.planId))
+          .where(
+            and(
+              eq(incomesTable.incomeId, deleteValues.incomeId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          ),
+      );
+    if (ownershipCheckError)
+      throw new HTTPException(500, { message: "Ownership check failed" });
+    if (ownershipCheck.length === 0)
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const { error: incomeDeleteError, result: incomeDeleteResult } =
+      await mightFail(
+        db
+          .delete(incomesTable)
+          .where(eq(incomesTable.incomeId, deleteValues.incomeId))
+          .returning(),
+      );
+    if (incomeDeleteError) {
+      console.log("Error while deleting income");
+      throw new HTTPException(500, {
+        message: "Error while deleting income",
+        cause: incomeDeleteError,
+      });
+    }
+    return c.json({ user: incomeDeleteResult[0] }, 200);
   });
