@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { assertIsParsableInt, requireUser } from "./plans";
 import { zValidator } from "@hono/zod-validator";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { incomes as incomesTable } from "../schemas/incomes";
 import { mightFail } from "might-fail";
 import { db } from "../db";
@@ -132,4 +132,55 @@ export const incomesRouter = new Hono()
       });
     }
     return c.json({ user: incomeDeleteResult[0] }, 200);
-  });
+  })
+  .post(
+    "/update",
+    zValidator(
+      "json",
+      createUpdateSchema(incomesTable).omit({ incomeId: true }).extend({
+        incomeId: z.number(),
+      }),
+    ),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { result: ownershipCheck, error: ownershipCheckError } =
+        await mightFail(
+          db
+            .select()
+            .from(incomesTable)
+            .innerJoin(plansTable, eq(incomesTable.planId, plansTable.planId))
+            .where(
+              and(
+                eq(incomesTable.incomeId, updateValues.incomeId),
+                eq(plansTable.userId, decodedUser.id),
+              ),
+            ),
+        );
+      if (ownershipCheckError)
+        throw new HTTPException(500, { message: "Ownership check failed" });
+      if (ownershipCheck.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
+      const { error: incomeUpdateError, result: incomeUpdateResult } =
+        await mightFail(
+          db
+            .update(incomesTable)
+            .set({
+              company: updateValues.company,
+              position: updateValues.position,
+              amount: updateValues.amount,
+              tax: updateValues.tax,
+            })
+            .where(eq(incomesTable.incomeId, updateValues.incomeId))
+            .returning(),
+        );
+      if (incomeUpdateError) {
+        console.log("Error while updating income");
+        throw new HTTPException(500, {
+          message: "Error while updating income",
+          cause: incomeUpdateError,
+        });
+      }
+      return c.json({ user: incomeUpdateResult[0] }, 200);
+    },
+  );
