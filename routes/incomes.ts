@@ -53,7 +53,7 @@ export const incomesRouter = new Hono()
           cause: incomeInsertError,
         });
       }
-      return c.json({ user: incomeInsertResult[0] }, 200);
+      return c.json({ plan: incomeInsertResult[0] }, 200);
     },
   )
   .get("/", async (c) => {
@@ -131,7 +131,7 @@ export const incomesRouter = new Hono()
         cause: incomeDeleteError,
       });
     }
-    return c.json({ user: incomeDeleteResult[0] }, 200);
+    return c.json({ plan: incomeDeleteResult[0] }, 200);
   })
   .post(
     "/update",
@@ -181,6 +181,6 @@ export const incomesRouter = new Hono()
           cause: incomeUpdateError,
         });
       }
-      return c.json({ user: incomeUpdateResult[0] }, 200);
+      return c.json({ plan: incomeUpdateResult[0] }, 200);
     },
   );
