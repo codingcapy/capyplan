@@ -2,18 +2,40 @@ import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
 import { MdModeEditOutline } from "react-icons/md";
 import { Income } from "../../../schemas/incomes";
 import { useState } from "react";
-import { useDeleteIncomeMutation } from "../lib/api/incomes";
+import {
+  useDeleteIncomeMutation,
+  useUpdateIncomeMutation,
+} from "../lib/api/incomes";
 
 export function IncomeItem(props: { income: Income }) {
   const [editMode, setEditMode] = useState(false);
   const [companyContent, setCompanyContent] = useState(props.income.company);
   const [positionContent, setPositionContent] = useState(props.income.position);
-  const [amountContent, setAmountContent] = useState(props.income.amount);
-  const [taxContent, setTaxContent] = useState(props.income.tax);
+  const [amountContent, setAmountContent] = useState(props.income.amount / 100);
+  const [taxContent, setTaxContent] = useState(props.income.tax / 100);
   const { mutate: deleteIncome, isPending: deleteIncomePending } =
     useDeleteIncomeMutation();
+  const { mutate: updateIncome, isPending: updateIncomePending } =
+    useUpdateIncomeMutation();
+  const [notification, setNotification] = useState("");
 
-  function handleSubmitEditIncome() {}
+  function handleSubmitEditIncome(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (updateIncomePending) return;
+    updateIncome(
+      {
+        incomeId: props.income.incomeId,
+        company: companyContent,
+        position: positionContent,
+        amount: amountContent * 100,
+        tax: taxContent * 100,
+      },
+      {
+        onSuccess: () => setEditMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
 
   function handleSubmitDeleteIncome() {
     if (deleteIncomePending) return;
@@ -79,6 +101,7 @@ export function IncomeItem(props: { income: Income }) {
               <FaXmark />
             </div>
           </div>
+          <div>{notification}</div>
         </form>
       ) : (
         <div key={props.income.incomeId} className="flex justify-between my-2">
