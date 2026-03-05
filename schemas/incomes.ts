@@ -12,7 +12,7 @@ export const incomes = pgTable("incomes", {
   planId: integer("plan_id").notNull(),
   company: varchar("company").notNull().default(""),
   position: varchar("position").notNull().default(""),
-  amount: integer("amount").notNull(), // Stored as cents to avoid floating point issues
+  amount: integer("amount").notNull().default(0), // Stored as cents to avoid floating point issues
   tax: integer("tax").notNull().default(0),
   status: varchar("status").default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
