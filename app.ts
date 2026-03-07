@@ -8,6 +8,7 @@ import { userRouter } from "./routes/user";
 import { plansRouter } from "./routes/plans";
 import { incomesRouter } from "./routes/incomes";
 import aiRouter from "./frontend/src/lib/api/ai";
+import { expendituresRouter } from "./routes/expenditures";
 
 const app = new Hono();
 
@@ -22,6 +23,7 @@ const apiRoutes = app
   .route("/user", userRouter)
   .route("/plans", plansRouter)
   .route("/incomes", incomesRouter)
+  .route("/expenditures", expendituresRouter)
   .route("/ai", aiRouter);
 
 export type ApiRoutes = typeof apiRoutes;

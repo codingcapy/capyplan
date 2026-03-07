@@ -9,7 +9,7 @@ import { and, eq } from "drizzle-orm";
 import { plans as plansTable } from "../schemas/plans";
 import { HTTPException } from "hono/http-exception";
 
-export const incomesRouter = new Hono()
+export const expendituresRouter = new Hono()
   .post(
     "/",
     zValidator(
