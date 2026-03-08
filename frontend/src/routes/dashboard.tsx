@@ -9,6 +9,9 @@ import { CreateIncome } from "../components/CreateIncome";
 import { CreateExpenditure } from "../components/CreateExpenditure";
 import { getIncomesByPlanIdQueryOptions } from "../lib/api/incomes";
 import { IncomeItem } from "../components/IncomeItem";
+import { CreateAsset } from "../components/CreateAsset";
+import { CreateLiability } from "../components/CreateLiability";
+import { CreateFinancialGoal } from "../components/CreateFinancialGoal";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -141,12 +144,16 @@ function Dashboard() {
                 <div className="w-[33%]">Return on invesment %</div>
                 <div className="w-17.5"></div>
               </div>
-              <div
-                onClick={() => setCreateAssetMode(true)}
-                className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-              >
-                + Add asset
-              </div>
+              {createAssetMode ? (
+                <CreateAsset setCreateAssetMode={setCreateAssetMode} />
+              ) : (
+                <div
+                  onClick={() => setCreateAssetMode(true)}
+                  className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                >
+                  + Add asset
+                </div>
+              )}
               <div className="pt-5">Total assets: $0</div>
             </div>
           </div>
@@ -159,12 +166,18 @@ function Dashboard() {
                 <div className="w-[33%]">Monthly Interest %</div>
                 <div className="w-17.5"></div>
               </div>
-              <div
-                onClick={() => setCreateLiabilityMode(true)}
-                className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-              >
-                + Add liability
-              </div>
+              {createLiabilityMode ? (
+                <CreateLiability
+                  setCreateLiabilityMode={setCreateLiabilityMode}
+                />
+              ) : (
+                <div
+                  onClick={() => setCreateLiabilityMode(true)}
+                  className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                >
+                  + Add liability
+                </div>
+              )}
               <div className="pt-5">Total liabilities: $0</div>
             </div>
           </div>
@@ -182,12 +195,18 @@ function Dashboard() {
                 <div className="w-[33%]">Target Date</div>
                 <div className="w-17.5"></div>
               </div>
-              <div
-                onClick={() => setCreateFinancialGoalMode(true)}
-                className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-              >
-                + Add financial goal
-              </div>
+              {createFinancialGoalMode ? (
+                <CreateFinancialGoal
+                  setCreateFinancialGoalMode={setCreateFinancialGoalMode}
+                />
+              ) : (
+                <div
+                  onClick={() => setCreateFinancialGoalMode(true)}
+                  className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                >
+                  + Add financial goal
+                </div>
+              )}
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
