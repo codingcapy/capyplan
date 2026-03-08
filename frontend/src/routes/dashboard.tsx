@@ -12,6 +12,8 @@ import { IncomeItem } from "../components/IncomeItem";
 import { CreateAsset } from "../components/CreateAsset";
 import { CreateLiability } from "../components/CreateLiability";
 import { CreateFinancialGoal } from "../components/CreateFinancialGoal";
+import { getExpendituresByPlanIdQueryOptions } from "../lib/api/expenditures";
+import { ExpenditureItem } from "../components/ExpenditureItem";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -38,6 +40,14 @@ function Dashboard() {
     error: incomesError,
   } = useQuery({
     ...getIncomesByPlanIdQueryOptions(plan?.planId ?? 0),
+    enabled: !!plan?.planId,
+  });
+  const {
+    data: expenditures,
+    isLoading: expendituresLoading,
+    error: expendituresError,
+  } = useQuery({
+    ...getExpendituresByPlanIdQueryOptions(plan?.planId ?? 0),
     enabled: !!plan?.planId,
   });
   const [showRedirectModal, setShowRedirectModal] = useState(false);
@@ -75,7 +85,7 @@ function Dashboard() {
                   <div className="w-[70px]"></div>
                 </div>
                 {incomes.map((income) => (
-                  <IncomeItem income={income} />
+                  <IncomeItem key={income.incomeId} income={income} />
                 ))}
                 {createIncomeMode ? (
                   <CreateIncome
@@ -115,8 +125,20 @@ function Dashboard() {
                 <div className="w-[50%]">Amount (Monthly)</div>
                 <div className="w-17.5"></div>
               </div>
+              {expendituresLoading ? (
+                <div>Loading expenditures...</div>
+              ) : expendituresError ? (
+                <div>Error loading expenditures</div>
+              ) : expenditures ? (
+                expenditures.map((e) => (
+                  <ExpenditureItem key={e.expenditureId} expenditure={e} />
+                ))
+              ) : (
+                <div></div>
+              )}
               {createExpenditureMode ? (
                 <CreateExpenditure
+                  plan={plan}
                   setCreateExpenditureMode={setCreateExpenditureMode}
                 />
               ) : (
@@ -241,7 +263,7 @@ function Dashboard() {
           <div className="text-2xl font-bold">COMING SOON</div>
           <div className="my-5">
             The back-end AI generation pipeline is being constructed, and the
-            front-end will be built for you :)
+            front-end will be built for you 🚧
           </div>
           <div className="my-5 flex justify-end">
             <div

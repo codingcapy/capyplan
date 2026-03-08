@@ -41,7 +41,8 @@ export const incomesRouter = new Hono()
       );
       if (planError)
         throw new HTTPException(500, { message: "Plan lookup failed" });
-      if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
+      if (!plan || plan.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
       const { error: incomeInsertError, result: incomeInsertResult } =
         await mightFail(
           db.insert(incomesTable).values(insertValues).returning(),

@@ -26,7 +26,7 @@ export const expendituresRouter = new Hono()
       const { result: plan, error: planError } = await mightFail(
         db
           .select()
-          .from(expendituresTable)
+          .from(plansTable)
           .where(
             and(
               eq(plansTable.planId, insertValues.planId),
@@ -36,7 +36,8 @@ export const expendituresRouter = new Hono()
       );
       if (planError)
         throw new HTTPException(500, { message: "Plan lookup failed" });
-      if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
+      if (!plan || plan.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
       const { error: expenditureInsertError, result: expenditureInsertResult } =
         await mightFail(
           db.insert(expendituresTable).values(insertValues).returning(),

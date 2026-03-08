@@ -1,10 +1,36 @@
-import { SetStateAction } from "react";
+import { SetStateAction, useState } from "react";
+import { useCreateExpenditureMutation } from "../lib/api/expenditures";
+import { Plan } from "../../../schemas/plans";
 
 export function CreateExpenditure(props: {
+  plan: Plan;
   setCreateExpenditureMode: (value: SetStateAction<boolean>) => void;
 }) {
+  const { mutate: createExpenditure, isPending: createExpenditurePending } =
+    useCreateExpenditureMutation();
+  const [notification, setNotification] = useState("");
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (createExpenditurePending) return;
+    const expenditurename = (e.target as HTMLFormElement).expenditurename.value;
+    const amount =
+      parseFloat((e.target as HTMLFormElement).expenditureamount.value) * 100;
+    createExpenditure(
+      {
+        planId: props.plan.planId,
+        name: expenditurename,
+        amount: amount,
+      },
+      {
+        onSuccess: () => props.setCreateExpenditureMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
+
   return (
-    <form className="my-2">
+    <form onSubmit={handleSubmit} className="my-2">
       <div className="flex flex-col xl:flex-row xl:justify-between gap-2">
         <div className="xl:w-[50%]">
           <div className="xl:hidden w-25 inline-block">Name:</div>
@@ -37,6 +63,7 @@ export function CreateExpenditure(props: {
           Create
         </button>
       </div>
+      <div>{notification}</div>
     </form>
   );
 }
