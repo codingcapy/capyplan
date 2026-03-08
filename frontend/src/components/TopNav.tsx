@@ -20,17 +20,17 @@ export function TopNav() {
   return (
     <div
       ref={menuRef}
-      className="fixed top-0 left-0 p-5 w-screen flex justify-between"
+      className="fixed top-0 left-0 bg-[#242424] px-5 py-2 w-screen flex justify-between z-90"
     >
       <div></div>
       <div
         onClick={() => setShowMenu(!showMenu)}
-        className="pr-4 cursor-pointer"
+        className="px-4 cursor-pointer"
       >
         {user && user.username}
       </div>
       {showMenu && (
-        <div className="absolute top-[55px] right-1 bg-[#404040] px-5 py-2 rounded">
+        <div className="absolute top-[40px] right-1 bg-[#404040] px-5 py-2 rounded">
           <div onClick={logoutService} className="cursor-pointer">
             Logout
           </div>

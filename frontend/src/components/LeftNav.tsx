@@ -69,7 +69,7 @@ export function LeftNav() {
   }, [plans]);
 
   return (
-    <div className="hidden sm:block fixed top-0 left-0 h-screen bg-[#101010] w-[250px]">
+    <div className="hidden sm:block fixed top-0 left-0 h-screen bg-[#101010] w-[250px] z-100">
       <div className="flex items-center p-5 mb-5">
         <img src={logo} alt="" className="w-[25px]" />
         <div className="ml-2 text-lg">CapyPlan</div>
@@ -96,7 +96,7 @@ export function LeftNav() {
         </div>
       </div>
       {showDropdown && (
-        <div className="relative bg-[#303030] rounded m-2 px-3 py-2 max-h-[175px] overflow-y-auto">
+        <div className="custom-scrollbar relative bg-[#303030] rounded m-2 px-3 py-2 max-h-[175px] overflow-y-auto">
           <div className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"></div>
           {plansLoading ? (
             <div>Loading plans...</div>
@@ -107,7 +107,7 @@ export function LeftNav() {
               <div
                 onClick={() => updateCurrentPlan({ currentPlan: p.planId })}
                 key={p.planId}
-                className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+                className="py-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
               >
                 {p.title}
               </div>
@@ -124,7 +124,7 @@ export function LeftNav() {
         </div>
       )}
       {showCreatePlanModal && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-100">
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-1000">
           <div className="text-xl font-bold mb-5">
             Create a new financial plan
           </div>
@@ -156,7 +156,7 @@ export function LeftNav() {
         </div>
       )}
       {showCreatePlanModal && (
-        <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
+        <div className="fixed inset-0 bg-black opacity-50 z-900"></div>
       )}
     </div>
   );
