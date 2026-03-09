@@ -2,7 +2,10 @@ import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
 import { Expenditure } from "../../../schemas/expenditures";
 import { MdModeEditOutline } from "react-icons/md";
 import { useState } from "react";
-import { useDeleteExpenditureMutation } from "../lib/api/expenditures";
+import {
+  useDeleteExpenditureMutation,
+  useUpdateExpenditureMutation,
+} from "../lib/api/expenditures";
 
 export function ExpenditureItem(props: { expenditure: Expenditure }) {
   const [editMode, setEditMode] = useState(false);
@@ -12,8 +15,25 @@ export function ExpenditureItem(props: { expenditure: Expenditure }) {
   );
   const { mutate: deleteExpenditure, isPending: deleteExpenditurePending } =
     useDeleteExpenditureMutation();
+  const { mutate: updateExpenditure, isPending: updateExpenditurePending } =
+    useUpdateExpenditureMutation();
+  const [notification, setNotification] = useState("");
 
-  function handleSubmitEditExpenditure() {}
+  function handleSubmitEditExpenditure(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (updateExpenditurePending) return;
+    updateExpenditure(
+      {
+        expenditureId: props.expenditure.expenditureId,
+        name: nameContent,
+        amount: amountContent * 100,
+      },
+      {
+        onSuccess: () => setEditMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
 
   function handleSubmitDeleteExpenditure() {
     if (deleteExpenditurePending) return;
@@ -57,6 +77,7 @@ export function ExpenditureItem(props: { expenditure: Expenditure }) {
               <FaXmark />
             </div>
           </div>
+          <div>{notification}</div>
         </form>
       ) : (
         <div
