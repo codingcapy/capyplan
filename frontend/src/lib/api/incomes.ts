@@ -153,7 +153,7 @@ export const useDeleteIncomeMutation = (
     mutationFn: deleteIncome,
     onSettled: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["incomes", data?.plan.planId],
+        queryKey: ["incomes", data?.income.planId],
       });
     },
     onError: (error) => {
@@ -205,7 +205,7 @@ export const useUpdateIncomeMutation = (
     mutationFn: UpdateIncome,
     onSettled: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["incomes", data?.plan.planId],
+        queryKey: ["incomes", data?.income.planId],
       });
     },
     onError: (error) => {

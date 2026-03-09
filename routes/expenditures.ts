@@ -8,6 +8,11 @@ import { db } from "../db";
 import { and, eq } from "drizzle-orm";
 import { plans as plansTable } from "../schemas/plans";
 import { HTTPException } from "hono/http-exception";
+import z from "zod";
+
+const deleteExpenditureSchema = z.object({
+  expenditureId: z.number(),
+});
 
 export const expendituresRouter = new Hono()
   .post(
@@ -49,7 +54,7 @@ export const expendituresRouter = new Hono()
           cause: expenditureInsertError,
         });
       }
-      return c.json({ plan: expenditureInsertResult[0] }, 200);
+      return c.json({ expenditure: expenditureInsertResult[0] }, 200);
     },
   )
   .get("/", async (c) => {
@@ -98,4 +103,45 @@ export const expendituresRouter = new Hono()
         cause: expendituresQueryError,
       });
     return c.json({ expenditures: expendituresQueryResult });
+  })
+  .post("/delete", zValidator("json", deleteExpenditureSchema), async (c) => {
+    const decodedUser = requireUser(c);
+    const deleteValues = c.req.valid("json");
+    const { result: ownershipCheck, error: ownershipCheckError } =
+      await mightFail(
+        db
+          .select()
+          .from(expendituresTable)
+          .innerJoin(
+            plansTable,
+            eq(expendituresTable.planId, plansTable.planId),
+          )
+          .where(
+            and(
+              eq(expendituresTable.expenditureId, deleteValues.expenditureId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          ),
+      );
+    if (ownershipCheckError)
+      throw new HTTPException(500, { message: "Ownership check failed" });
+    if (ownershipCheck.length === 0)
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const { error: expenditureDeleteError, result: expenditureDeleteResult } =
+      await mightFail(
+        db
+          .delete(expendituresTable)
+          .where(
+            eq(expendituresTable.expenditureId, deleteValues.expenditureId),
+          )
+          .returning(),
+      );
+    if (expenditureDeleteError) {
+      console.log("Error while deleting expenditure");
+      throw new HTTPException(500, {
+        message: "Error while deleting expenditure",
+        cause: expenditureDeleteError,
+      });
+    }
+    return c.json({ expenditure: expenditureDeleteResult[0] }, 200);
   });
