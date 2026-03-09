@@ -76,15 +76,17 @@ function SignupPage() {
             className="border rounded p-2 my-2"
             required
           />
-          <button className="my-2 px-5 py-3 bg-cyan-500 font-bold">
+          <button className="my-2 px-5 py-3 bg-cyan-500 font-bold cursor-pointer hover:bg-cyan-400 transition-all ease-in-out duration-300">
             {createUserPending ? "Signing up..." : "SIGN UP"}
           </button>
+          <div className="text-yellow-500">{notification}</div>
         </form>
-        <div>{notification}</div>
-
         <div className="text-center">
           Already have an account?{" "}
-          <Link to="/" className="text-cyan-500 font-bold">
+          <Link
+            to="/"
+            className="text-cyan-500 font-bold hover:text-cyan-400 transition-all ease-in-out duration-300"
+          >
             login
           </Link>
         </div>

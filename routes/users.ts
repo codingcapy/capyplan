@@ -10,6 +10,7 @@ import { users as usersTable } from "../schemas/users";
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { requireUser } from "./plans";
+import { plans as plansTable } from "../schemas/plans";
 
 const scryptAsync = promisify(scrypt);
 
@@ -89,6 +90,28 @@ export const usersRouter = new Hono()
       throw new HTTPException(500, {
         message: "Error while creating user",
         cause: userInsertResult,
+      });
+    }
+    const newUser = userInsertResult[0];
+    if (!newUser) {
+      throw new HTTPException(500, { message: "User insert returned no rows" });
+    }
+    const { error: planInsertError, result: planInsertResult } =
+      await mightFail(
+        db
+          .insert(plansTable)
+          .values({
+            userId: newUser.userId,
+            title: `${newUser.username}'s plan`,
+          })
+          .returning(),
+      );
+    if (planInsertError) {
+      console.log("Error while creating plan");
+      console.log(planInsertError);
+      throw new HTTPException(500, {
+        message: "Error while creating plan",
+        cause: planInsertError,
       });
     }
     return c.json({ user: userInsertResult[0] }, 200);

@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { expenditures as expendituresTable } from "../schemas/expenditures";
 import { assertIsParsableInt, requireUser } from "./plans";
@@ -144,4 +144,60 @@ export const expendituresRouter = new Hono()
       });
     }
     return c.json({ expenditure: expenditureDeleteResult[0] }, 200);
-  });
+  })
+  .post(
+    "/update",
+    zValidator(
+      "json",
+      createUpdateSchema(expendituresTable)
+        .omit({ expenditureId: true })
+        .extend({
+          expenditureId: z.number(),
+        }),
+    ),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { result: ownershipCheck, error: ownershipCheckError } =
+        await mightFail(
+          db
+            .select()
+            .from(expendituresTable)
+            .innerJoin(
+              plansTable,
+              eq(expendituresTable.planId, plansTable.planId),
+            )
+            .where(
+              and(
+                eq(expendituresTable.expenditureId, updateValues.expenditureId),
+                eq(plansTable.userId, decodedUser.id),
+              ),
+            ),
+        );
+      if (ownershipCheckError)
+        throw new HTTPException(500, { message: "Ownership check failed" });
+      if (ownershipCheck.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
+      const { error: expenditureUpdateError, result: expenditureUpdateResult } =
+        await mightFail(
+          db
+            .update(expendituresTable)
+            .set({
+              name: updateValues.name,
+              amount: updateValues.amount,
+            })
+            .where(
+              eq(expendituresTable.expenditureId, updateValues.expenditureId),
+            )
+            .returning(),
+        );
+      if (expenditureUpdateError) {
+        console.log("Error while updating expenditure");
+        throw new HTTPException(500, {
+          message: "Error while updating expenditure",
+          cause: expenditureUpdateError,
+        });
+      }
+      return c.json({ expenditure: expenditureUpdateResult[0] }, 200);
+    },
+  );

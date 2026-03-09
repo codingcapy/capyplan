@@ -46,21 +46,27 @@ function IndexPage() {
             name="email"
             placeholder="email"
             className="border rounded p-2 my-2"
+            required
           />
           <input
-            type="text"
+            type="password"
             id="password"
             name="password"
             placeholder="password"
             className="border rounded p-2 my-2"
+            required
           />
-          <button className="my-2 px-5 py-3 bg-cyan-500 font-bold">
+          <button className="my-2 px-5 py-3 bg-cyan-500 font-bold cursor-pointer hover:bg-cyan-400 transition-all ease-in-out duration-300">
             LOGIN
           </button>
+          <div className="text-yellow-500">{notification}</div>
         </form>
         <div className="text-center">
           Don't have an account?{" "}
-          <Link to="/signup" className="text-cyan-500 font-bold">
+          <Link
+            to="/signup"
+            className="text-cyan-500 font-bold hover:text-cyan-400 transition-all ease-in-out duration-300"
+          >
             register
           </Link>
         </div>
