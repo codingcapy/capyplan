@@ -2,6 +2,7 @@ import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
 import { Expenditure } from "../../../schemas/expenditures";
 import { MdModeEditOutline } from "react-icons/md";
 import { useState } from "react";
+import { useDeleteExpenditureMutation } from "../lib/api/expenditures";
 
 export function ExpenditureItem(props: { expenditure: Expenditure }) {
   const [editMode, setEditMode] = useState(false);
@@ -9,8 +10,15 @@ export function ExpenditureItem(props: { expenditure: Expenditure }) {
   const [amountContent, setAmountContent] = useState(
     props.expenditure.amount / 100,
   );
+  const { mutate: deleteExpenditure, isPending: deleteExpenditurePending } =
+    useDeleteExpenditureMutation();
 
   function handleSubmitEditExpenditure() {}
+
+  function handleSubmitDeleteExpenditure() {
+    if (deleteExpenditurePending) return;
+    deleteExpenditure({ expenditureId: props.expenditure.expenditureId });
+  }
 
   return (
     <div>
@@ -63,6 +71,7 @@ export function ExpenditureItem(props: { expenditure: Expenditure }) {
             className="w-8.75 cursor-pointer"
           />
           <FaTrashCan
+            onClick={handleSubmitDeleteExpenditure}
             size={20}
             className="text-red-400 w-8.75 cursor-pointer"
           />

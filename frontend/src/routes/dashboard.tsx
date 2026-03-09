@@ -51,6 +51,20 @@ function Dashboard() {
     enabled: !!plan?.planId,
   });
   const [showRedirectModal, setShowRedirectModal] = useState(false);
+  const cashflow =
+    incomes &&
+    expenditures &&
+    (
+      incomes.reduce(
+        (sum, income) =>
+          sum + ((income.amount / 100) * (100 - income.tax / 100)) / 100,
+        0,
+      ) -
+      expenditures.reduce(
+        (sum, expenditure) => sum + expenditure.amount / 100,
+        0,
+      )
+    ).toFixed(2);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -118,43 +132,53 @@ function Dashboard() {
             )}
           </div>
           <div className="border-b border-b-[#777777] pb-5">
-            <div className="pl-5">
-              <div className="pt-5 text-3xl font-bold">Expenditure</div>
-              <div className="flex justify-between my-2">
-                <div className="w-[50%]">Name</div>
-                <div className="w-[50%]">Amount (Monthly)</div>
-                <div className="w-17.5"></div>
-              </div>
-              {expendituresLoading ? (
-                <div>Loading expenditures...</div>
-              ) : expendituresError ? (
-                <div>Error loading expenditures</div>
-              ) : expenditures ? (
-                expenditures.map((e) => (
-                  <ExpenditureItem key={e.expenditureId} expenditure={e} />
-                ))
-              ) : (
-                <div></div>
-              )}
-              {createExpenditureMode ? (
-                <CreateExpenditure
-                  plan={plan}
-                  setCreateExpenditureMode={setCreateExpenditureMode}
-                />
-              ) : (
-                <div
-                  onClick={() => setCreateExpenditureMode(true)}
-                  className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-                >
-                  + Add expenditure
+            {expendituresLoading ? (
+              <div>Loading expenditures...</div>
+            ) : expendituresError ? (
+              <div>Error loading expenditures</div>
+            ) : expenditures ? (
+              <div className="pl-5">
+                <div className="pt-5 text-3xl font-bold">Expenditure</div>
+                <div className="flex justify-between my-2">
+                  <div className="w-[50%]">Name</div>
+                  <div className="w-[50%]">Amount (Monthly)</div>
+                  <div className="w-17.5"></div>
                 </div>
-              )}
-              <div className="pt-5">Total expenditure: $0</div>
-            </div>
+                {expenditures.map((e) => (
+                  <ExpenditureItem key={e.expenditureId} expenditure={e} />
+                ))}
+                {createExpenditureMode ? (
+                  <CreateExpenditure
+                    plan={plan}
+                    setCreateExpenditureMode={setCreateExpenditureMode}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setCreateExpenditureMode(true)}
+                    className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                  >
+                    + Add expenditure
+                  </div>
+                )}
+                <div className="pt-5">
+                  Total expenditure: $
+                  {expenditures
+                    .reduce(
+                      (sum, expenditure) => sum + expenditure.amount / 100,
+                      0,
+                    )
+                    .toFixed(2)}
+                </div>
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
           <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
             <div className="pl-5">
-              <div className="pt-5 font-bold">Total cashflow: $0</div>
+              <div className="pt-5 font-bold">
+                Total cashflow: ${cashflow || "error"}
+              </div>
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
