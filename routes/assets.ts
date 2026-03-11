@@ -8,6 +8,11 @@ import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import z from "zod";
+
+const deleteAssetSchema = z.object({
+  assetId: z.number(),
+});
 
 export const assetsRouter = new Hono()
   .post(
@@ -92,4 +97,40 @@ export const assetsRouter = new Hono()
         cause: assetsQueryError,
       });
     return c.json({ assets: assetsQueryResult });
+  })
+  .post("/delete", zValidator("json", deleteAssetSchema), async (c) => {
+    const decodedUser = requireUser(c);
+    const deleteValues = c.req.valid("json");
+    const { result: ownershipCheck, error: ownershipCheckError } =
+      await mightFail(
+        db
+          .select()
+          .from(assetsTable)
+          .innerJoin(plansTable, eq(assetsTable.planId, plansTable.planId))
+          .where(
+            and(
+              eq(assetsTable.assetId, deleteValues.assetId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          ),
+      );
+    if (ownershipCheckError)
+      throw new HTTPException(500, { message: "Ownership check failed" });
+    if (ownershipCheck.length === 0)
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const { error: assetDeleteError, result: assetDeleteResult } =
+      await mightFail(
+        db
+          .delete(assetsTable)
+          .where(eq(assetsTable.assetId, deleteValues.assetId))
+          .returning(),
+      );
+    if (assetDeleteError) {
+      console.log("Error while deleting asset");
+      throw new HTTPException(500, {
+        message: "Error while deleting asset",
+        cause: assetDeleteError,
+      });
+    }
+    return c.json({ asset: assetDeleteResult[0] }, 200);
   });

@@ -17,8 +17,8 @@ export function CreateAsset(props: {
       {
         planId: props.plan.planId,
         name: (e.target as HTMLFormElement).assetname.value,
-        value: parseFloat((e.target as HTMLFormElement).assetvalue.value),
-        roi: parseFloat((e.target as HTMLFormElement).roi.value),
+        value: parseFloat((e.target as HTMLFormElement).assetvalue.value) * 100,
+        roi: parseFloat((e.target as HTMLFormElement).roi.value) * 100,
       },
       {
         onSuccess: () => props.setCreateAssetMode(false),
