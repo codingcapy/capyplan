@@ -12,6 +12,7 @@ export const assets = pgTable("assets", {
   planId: integer("plan_id").notNull(),
   name: varchar("name").notNull().default(""),
   value: integer("value").notNull().default(0), // Stored as cents to avoid floating point issues
+  roi: integer("roi").notNull().default(0),
   status: varchar("status").default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

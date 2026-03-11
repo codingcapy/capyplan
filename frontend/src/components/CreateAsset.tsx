@@ -1,9 +1,31 @@
-import { SetStateAction } from "react";
+import { SetStateAction, useState } from "react";
+import { useCreateAssetMutation } from "../lib/api/assets";
+import { Plan } from "../../../schemas/plans";
 
 export function CreateAsset(props: {
+  plan: Plan;
   setCreateAssetMode: (value: SetStateAction<boolean>) => void;
 }) {
-  function handleSubmitCreateAsset() {}
+  const { mutate: createAsset, isPending: createAssetPending } =
+    useCreateAssetMutation();
+  const [notification, setNotification] = useState("");
+
+  function handleSubmitCreateAsset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (createAssetPending) return;
+    createAsset(
+      {
+        planId: props.plan.planId,
+        name: (e.target as HTMLFormElement).assetname.value,
+        value: parseFloat((e.target as HTMLFormElement).assetvalue.value),
+        roi: parseFloat((e.target as HTMLFormElement).roi.value),
+      },
+      {
+        onSuccess: () => props.setCreateAssetMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
 
   return (
     <form onSubmit={handleSubmitCreateAsset} className="my-2">
@@ -51,6 +73,7 @@ export function CreateAsset(props: {
           Create
         </button>
       </div>
+      {notification}
     </form>
   );
 }

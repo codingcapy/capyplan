@@ -14,6 +14,8 @@ import { CreateLiability } from "../components/CreateLiability";
 import { CreateFinancialGoal } from "../components/CreateFinancialGoal";
 import { getExpendituresByPlanIdQueryOptions } from "../lib/api/expenditures";
 import { ExpenditureItem } from "../components/ExpenditureItem";
+import { getAssetsByPlanIdQueryOptions } from "../lib/api/assets";
+import { AssetItem } from "../components/AssetItem";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -48,6 +50,14 @@ function Dashboard() {
     error: expendituresError,
   } = useQuery({
     ...getExpendituresByPlanIdQueryOptions(plan?.planId ?? 0),
+    enabled: !!plan?.planId,
+  });
+  const {
+    data: assets,
+    isLoading: assetsLoading,
+    error: assetsError,
+  } = useQuery({
+    ...getAssetsByPlanIdQueryOptions(plan?.planId ?? 0),
     enabled: !!plan?.planId,
   });
   const [showRedirectModal, setShowRedirectModal] = useState(false);
@@ -182,26 +192,40 @@ function Dashboard() {
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
-            <div className="pl-5">
-              <div className="pt-5 text-3xl font-bold">Assets</div>
-              <div className="flex justify-between my-2">
-                <div className="w-[33%]">Name</div>
-                <div className="w-[33%]">Value</div>
-                <div className="w-[33%]">Return on invesment %</div>
-                <div className="w-17.5"></div>
-              </div>
-              {createAssetMode ? (
-                <CreateAsset setCreateAssetMode={setCreateAssetMode} />
-              ) : (
-                <div
-                  onClick={() => setCreateAssetMode(true)}
-                  className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-                >
-                  + Add asset
+            {assetsLoading ? (
+              <div>Loading...</div>
+            ) : assetsError ? (
+              <div>Error loading assets</div>
+            ) : assets ? (
+              <div className="pl-5">
+                <div className="pt-5 text-3xl font-bold">Assets</div>
+                <div className="flex justify-between my-2">
+                  <div className="w-[33%]">Name</div>
+                  <div className="w-[33%]">Value</div>
+                  <div className="w-[33%]">Return on invesment %</div>
+                  <div className="w-17.5"></div>
                 </div>
-              )}
-              <div className="pt-5">Total assets: $0</div>
-            </div>
+                {assets.map((a) => (
+                  <AssetItem asset={a} />
+                ))}
+                {createAssetMode ? (
+                  <CreateAsset
+                    plan={plan}
+                    setCreateAssetMode={setCreateAssetMode}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setCreateAssetMode(true)}
+                    className="mt-5 py-1 w-32.5 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                  >
+                    + Add asset
+                  </div>
+                )}
+                <div className="pt-5">Total assets: $0</div>
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             <div className="pl-5">
