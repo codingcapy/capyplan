@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { assets as assetsTable } from "../schemas/assets";
 import { assertIsParsableInt, requireUser } from "./plans";
@@ -133,4 +133,54 @@ export const assetsRouter = new Hono()
       });
     }
     return c.json({ asset: assetDeleteResult[0] }, 200);
-  });
+  })
+  .post(
+    "/update",
+    zValidator(
+      "json",
+      createUpdateSchema(assetsTable).omit({ assetId: true }).extend({
+        assetId: z.number(),
+      }),
+    ),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { result: ownershipCheck, error: ownershipCheckError } =
+        await mightFail(
+          db
+            .select()
+            .from(assetsTable)
+            .innerJoin(plansTable, eq(assetsTable.planId, plansTable.planId))
+            .where(
+              and(
+                eq(assetsTable.assetId, updateValues.assetId),
+                eq(plansTable.userId, decodedUser.id),
+              ),
+            ),
+        );
+      if (ownershipCheckError)
+        throw new HTTPException(500, { message: "Ownership check failed" });
+      if (ownershipCheck.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
+      const { error: assetUpdateError, result: assetUpdateResult } =
+        await mightFail(
+          db
+            .update(assetsTable)
+            .set({
+              name: updateValues.name,
+              value: updateValues.value,
+              roi: updateValues.roi,
+            })
+            .where(eq(assetsTable.assetId, updateValues.assetId))
+            .returning(),
+        );
+      if (assetUpdateError) {
+        console.log("Error while updating asset");
+        throw new HTTPException(500, {
+          message: "Error while updating asset",
+          cause: assetUpdateError,
+        });
+      }
+      return c.json({ asset: assetUpdateResult[0] }, 200);
+    },
+  );
