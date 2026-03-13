@@ -221,7 +221,15 @@ function Dashboard() {
                     + Add asset
                   </div>
                 )}
-                <div className="pt-5">Total assets: $0</div>
+                <div className="pt-5">
+                  Total assets: $
+                  {assets
+                    .reduce(
+                      (sum, expenditure) => sum + expenditure.value / 100,
+                      0,
+                    )
+                    .toFixed(2)}
+                </div>
               </div>
             ) : (
               <div></div>
