@@ -15,6 +15,10 @@ type DeleteAssetArgs = ArgumentTypes<
   typeof client.api.v0.assets.delete.$post
 >[0]["json"];
 
+type UpdateAssetArgs = ArgumentTypes<
+  typeof client.api.v0.assets.update.$post
+>[0]["json"];
+
 type SerializeAsset = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.assets.$get>>
 >["assets"][number];
@@ -141,6 +145,56 @@ export const useDeleteAssetMutation = (onError?: (message: string) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteAsset,
+    onSettled: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["assets", data?.asset.planId],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function UpdateAsset(args: UpdateAssetArgs) {
+  const token = getSession();
+  const res = await client.api.v0.assets.update.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your asset :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useUpdateAssetMutation = (onError?: (message: string) => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UpdateAsset,
     onSettled: (data) => {
       queryClient.invalidateQueries({
         queryKey: ["assets", data?.asset.planId],
