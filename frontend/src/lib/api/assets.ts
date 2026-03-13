@@ -94,7 +94,6 @@ async function getAssetsByPlanId(planId: number) {
         }
       : undefined,
   );
-
   if (!res.ok) {
     throw new Error("Error getting assets by plan id");
   }
