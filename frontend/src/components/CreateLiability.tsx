@@ -1,9 +1,34 @@
-import { SetStateAction } from "react";
+import { SetStateAction, useState } from "react";
+import { useCreateLiabilityMutation } from "../lib/api/liabilities";
+import { Plan } from "../../../schemas/plans";
 
 export function CreateLiability(props: {
+  plan: Plan;
   setCreateLiabilityMode: (value: SetStateAction<boolean>) => void;
 }) {
-  function handleSubmitCreateLiability() {}
+  const { mutate: createLiability, isPending: createLiabilityPending } =
+    useCreateLiabilityMutation();
+  const [notification, setNotification] = useState("");
+
+  function handleSubmitCreateLiability(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (createLiabilityPending) return;
+    createLiability(
+      {
+        planId: props.plan.planId,
+        name: (e.target as HTMLFormElement).liabilityname.value,
+        amount:
+          parseFloat((e.target as HTMLFormElement).liabilityamount.value) * 100,
+        interest:
+          parseFloat((e.target as HTMLFormElement).liabilityinterest.value) *
+          100,
+      },
+      {
+        onSuccess: () => props.setCreateLiabilityMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
 
   return (
     <form onSubmit={handleSubmitCreateLiability} className="my-2">
@@ -33,7 +58,7 @@ export function CreateLiability(props: {
           <input
             type="number"
             step="any"
-            name="interest"
+            name="liabilityinterest"
             required
             className="px-2 border border-[#777777] rounded"
           />
@@ -51,6 +76,7 @@ export function CreateLiability(props: {
           Create
         </button>
       </div>
+      <div>{notification}</div>
     </form>
   );
 }

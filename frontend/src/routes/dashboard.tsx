@@ -16,6 +16,8 @@ import { getExpendituresByPlanIdQueryOptions } from "../lib/api/expenditures";
 import { ExpenditureItem } from "../components/ExpenditureItem";
 import { getAssetsByPlanIdQueryOptions } from "../lib/api/assets";
 import { AssetItem } from "../components/AssetItem";
+import { getLiabilitiesByPlanIdQueryOptions } from "../lib/api/liabilities";
+import { LiabilityItem } from "../components/LiabilityItem";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -60,6 +62,14 @@ function Dashboard() {
     ...getAssetsByPlanIdQueryOptions(plan?.planId ?? 0),
     enabled: !!plan?.planId,
   });
+  const {
+    data: liabilities,
+    isLoading: liabilitiesLoading,
+    error: liabilitiesError,
+  } = useQuery({
+    ...getLiabilitiesByPlanIdQueryOptions(plan?.planId ?? 0),
+    enabled: !!plan?.planId,
+  });
   const [showRedirectModal, setShowRedirectModal] = useState(false);
   const cashflow =
     incomes &&
@@ -75,6 +85,19 @@ function Dashboard() {
         0,
       )
     ).toFixed(2);
+  const netWorth =
+    assets &&
+    liabilities &&
+    assets
+      .reduce(
+        (sum, expenditure) => sum + expenditure.value / 100,
+        0 -
+          liabilities.reduce(
+            (sum, liability) => sum + liability.amount / 100,
+            0,
+          ),
+      )
+      .toFixed(2);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -224,10 +247,7 @@ function Dashboard() {
                 <div className="pt-5">
                   Total assets: $
                   {assets
-                    .reduce(
-                      (sum, expenditure) => sum + expenditure.value / 100,
-                      0,
-                    )
+                    .reduce((sum, asset) => sum + asset.value / 100, 0)
                     .toFixed(2)}
                 </div>
               </div>
@@ -236,32 +256,51 @@ function Dashboard() {
             )}
           </div>
           <div className="border-b border-b-[#777777] pb-5">
-            <div className="pl-5">
-              <div className="pt-5 text-3xl font-bold">Liabilities</div>
-              <div className="flex justify-between my-2">
-                <div className="w-[33%]">Name</div>
-                <div className="w-[33%]">Amount</div>
-                <div className="w-[33%]">Monthly Interest %</div>
-                <div className="w-17.5"></div>
-              </div>
-              {createLiabilityMode ? (
-                <CreateLiability
-                  setCreateLiabilityMode={setCreateLiabilityMode}
-                />
-              ) : (
-                <div
-                  onClick={() => setCreateLiabilityMode(true)}
-                  className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-                >
-                  + Add liability
+            {liabilitiesLoading ? (
+              <div>Loading liabilities...</div>
+            ) : liabilitiesError ? (
+              <div>Error loading liabilities</div>
+            ) : liabilities ? (
+              <div className="pl-5">
+                <div className="pt-5 text-3xl font-bold">Liabilities</div>
+                <div className="flex justify-between my-2">
+                  <div className="w-[33%]">Name</div>
+                  <div className="w-[33%]">Amount</div>
+                  <div className="w-[33%]">Monthly Interest %</div>
+                  <div className="w-17.5"></div>
                 </div>
-              )}
-              <div className="pt-5">Total liabilities: $0</div>
-            </div>
+                {liabilities.map((l) => (
+                  <LiabilityItem liability={l} />
+                ))}
+                {createLiabilityMode ? (
+                  <CreateLiability
+                    plan={plan}
+                    setCreateLiabilityMode={setCreateLiabilityMode}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setCreateLiabilityMode(true)}
+                    className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                  >
+                    + Add liability
+                  </div>
+                )}
+                <div className="pt-5">
+                  Total liabilities: $
+                  {liabilities
+                    .reduce((sum, liability) => sum + liability.amount / 100, 0)
+                    .toFixed(2)}
+                </div>
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
             <div className="pl-5">
-              <div className="pt-5 font-bold">Total net worth: $0</div>
+              <div className="pt-5 font-bold">
+                Total net worth: ${netWorth || "error"}
+              </div>
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
