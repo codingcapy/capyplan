@@ -7,7 +7,7 @@ import { usersRouter } from "./routes/users";
 import { userRouter } from "./routes/user";
 import { plansRouter } from "./routes/plans";
 import { incomesRouter } from "./routes/incomes";
-import aiRouter from "./frontend/src/lib/api/ai";
+import { aiRouter } from "./routes/ai";
 import { expendituresRouter } from "./routes/expenditures";
 import { assetsRouter } from "./routes/assets";
 import { liabilitiesRouter } from "./routes/liabilities";
