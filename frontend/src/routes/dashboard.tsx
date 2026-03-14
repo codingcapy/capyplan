@@ -71,34 +71,36 @@ function Dashboard() {
     enabled: !!plan?.planId,
   });
   const [showRedirectModal, setShowRedirectModal] = useState(false);
+  const totalIncome =
+    incomes &&
+    incomes.reduce(
+      (sum, income) =>
+        sum + ((income.amount / 100) * (100 - income.tax / 100)) / 100,
+      0,
+    );
+  const totalExpenditure =
+    expenditures &&
+    expenditures.reduce(
+      (sum, expenditure) => sum + expenditure.amount / 100,
+      0,
+    );
   const cashflow =
     incomes &&
     expenditures &&
-    (
-      incomes.reduce(
-        (sum, income) =>
-          sum + ((income.amount / 100) * (100 - income.tax / 100)) / 100,
-        0,
-      ) -
+    incomes.reduce(
+      (sum, income) =>
+        sum + ((income.amount / 100) * (100 - income.tax / 100)) / 100,
+      0,
+    ) -
       expenditures.reduce(
         (sum, expenditure) => sum + expenditure.amount / 100,
         0,
-      )
-    ).toFixed(2);
+      );
   const netWorth =
     assets &&
     liabilities &&
-    assets
-      .reduce(
-        (sum, expenditure) => sum + expenditure.value / 100,
-        0 -
-          liabilities.reduce(
-            (sum, liability) => sum + liability.amount / 100,
-            0,
-          ),
-      )
-      .toFixed(2);
-
+    assets.reduce((sum, expenditure) => sum + expenditure.value / 100, 0) -
+      liabilities.reduce((sum, liability) => sum + liability.amount / 100, 0);
   useEffect(() => {
     if (!user) navigate({ to: "/" });
   }, [user]);
@@ -149,15 +151,8 @@ function Dashboard() {
                 )}
                 <div className="pt-5">
                   Total income: $
-                  {incomes
-                    .reduce(
-                      (sum, income) =>
-                        sum +
-                        ((income.amount / 100) * (100 - income.tax / 100)) /
-                          100,
-                      0,
-                    )
-                    .toFixed(2)}
+                  {(totalIncome && totalIncome.toFixed(2)) ||
+                    "total income error"}
                 </div>
               </div>
             ) : (
@@ -195,12 +190,8 @@ function Dashboard() {
                 )}
                 <div className="pt-5">
                   Total expenditure: $
-                  {expenditures
-                    .reduce(
-                      (sum, expenditure) => sum + expenditure.amount / 100,
-                      0,
-                    )
-                    .toFixed(2)}
+                  {(totalExpenditure && totalExpenditure.toFixed(2)) ||
+                    "total expenditure error"}
                 </div>
               </div>
             ) : (
@@ -210,7 +201,8 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total cashflow: ${cashflow || "error"}
+                Total cashflow: $
+                {(cashflow && cashflow.toFixed(2)) || "cashflow error"}
               </div>
             </div>
           </div>
@@ -299,7 +291,7 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total net worth: ${netWorth || "error"}
+                Total net worth: ${(netWorth && netWorth.toFixed(2)) || "error"}
               </div>
             </div>
           </div>
@@ -335,8 +327,71 @@ function Dashboard() {
                 advice. You should consult a qualified financial professional
                 before making financial decisions.
               </div>
-              <div className="pt-5"></div>
-              <ol></ol>
+              <div className="py-5">
+                <ol>
+                  {incomes &&
+                  expenditures &&
+                  totalExpenditure &&
+                  totalIncome &&
+                  cashflow &&
+                  (incomes.length > 0 || expenditures.length > 0) ? (
+                    totalExpenditure > totalIncome ? (
+                      <li>
+                        <b>1. Improve your cashflow</b> - you are spending more
+                        than you are making. Try to reduce your spending or if a
+                        raise or promotion is not on the horizon, consider
+                        creating additional sources of income.
+                      </li>
+                    ) : cashflow < totalIncome * 0.1 ? (
+                      <li>
+                        <b>1. Your cashflow is semi-healthy</b> - you are
+                        spending within your means but you are saving less than
+                        10% of your income. Try to reduce your spending or if a
+                        raise or promotion is not on the horizon, consider
+                        creating additional sources of income for additional
+                        savings.
+                      </li>
+                    ) : (
+                      <li>
+                        <b>1. Your cashflow is healthy</b> - you are able to
+                        save more than 10% or more of your income. If you are
+                        not already, consider investing your savings.
+                      </li>
+                    )
+                  ) : (
+                    <li></li>
+                  )}
+                  {incomes &&
+                  expenditures &&
+                  netWorth &&
+                  totalIncome &&
+                  (incomes.length > 0 || expenditures.length > 0) ? (
+                    netWorth < 0 ? (
+                      <li className="my-2">
+                        <b>2. Payoff your debts</b> - your priority is to payoff
+                        your debts with high interest. Once your debts are paid
+                        off, we can start working on long-term savings plan.
+                      </li>
+                    ) : netWorth < totalIncome * 3 ? (
+                      <li className="my-2">
+                        <b>2. Build an emergency fund</b> - save up until you
+                        have at least 3 months' worth of salary in your savings
+                        account. Once you have an emergency fund set up, we can
+                        start working on long-term savings plan for your
+                        financial goals.
+                      </li>
+                    ) : (
+                      <li className="my-2">
+                        <b>2. Your net worth is healthy</b> - you have
+                        sufficient assets to ensure your immediate needs are met
+                        and work on any financial goals you may have.
+                      </li>
+                    )
+                  ) : (
+                    <li></li>
+                  )}
+                </ol>
+              </div>
               {incomes && incomes.length > 0 && (
                 <div
                   onClick={() => setShowRedirectModal(true)}

@@ -10,6 +10,8 @@ import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { incomes as incomesTable } from "../schemas/incomes";
 import { expenditures as expendituresTable } from "../schemas/expenditures";
+import { assets as assetsTable } from "../schemas/assets";
+import { liabilities as liabilitiesTable } from "../schemas/liabilities";
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -60,17 +62,47 @@ export const aiRouter = new Hono().post(
         message: "error querying expenditures",
         cause: expendituresQueryError,
       });
+    const { result: assetsQueryResult, error: assetsQueryError } =
+      await mightFail(
+        db
+          .select()
+          .from(assetsTable)
+          .where(eq(assetsTable.planId, generationValues.planId)),
+      );
+    if (assetsQueryError)
+      throw new HTTPException(500, {
+        message: "error querying assets",
+        cause: assetsQueryError,
+      });
+    const { result: liabilitiesQueryResult, error: liabilitiesQueryError } =
+      await mightFail(
+        db
+          .select()
+          .from(liabilitiesTable)
+          .where(eq(liabilitiesTable.planId, generationValues.planId)),
+      );
+    if (liabilitiesQueryError)
+      throw new HTTPException(500, {
+        message: "error querying liabilities",
+        cause: liabilitiesQueryError,
+      });
     const incomesText = incomesQueryResult
       .map(
         (i) =>
           `${i.position}${i.company ? ` at ${i.company}` : ""}: $${i.amount}`,
       )
       .join("\n");
-
     const expendituresText = expendituresQueryResult
       .map((e) => `${e.name}: $${e.amount}`)
       .join("\n");
-
+    const assetsText = assetsQueryResult
+      .map((a) => `${a.name}: value $${a.value}, annual ROI ${a.roi}%`)
+      .join("\n");
+    const liabilitiesText = liabilitiesQueryResult
+      .map(
+        (l) => `${l.name}: balance $${l.amount}, interest rate ${l.interest}%`,
+      )
+      .join("\n");
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -90,15 +122,25 @@ ${incomesText}
 MONTHLY EXPENSES:
 ${expendituresText}
 
-Please analyze my finances and provide recommendations on:
+ASSETS:
+${assetsText}
 
-- budgeting improvements
-- unnecessary spending
-- savings opportunities
+LIABILITIES:
+${liabilitiesText}
+
+Please analyze my financial situation and provide professional financial planning advice.
+
+Consider the following areas:
+
+- cash flow sustainability
+- expense optimization
+- asset allocation
+- investment performance
+- debt management
 - financial risks
-- ways to improve financial stability
+- opportunities to improve long-term financial health
 
-Be specific when referencing individual income sources or expenses.
+Reference specific income sources, expenses, assets, or liabilities when giving advice.
 `,
         },
       ],
