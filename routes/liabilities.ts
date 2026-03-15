@@ -8,6 +8,11 @@ import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import z from "zod";
+
+const deleteLiabilitySchema = z.object({
+  liabilityId: z.number(),
+});
 
 export const liabilitiesRouter = new Hono()
   .post(
@@ -98,4 +103,40 @@ export const liabilitiesRouter = new Hono()
         cause: liabilitiesQueryError,
       });
     return c.json({ liabilities: liabilitiesQueryResult });
+  })
+  .post("/delete", zValidator("json", deleteLiabilitySchema), async (c) => {
+    const decodedUser = requireUser(c);
+    const deleteValues = c.req.valid("json");
+    const { result: ownershipCheck, error: ownershipCheckError } =
+      await mightFail(
+        db
+          .select()
+          .from(liabilitiesTable)
+          .innerJoin(plansTable, eq(liabilitiesTable.planId, plansTable.planId))
+          .where(
+            and(
+              eq(liabilitiesTable.liabilityId, deleteValues.liabilityId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          ),
+      );
+    if (ownershipCheckError)
+      throw new HTTPException(500, { message: "Ownership check failed" });
+    if (ownershipCheck.length === 0)
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const { error: liabilityDeleteError, result: liabilityDeleteResult } =
+      await mightFail(
+        db
+          .delete(liabilitiesTable)
+          .where(eq(liabilitiesTable.liabilityId, deleteValues.liabilityId))
+          .returning(),
+      );
+    if (liabilityDeleteError) {
+      console.log("Error while deleting liability");
+      throw new HTTPException(500, {
+        message: "Error while deleting liability",
+        cause: liabilityDeleteError,
+      });
+    }
+    return c.json({ liability: liabilityDeleteResult[0] }, 200);
   });
