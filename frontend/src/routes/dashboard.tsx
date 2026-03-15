@@ -221,7 +221,7 @@ function Dashboard() {
                   <div className="w-17.5"></div>
                 </div>
                 {assets.map((a) => (
-                  <AssetItem asset={a} />
+                  <AssetItem key={a.assetId} asset={a} />
                 ))}
                 {createAssetMode ? (
                   <CreateAsset
@@ -262,7 +262,7 @@ function Dashboard() {
                   <div className="w-17.5"></div>
                 </div>
                 {liabilities.map((l) => (
-                  <LiabilityItem liability={l} />
+                  <LiabilityItem key={l.liabilityId} liability={l} />
                 ))}
                 {createLiabilityMode ? (
                   <CreateLiability
