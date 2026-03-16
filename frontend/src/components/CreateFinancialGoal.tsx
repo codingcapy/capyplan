@@ -1,14 +1,39 @@
 import { format } from "date-fns";
 import { Dispatch, SetStateAction, useState } from "react";
 import { DayPicker } from "react-day-picker";
+import { useCreateFinancialGoalMutation } from "../lib/api/financialGoals";
+import { Plan } from "../../../schemas/plans";
 
 export function CreateFinancialGoal(props: {
+  plan: Plan;
   setCreateFinancialGoalMode: (value: SetStateAction<boolean>) => void;
 }) {
   const [targetDate, setTargetDate] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
+  const { mutate: createFinancialGoal, isPending: createFinancialGoalPending } =
+    useCreateFinancialGoalMutation();
+  const [notification, setNotification] = useState("");
 
-  function handleSubmitCreateFinancialGoal() {}
+  function handleSubmitCreateFinancialGoal(
+    e: React.FormEvent<HTMLFormElement>,
+  ) {
+    e.preventDefault();
+    if (createFinancialGoalPending) return;
+    createFinancialGoal(
+      {
+        planId: props.plan.planId,
+        name: (e.target as HTMLFormElement).financialgoalname.value,
+        amount:
+          parseFloat((e.target as HTMLFormElement).financialgoalamount.value) *
+          100,
+        targetDate: targetDate,
+      },
+      {
+        onSuccess: () => props.setCreateFinancialGoalMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
 
   return (
     <form onSubmit={handleSubmitCreateFinancialGoal} className="my-2">
@@ -66,6 +91,7 @@ export function CreateFinancialGoal(props: {
           Create
         </button>
       </div>
+      <div>{notification}</div>
     </form>
   );
 }

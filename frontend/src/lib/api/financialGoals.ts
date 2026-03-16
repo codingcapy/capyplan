@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { FinancialGoal } from "../../../../schemas/financialGoals";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { getSession } from "./plans";
@@ -72,3 +76,30 @@ export const useCreateFinancialGoalMutation = (
     },
   });
 };
+
+async function getFinancialGoalsByPlanId(planId: number) {
+  const token = getSession();
+  const res = await client.api.v0.financialgoals[":planId"].$get(
+    {
+      param: { planId: planId.toString() },
+    },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    throw new Error("Error getting financial goals by plan id");
+  }
+  const { financialGoals } = await res.json();
+  return financialGoals.map(mapSerializedFinancialGoalToSchema);
+}
+
+export const getFinancialGoalsByPlanIdQueryOptions = (planId: number) =>
+  queryOptions({
+    queryKey: ["financialGoals", planId],
+    queryFn: () => getFinancialGoalsByPlanId(planId),
+  });

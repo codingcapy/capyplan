@@ -18,6 +18,8 @@ import { getAssetsByPlanIdQueryOptions } from "../lib/api/assets";
 import { AssetItem } from "../components/AssetItem";
 import { getLiabilitiesByPlanIdQueryOptions } from "../lib/api/liabilities";
 import { LiabilityItem } from "../components/LiabilityItem";
+import { getFinancialGoalsByPlanIdQueryOptions } from "../lib/api/financialGoals";
+import { FinancialGoalItem } from "../components/FinancialGoalItem";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -68,6 +70,14 @@ function Dashboard() {
     error: liabilitiesError,
   } = useQuery({
     ...getLiabilitiesByPlanIdQueryOptions(plan?.planId ?? 0),
+    enabled: !!plan?.planId,
+  });
+  const {
+    data: financialGoals,
+    isLoading: financialGoalsLoading,
+    error: financialGoalsError,
+  } = useQuery({
+    ...getFinancialGoalsByPlanIdQueryOptions(plan?.planId ?? 0),
     enabled: !!plan?.planId,
   });
   const [showRedirectModal, setShowRedirectModal] = useState(false);
@@ -296,27 +306,42 @@ function Dashboard() {
             </div>
           </div>
           <div className="border-b border-b-[#777777] pb-5">
-            <div className="pl-5">
-              <div className="pt-5 text-3xl font-bold">Financial Goals</div>
-              <div className="flex justify-between my-2">
-                <div className="w-[33%]">Name</div>
-                <div className="w-[33%]">Amount</div>
-                <div className="w-[33%]">Target Date</div>
-                <div className="w-17.5"></div>
-              </div>
-              {createFinancialGoalMode ? (
-                <CreateFinancialGoal
-                  setCreateFinancialGoalMode={setCreateFinancialGoalMode}
-                />
-              ) : (
-                <div
-                  onClick={() => setCreateFinancialGoalMode(true)}
-                  className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
-                >
-                  + Add financial goal
+            {financialGoalsLoading ? (
+              <div>Loading financial goals...</div>
+            ) : financialGoalsError ? (
+              <div>Error loading financial goals</div>
+            ) : financialGoals ? (
+              <div className="pl-5">
+                <div className="pt-5 text-3xl font-bold">Financial Goals</div>
+                <div className="flex justify-between my-2">
+                  <div className="w-[33%]">Name</div>
+                  <div className="w-[33%]">Amount</div>
+                  <div className="w-[33%]">Target Date</div>
+                  <div className="w-17.5"></div>
                 </div>
-              )}
-            </div>
+                {financialGoals.map((f) => (
+                  <FinancialGoalItem
+                    key={f.financialGoalId}
+                    financialGoal={f}
+                  />
+                ))}
+                {createFinancialGoalMode ? (
+                  <CreateFinancialGoal
+                    plan={plan}
+                    setCreateFinancialGoalMode={setCreateFinancialGoalMode}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setCreateFinancialGoalMode(true)}
+                    className="mt-5 py-1 w-40 text-center cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300 border border-[#777777] hover:border-cyan-500 rounded"
+                  >
+                    + Add financial goal
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
             <div className="pl-5">
