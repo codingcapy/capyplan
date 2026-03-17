@@ -15,6 +15,10 @@ type DeleteLiabilityArgs = ArgumentTypes<
   typeof client.api.v0.liabilities.delete.$post
 >[0]["json"];
 
+type UpdateLiabilityArgs = ArgumentTypes<
+  typeof client.api.v0.liabilities.update.$post
+>[0]["json"];
+
 type SerializeLiability = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.liabilities.$get>>
 >["liabilities"][number];
@@ -146,6 +150,58 @@ export const useDeleteLiabilityMutation = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteLiability,
+    onSettled: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["liabilities", data?.liability.planId],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function UpdateLiability(args: UpdateLiabilityArgs) {
+  const token = getSession();
+  const res = await client.api.v0.liabilities.update.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your liability :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useUpdateLiabilityMutation = (
+  onError?: (message: string) => void,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UpdateLiability,
     onSettled: (data) => {
       queryClient.invalidateQueries({
         queryKey: ["liabilities", data?.liability.planId],

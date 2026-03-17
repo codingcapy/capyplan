@@ -126,7 +126,7 @@ export const aiRouter = new Hono().post(
         cause: financialGoalsQueryError,
       });
     const completion = await openai.responses.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5.4",
       temperature: 0.4,
       input: [
         {
@@ -137,7 +137,7 @@ export const aiRouter = new Hono().post(
         {
           role: "user",
           content: `
-Here is my financial data in JSON, all monetary amounts are in cents:
+Here is my financial data in JSON, all monetary amounts are in cents and all taxes and interest and roi are in percentages:
 
 ${JSON.stringify(
   {
