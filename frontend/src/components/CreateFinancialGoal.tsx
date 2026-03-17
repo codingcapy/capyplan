@@ -1,14 +1,38 @@
 import { format } from "date-fns";
 import { Dispatch, SetStateAction, useState } from "react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, MonthChangeEventHandler } from "react-day-picker";
 import { useCreateFinancialGoalMutation } from "../lib/api/financialGoals";
 import { Plan } from "../../../schemas/plans";
+
+const START_YEAR = 2000;
+const END_YEAR = new Date().getFullYear() + 50;
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const YEARS = Array.from(
+  { length: END_YEAR - START_YEAR + 1 },
+  (_, i) => START_YEAR + i,
+);
 
 export function CreateFinancialGoal(props: {
   plan: Plan;
   setCreateFinancialGoalMode: (value: SetStateAction<boolean>) => void;
 }) {
   const [targetDate, setTargetDate] = useState<Date>(new Date());
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const { mutate: createFinancialGoal, isPending: createFinancialGoalPending } =
     useCreateFinancialGoalMutation();
@@ -33,6 +57,18 @@ export function CreateFinancialGoal(props: {
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       },
     );
+  }
+
+  function handleMonthDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newMonth = new Date(calendarMonth);
+    newMonth.setMonth(parseInt(e.target.value));
+    setCalendarMonth(newMonth);
+  }
+
+  function handleYearDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newMonth = new Date(calendarMonth);
+    newMonth.setFullYear(parseInt(e.target.value));
+    setCalendarMonth(newMonth);
   }
 
   return (
@@ -66,15 +102,43 @@ export function CreateFinancialGoal(props: {
           </div>
           {showCalendar && (
             <div className="absolute bottom-[10px] md:bottom-[25px] md:right-[200px] scale-75">
-              <DayPicker
-                mode="single"
-                selected={targetDate}
-                onSelect={(date) => {
-                  setTargetDate((date && date) || new Date());
-                  setShowCalendar(false);
-                }}
-                className="text-xs bg-[#404040] p-2"
-              />
+              <div className="text-xs bg-[#404040] p-2">
+                <div className="flex justify-between items-center gap-1 px-1 pb-2">
+                  <select
+                    value={calendarMonth.getMonth()}
+                    onChange={handleMonthDropdown}
+                    className="bg-[#555555] text-white text-xs rounded px-1 py-0.5 cursor-pointer"
+                  >
+                    {MONTHS.map((month, i) => (
+                      <option key={month} value={i}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={calendarMonth.getFullYear()}
+                    onChange={handleYearDropdown}
+                    className="bg-[#555555] text-white text-xs rounded px-1 py-0.5 cursor-pointer"
+                  >
+                    {YEARS.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <DayPicker
+                  mode="single"
+                  selected={targetDate}
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth as MonthChangeEventHandler}
+                  onSelect={(date) => {
+                    setTargetDate(date || new Date());
+                    setShowCalendar(false);
+                  }}
+                  classNames={{ caption: "hidden" }}
+                />
+              </div>
             </div>
           )}
         </div>
