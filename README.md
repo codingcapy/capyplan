@@ -1,5 +1,8 @@
 # capyplan
 
+GenAI Financial plan under construction. Create financial plans and generate recommendations using AI.
+Live at: https://capyplan.up.railway.app/
+
 To install dependencies:
 
 ```bash
