@@ -12,6 +12,8 @@ import { incomes as incomesTable } from "../schemas/incomes";
 import { expenditures as expendituresTable } from "../schemas/expenditures";
 import { assets as assetsTable } from "../schemas/assets";
 import { liabilities as liabilitiesTable } from "../schemas/liabilities";
+import { financialGoals as financialGoalsTable } from "../schemas/financialGoals";
+import { generations as generationsTable } from "../schemas/generations";
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -38,6 +40,29 @@ export const aiRouter = new Hono().post(
       throw new HTTPException(500, { message: "Plan lookup failed" });
     if (!plan || plan.length === 0)
       throw new HTTPException(401, { message: "Unauthorized" });
+    // const [incomes, expenditures, assets, liabilities, financialGoals] =
+    //   await Promise.all([
+    //     db
+    //       .select()
+    //       .from(incomesTable)
+    //       .where(eq(incomesTable.planId, generationValues.planId)),
+    //     db
+    //       .select()
+    //       .from(expendituresTable)
+    //       .where(eq(expendituresTable.planId, generationValues.planId)),
+    //     db
+    //       .select()
+    //       .from(assetsTable)
+    //       .where(eq(assetsTable.planId, generationValues.planId)),
+    //     db
+    //       .select()
+    //       .from(liabilitiesTable)
+    //       .where(eq(liabilitiesTable.planId, generationValues.planId)),
+    //     db
+    //       .select()
+    //       .from(financialGoalsTable)
+    //       .where(eq(financialGoalsTable.planId, generationValues.planId)),
+    //   ]);
     const { result: incomesQueryResult, error: incomesQueryError } =
       await mightFail(
         db
@@ -86,26 +111,24 @@ export const aiRouter = new Hono().post(
         message: "error querying liabilities",
         cause: liabilitiesQueryError,
       });
-    const incomesText = incomesQueryResult
-      .map(
-        (i) =>
-          `${i.position}${i.company ? ` at ${i.company}` : ""}: $${i.amount}`,
-      )
-      .join("\n");
-    const expendituresText = expendituresQueryResult
-      .map((e) => `${e.name}: $${e.amount}`)
-      .join("\n");
-    const assetsText = assetsQueryResult
-      .map((a) => `${a.name}: value $${a.value}, annual ROI ${a.roi}%`)
-      .join("\n");
-    const liabilitiesText = liabilitiesQueryResult
-      .map(
-        (l) => `${l.name}: balance $${l.amount}, interest rate ${l.interest}%`,
-      )
-      .join("\n");
-    const completion = await openai.chat.completions.create({
+    const {
+      result: financialGoalsQueryResult,
+      error: financialGoalsQueryError,
+    } = await mightFail(
+      db
+        .select()
+        .from(financialGoalsTable)
+        .where(eq(financialGoalsTable.planId, generationValues.planId)),
+    );
+    if (financialGoalsQueryError)
+      throw new HTTPException(500, {
+        message: "error querying financial goals",
+        cause: financialGoalsQueryError,
+      });
+    const completion = await openai.responses.create({
       model: "gpt-4o-mini",
-      messages: [
+      temperature: 0.4,
+      input: [
         {
           role: "system",
           content:
@@ -114,42 +137,49 @@ export const aiRouter = new Hono().post(
         {
           role: "user",
           content: `
-I am providing my monthly financial data.
+Here is my financial data in JSON:
 
-INCOME SOURCES:
-${incomesText}
+${JSON.stringify(
+  {
+    incomes: incomesQueryResult,
+    expenditures: expendituresQueryResult,
+    assets: assetsQueryResult,
+    liabilities: liabilitiesQueryResult,
+    goals: financialGoalsQueryResult,
+  },
+  null,
+  2,
+)}
 
-MONTHLY EXPENSES:
-${expendituresText}
+Instructions:
+1. Summarize financial health
+2. Identify risks
+3. Analyze cash flow
+4. Provide debt strategy
+5. Suggest investment approach
+6. Give prioritized action plan
 
-ASSETS:
-${assetsText}
-
-LIABILITIES:
-${liabilitiesText}
-
-Please analyze my financial situation and provide professional financial planning advice.
-
-Consider the following areas:
-
-- cash flow sustainability
-- expense optimization
-- asset allocation
-- investment performance
-- debt management
-- financial risks
-- opportunities to improve long-term financial health
-
-Reference specific income sources, expenses, assets, or liabilities when giving advice.
+Only use provided data.
 `,
         },
       ],
     });
 
-    const content =
-      (completion.choices[0] && completion.choices[0].message.content) ||
-      "error generating recommendation";
-
-    return c.json({ recommendation: content });
+    const content = completion.output_text || "error generating recommendation";
+    const { error: generationInsertError, result: generationInsertResult } =
+      await mightFail(
+        db
+          .insert(generationsTable)
+          .values({ planId: plan[0]!.planId, content })
+          .returning(),
+      );
+    if (generationInsertError) {
+      console.log("Error while creating generation");
+      throw new HTTPException(500, {
+        message: "Error while creating generation",
+        cause: generationInsertError,
+      });
+    }
+    return c.json({ generation: generationInsertResult[0] });
   },
 );
