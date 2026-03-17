@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { liabilities as liabilitiesTable } from "../schemas/liabilities";
 import { assertIsParsableInt, requireUser } from "./plans";
@@ -139,4 +139,57 @@ export const liabilitiesRouter = new Hono()
       });
     }
     return c.json({ liability: liabilityDeleteResult[0] }, 200);
-  });
+  })
+  .post(
+    "/update",
+    zValidator(
+      "json",
+      createUpdateSchema(liabilitiesTable).omit({ liabilityId: true }).extend({
+        liabilityId: z.number(),
+      }),
+    ),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { result: ownershipCheck, error: ownershipCheckError } =
+        await mightFail(
+          db
+            .select()
+            .from(liabilitiesTable)
+            .innerJoin(
+              plansTable,
+              eq(liabilitiesTable.planId, plansTable.planId),
+            )
+            .where(
+              and(
+                eq(liabilitiesTable.liabilityId, updateValues.liabilityId),
+                eq(plansTable.userId, decodedUser.id),
+              ),
+            ),
+        );
+      if (ownershipCheckError)
+        throw new HTTPException(500, { message: "Ownership check failed" });
+      if (ownershipCheck.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
+      const { error: liabilityUpdateError, result: liabilityUpdateResult } =
+        await mightFail(
+          db
+            .update(liabilitiesTable)
+            .set({
+              name: updateValues.name,
+              amount: updateValues.amount,
+              interest: updateValues.interest,
+            })
+            .where(eq(liabilitiesTable.liabilityId, updateValues.liabilityId))
+            .returning(),
+        );
+      if (liabilityUpdateError) {
+        console.log("Error while updating liability");
+        throw new HTTPException(500, {
+          message: "Error while updating liability",
+          cause: liabilityUpdateError,
+        });
+      }
+      return c.json({ liability: liabilityUpdateResult[0] }, 200);
+    },
+  );

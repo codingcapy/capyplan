@@ -137,7 +137,7 @@ export const aiRouter = new Hono().post(
         {
           role: "user",
           content: `
-Here is my financial data in JSON:
+Here is my financial data in JSON, all monetary amounts are in cents:
 
 ${JSON.stringify(
   {
