@@ -20,6 +20,10 @@ import { getLiabilitiesByPlanIdQueryOptions } from "../lib/api/liabilities";
 import { LiabilityItem } from "../components/LiabilityItem";
 import { getFinancialGoalsByPlanIdQueryOptions } from "../lib/api/financialGoals";
 import { FinancialGoalItem } from "../components/FinancialGoalItem";
+import {
+  getGenerationsByPlanIdQueryOptions,
+  useCreateGenerationMutation,
+} from "../lib/api/generations";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -80,6 +84,16 @@ function Dashboard() {
     ...getFinancialGoalsByPlanIdQueryOptions(plan?.planId ?? 0),
     enabled: !!plan?.planId,
   });
+  const {
+    data: generations,
+    isLoading: generationsLoading,
+    error: generationsError,
+  } = useQuery({
+    ...getGenerationsByPlanIdQueryOptions(plan?.planId ?? 0),
+    enabled: !!plan?.planId,
+  });
+  const { mutate: createGeneration, isPending: createGenerationPending } =
+    useCreateGenerationMutation();
   const [showRedirectModal, setShowRedirectModal] = useState(false);
   const totalIncome =
     incomes &&
@@ -111,6 +125,19 @@ function Dashboard() {
     liabilities &&
     assets.reduce((sum, expenditure) => sum + expenditure.value / 100, 0) -
       liabilities.reduce((sum, liability) => sum + liability.amount / 100, 0);
+  const [generationNotification, setGenerationNotification] = useState("");
+
+  function handleCreateGeneration() {
+    if (createGenerationPending) return;
+    createGeneration(
+      { planId: plan!.planId },
+      {
+        onError: (errorMessage) =>
+          setGenerationNotification(errorMessage.toString()),
+      },
+    );
+  }
+
   useEffect(() => {
     if (!user) navigate({ to: "/" });
   }, [user]);
@@ -417,14 +444,30 @@ function Dashboard() {
                   )}
                 </ol>
               </div>
+              {generationsLoading ? (
+                <div>Loading AI recommendations...</div>
+              ) : generationsError ? (
+                <div>Error loading AI recommendations</div>
+              ) : generations ? (
+                generations.map((g) => (
+                  <div key={g.generationId} className="my-5">
+                    {g.content}
+                  </div>
+                ))
+              ) : (
+                <div></div>
+              )}
               {incomes && incomes.length > 0 && (
                 <div
-                  onClick={() => setShowRedirectModal(true)}
-                  className="py-2 rounded bg-linear-to-r from-blue-500 via-teal-500 to-green-500 w-[300px] text-center cursor-pointer hover:from-blue-400 hover:via-teal-400 hover:to-green-400 transition-all ease-in-out duration-300"
+                  onClick={handleCreateGeneration}
+                  className={`py-2 rounded ${createGenerationPending ? "bg-[#222222]" : "bg-linear-to-r from-blue-500 via-teal-500 to-green-500"} w-[300px] text-center cursor-pointer hover:from-blue-400 hover:via-teal-400 hover:to-green-400 transition-all ease-in-out duration-300`}
                 >
-                  Generate AI Recommendations
+                  {createGenerationPending
+                    ? "Generating..."
+                    : "Generate AI Recommendations"}
                 </div>
               )}
+              <div>{generationNotification}</div>
             </div>
           </div>
         </div>
