@@ -91,6 +91,7 @@ export function AssetItem(props: { asset: Asset }) {
               <FaXmark />
             </div>
           </div>
+          <div>{notification}</div>
         </form>
       ) : (
         <div className="flex justify-between my-2">

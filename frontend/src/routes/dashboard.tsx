@@ -452,7 +452,7 @@ function Dashboard() {
               ) : generations ? (
                 generations.map((g) => (
                   <div key={g.generationId} className="mb-5">
-                    <div className="text-xl font-bold mb-1">
+                    <div className="text-xl text-cyan-500 font-bold mb-1">
                       AI Recommendation generated on{" "}
                       {g.createdAt.toLocaleString()}
                     </div>
