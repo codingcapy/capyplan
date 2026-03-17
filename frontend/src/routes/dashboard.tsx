@@ -24,6 +24,7 @@ import {
   getGenerationsByPlanIdQueryOptions,
   useCreateGenerationMutation,
 } from "../lib/api/generations";
+import ReactMarkdown from "react-markdown";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -450,8 +451,14 @@ function Dashboard() {
                 <div>Error loading AI recommendations</div>
               ) : generations ? (
                 generations.map((g) => (
-                  <div key={g.generationId} className="my-5">
-                    {g.content}
+                  <div key={g.generationId} className="mb-5">
+                    <div className="text-xl font-bold mb-1">
+                      AI Recommendation generated on{" "}
+                      {g.createdAt.toLocaleString()}
+                    </div>
+                    <div className="prose prose-invert max-w-none">
+                      <ReactMarkdown>{g.content}</ReactMarkdown>
+                    </div>
                   </div>
                 ))
               ) : (
