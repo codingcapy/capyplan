@@ -160,6 +160,9 @@ Instructions:
 6. Give prioritized action plan
 
 Only use provided data.
+Don't bother regurgitating or listing out all the details in the JSON again, only mention items when needed to explain something.
+Only output titles, paragraphs and maybe some lists.
+ALWAYS start with "Based on the provided financial data, here's a comprehensive analysis of your"
 `,
         },
       ],
