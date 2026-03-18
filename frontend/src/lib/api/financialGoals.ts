@@ -11,6 +11,10 @@ type CreateFinancialGoalArgs = ArgumentTypes<
   typeof client.api.v0.financialgoals.$post
 >[0]["json"];
 
+type DeleteFinancialGoalArgs = ArgumentTypes<
+  typeof client.api.v0.financialgoals.delete.$post
+>[0]["json"];
+
 type SerializeFinancialGoal = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.financialgoals.$get>>
 >["financialGoals"][number];
@@ -103,3 +107,55 @@ export const getFinancialGoalsByPlanIdQueryOptions = (planId: number) =>
     queryKey: ["financialGoals", planId],
     queryFn: () => getFinancialGoalsByPlanId(planId),
   });
+
+async function deleteFinancialGoal(args: DeleteFinancialGoalArgs) {
+  const token = getSession();
+  const res = await client.api.v0.financialgoals.delete.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue deleting your financial goal :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useDeleteFinancialGoalMutation = (
+  onError?: (message: string) => void,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteFinancialGoal,
+    onSettled: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["financialGoals", data?.financialGoal.planId],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};

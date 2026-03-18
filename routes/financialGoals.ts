@@ -17,6 +17,10 @@ const createFinancialGoalSchema = createInsertSchema(financialGoalsTable, {
   createdAt: true,
 });
 
+const deleteFinancialGoalSchema = z.object({
+  financialGoalId: z.number(),
+});
+
 export const financialGoalsRouter = new Hono()
   .post("/", zValidator("json", createFinancialGoalSchema), async (c) => {
     const decodedUser = requireUser(c);
@@ -101,4 +105,50 @@ export const financialGoalsRouter = new Hono()
         cause: financialGoalsQueryError,
       });
     return c.json({ financialGoals: financialGoalsQueryResult });
+  })
+  .post("/delete", zValidator("json", deleteFinancialGoalSchema), async (c) => {
+    const decodedUser = requireUser(c);
+    const deleteValues = c.req.valid("json");
+    const { result: ownershipCheck, error: ownershipCheckError } =
+      await mightFail(
+        db
+          .select()
+          .from(financialGoalsTable)
+          .innerJoin(
+            plansTable,
+            eq(financialGoalsTable.planId, plansTable.planId),
+          )
+          .where(
+            and(
+              eq(
+                financialGoalsTable.financialGoalId,
+                deleteValues.financialGoalId,
+              ),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          ),
+      );
+    if (ownershipCheckError)
+      throw new HTTPException(500, { message: "Ownership check failed" });
+    if (ownershipCheck.length === 0)
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const {
+      error: financialGoalDeleteError,
+      result: financialGoalDeleteResult,
+    } = await mightFail(
+      db
+        .delete(financialGoalsTable)
+        .where(
+          eq(financialGoalsTable.financialGoalId, deleteValues.financialGoalId),
+        )
+        .returning(),
+    );
+    if (financialGoalDeleteError) {
+      console.log("Error while deleting financial goal");
+      throw new HTTPException(500, {
+        message: "Error while deleting financial goal",
+        cause: financialGoalDeleteError,
+      });
+    }
+    return c.json({ financialGoal: financialGoalDeleteResult[0] }, 200);
   });

@@ -137,7 +137,7 @@ export const aiRouter = new Hono().post(
         {
           role: "user",
           content: `
-Here is my financial data in JSON, all monetary amounts, taxes, interest and roi must be divided by 100 for their true value:
+Here is my financial data in JSON, all monetary amounts, values, taxes, interest and roi must be divided by 100 for their true value, and tax and interest and roi are percentages:
 
 ${JSON.stringify(
   {
