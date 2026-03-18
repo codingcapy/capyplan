@@ -6,7 +6,7 @@ import { FaArrowLeft, FaCheck, FaXmark } from "react-icons/fa6";
 import { v4 as uuidv4 } from "uuid";
 import { MdModeEditOutline } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, MonthChangeEventHandler } from "react-day-picker";
 import { format } from "date-fns";
 import { DemoEditIncome } from "../components/DemoEditIncome";
 import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
@@ -104,6 +104,27 @@ function DemoPage() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showRedirectModal, setShowRedirectModal] = useState(false);
   const navigate = useNavigate();
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
+  const MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const START_YEAR = 2000;
+  const END_YEAR = new Date().getFullYear() + 50;
+  const YEARS = Array.from(
+    { length: END_YEAR - START_YEAR + 1 },
+    (_, i) => START_YEAR + i,
+  );
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -271,6 +292,18 @@ function DemoPage() {
     setEditFinancialGoalPointer("none");
   }
 
+  function handleMonthDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newMonth = new Date(calendarMonth);
+    newMonth.setMonth(parseInt(e.target.value));
+    setCalendarMonth(newMonth);
+  }
+
+  function handleYearDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newMonth = new Date(calendarMonth);
+    newMonth.setFullYear(parseInt(e.target.value));
+    setCalendarMonth(newMonth);
+  }
+
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
       setShowDropdown(false);
@@ -390,7 +423,7 @@ function DemoPage() {
             <div className="hidden sm:block sm:pl-2">Back to login</div>
           </Link>
         </div>
-        <div className="text-xs sm:text-base max-w-[300px] sm:max-w-full">
+        <div className="text-xs sm:text-base max-w-[90%] sm:max-w-full">
           <b>Note</b>: This is a demo. All of your data is temporary and will be
           deleted when you leave this page. To save your financial plans, please{" "}
           <Link
@@ -984,15 +1017,45 @@ function DemoPage() {
                     </div>
                     {showCalendar && (
                       <div className="absolute bottom-[10px] md:bottom-[25px] md:right-[200px] scale-75">
-                        <DayPicker
-                          mode="single"
-                          selected={targetDate}
-                          onSelect={(date) => {
-                            setTargetDate((date && date) || new Date());
-                            setShowCalendar(false);
-                          }}
-                          className="text-xs bg-[#404040] p-2"
-                        />
+                        <div className="text-xs bg-[#404040] p-2">
+                          <div className="flex justify-between items-center gap-1 px-1 pb-2">
+                            <select
+                              value={calendarMonth.getMonth()}
+                              onChange={handleMonthDropdown}
+                              className="bg-[#555555] text-white text-xs rounded px-1 py-0.5 cursor-pointer"
+                            >
+                              {MONTHS.map((month, i) => (
+                                <option key={month} value={i}>
+                                  {month}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              value={calendarMonth.getFullYear()}
+                              onChange={handleYearDropdown}
+                              className="bg-[#555555] text-white text-xs rounded px-1 py-0.5 cursor-pointer"
+                            >
+                              {YEARS.map((year) => (
+                                <option key={year} value={year}>
+                                  {year}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <DayPicker
+                            mode="single"
+                            selected={targetDate}
+                            month={calendarMonth}
+                            onMonthChange={
+                              setCalendarMonth as MonthChangeEventHandler
+                            }
+                            onSelect={(date) => {
+                              setTargetDate(date || new Date());
+                              setShowCalendar(false);
+                            }}
+                            classNames={{ caption: "hidden" }}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>

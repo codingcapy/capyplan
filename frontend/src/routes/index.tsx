@@ -38,7 +38,7 @@ function IndexPage() {
         </div>
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col w-[50%] mx-auto mb-5"
+          className="flex flex-col w-[80%] md:w-[50%] mx-auto mb-5"
         >
           <input
             type="email"
@@ -70,6 +70,14 @@ function IndexPage() {
             register
           </Link>
         </div>
+        <div className="flex flex-col mt-10">
+          <Link
+            to="/demo"
+            className="md:hidden mx-auto text-cyan-500 border rounded px-3 py-2"
+          >
+            Try the demo
+          </Link>
+        </div>
         <div className="hidden md:flex absolute bottom-0 left-0">
           <Link to="/terms" className="p-3">
             Terms & Conditions
@@ -83,10 +91,10 @@ function IndexPage() {
         </div>
       </div>
       <div className="mt-5 md:mt-0 flex flex-col">
-        <img src={capylogo} alt="" className="mx-auto" />
+        <img src={capylogo} alt="" className="hidden md:block mx-auto" />
       </div>
-      <div className="absolute top-1 right-2 sm:top-10 sm:right-10 font-bold hover:text-cyan-500 transition-all ease-in-out duration-300">
-        <Link to="/demo">Try Now!</Link>
+      <div className="absolute hidden md:block right-2 top-10 sm:right-10 font-bold hover:text-cyan-500 transition-all ease-in-out duration-300">
+        <Link to="/demo">Try demo</Link>
       </div>
       <div className="absolute bottom-0 left-0 w-screen flex justify-between md:hidden">
         <Link to="/terms" className="p-3">
