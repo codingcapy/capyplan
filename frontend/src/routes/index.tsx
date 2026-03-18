@@ -70,12 +70,31 @@ function IndexPage() {
             register
           </Link>
         </div>
+        <div className="hidden md:flex absolute bottom-0 left-0">
+          <Link to="/terms" className="p-3">
+            Terms & Conditions
+          </Link>
+          <Link to="/privacypolicy" className="p-3">
+            Privacy Policy
+          </Link>
+          <div className="p-3 text-[#aaaaaa]">
+            Copyright &copy; 2026 CapyPlan. All rights reserved.
+          </div>
+        </div>
       </div>
       <div className="mt-5 md:mt-0 flex flex-col">
         <img src={capylogo} alt="" className="mx-auto" />
       </div>
       <div className="absolute top-1 right-2 sm:top-10 sm:right-10 font-bold hover:text-cyan-500 transition-all ease-in-out duration-300">
         <Link to="/demo">Try Now!</Link>
+      </div>
+      <div className="absolute bottom-0 left-0 w-screen flex justify-between md:hidden">
+        <Link to="/terms" className="p-3">
+          Terms & Conditions
+        </Link>
+        <Link to="/privacypolicy" className="p-3">
+          Privacy Policy
+        </Link>
       </div>
     </div>
   );
