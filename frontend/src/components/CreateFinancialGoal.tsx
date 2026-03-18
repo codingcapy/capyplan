@@ -3,29 +3,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { DayPicker, MonthChangeEventHandler } from "react-day-picker";
 import { useCreateFinancialGoalMutation } from "../lib/api/financialGoals";
 import { Plan } from "../../../schemas/plans";
-
-const START_YEAR = 2000;
-const END_YEAR = new Date().getFullYear() + 50;
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const YEARS = Array.from(
-  { length: END_YEAR - START_YEAR + 1 },
-  (_, i) => START_YEAR + i,
-);
+import { MONTHS, YEARS } from "../lib/utils";
 
 export function CreateFinancialGoal(props: {
   plan: Plan;

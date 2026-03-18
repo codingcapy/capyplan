@@ -13,6 +13,7 @@ import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
 import { DemoEditAsset } from "../components/DemoEditAsset";
 import { DemoEditLiability } from "../components/DemoEditLiability";
 import { DemoEditFinancialGoal } from "../components/DemoEditFinancialGoal";
+import { MONTHS, YEARS } from "../lib/utils";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -105,26 +106,6 @@ function DemoPage() {
   const [showRedirectModal, setShowRedirectModal] = useState(false);
   const navigate = useNavigate();
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
-  const MONTHS = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const START_YEAR = 2000;
-  const END_YEAR = new Date().getFullYear() + 50;
-  const YEARS = Array.from(
-    { length: END_YEAR - START_YEAR + 1 },
-    (_, i) => START_YEAR + i,
-  );
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

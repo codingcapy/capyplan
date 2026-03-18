@@ -1,7 +1,8 @@
 import { format } from "date-fns";
 import { Dispatch, FormEvent, SetStateAction, useState } from "react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, MonthChangeEventHandler } from "react-day-picker";
 import { FaCheck, FaXmark } from "react-icons/fa6";
+import { MONTHS, YEARS } from "../lib/utils";
 
 export function DemoEditFinancialGoal(props: {
   financialGoal: {
@@ -19,9 +20,24 @@ export function DemoEditFinancialGoal(props: {
   setEditFinancialGoalPointer: (value: SetStateAction<string>) => void;
 }) {
   const [nameContent, setNameContent] = useState(props.financialGoal.name);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(
+    props.financialGoal.target,
+  );
   const [amountContent, setAmountContent] = useState(
     props.financialGoal.amount,
   );
+
+  function handleMonthDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newMonth = new Date(calendarMonth);
+    newMonth.setMonth(parseInt(e.target.value));
+    setCalendarMonth(newMonth);
+  }
+
+  function handleYearDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newMonth = new Date(calendarMonth);
+    newMonth.setFullYear(parseInt(e.target.value));
+    setCalendarMonth(newMonth);
+  }
 
   return (
     <form onSubmit={props.handleSubmitEditFinancialGoal} className="my-2">
@@ -58,15 +74,43 @@ export function DemoEditFinancialGoal(props: {
           </div>
           {props.showCalendar && (
             <div className="absolute bottom-[10px] md:bottom-[25px] md:right-[200px] scale-75">
-              <DayPicker
-                mode="single"
-                selected={props.targetDate}
-                onSelect={(date) => {
-                  props.setTargetDate((date && date) || new Date());
-                  props.setShowCalendar(false);
-                }}
-                className="text-xs bg-[#404040] p-2"
-              />
+              <div className="text-xs bg-[#404040] p-2">
+                <div className="flex justify-between items-center gap-1 px-1 pb-2">
+                  <select
+                    value={calendarMonth.getMonth()}
+                    onChange={handleMonthDropdown}
+                    className="bg-[#555555] text-white text-xs rounded px-1 py-0.5 cursor-pointer"
+                  >
+                    {MONTHS.map((month, i) => (
+                      <option key={month} value={i}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={calendarMonth.getFullYear()}
+                    onChange={handleYearDropdown}
+                    className="bg-[#555555] text-white text-xs rounded px-1 py-0.5 cursor-pointer"
+                  >
+                    {YEARS.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <DayPicker
+                  mode="single"
+                  selected={props.targetDate}
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth as MonthChangeEventHandler}
+                  onSelect={(date) => {
+                    props.setTargetDate(date || new Date());
+                    props.setShowCalendar(false);
+                  }}
+                  classNames={{ caption: "hidden" }}
+                />
+              </div>
             </div>
           )}
         </div>
