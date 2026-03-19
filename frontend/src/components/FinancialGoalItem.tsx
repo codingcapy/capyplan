@@ -5,7 +5,10 @@ import { format } from "date-fns";
 import { Dispatch, SetStateAction, useState } from "react";
 import { MONTHS, YEARS } from "../lib/utils";
 import { DayPicker, MonthChangeEventHandler } from "react-day-picker";
-import { useDeleteFinancialGoalMutation } from "../lib/api/financialGoals";
+import {
+  useDeleteFinancialGoalMutation,
+  useUpdateFinancialGoalMutation,
+} from "../lib/api/financialGoals";
 
 export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
   const [editMode, setEditMode] = useState(false);
@@ -16,10 +19,15 @@ export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
   const [amountContent, setAmountContent] = useState(
     props.financialGoal.amount,
   );
-  const [targetDate, setTargetDate] = useState<Date>(new Date());
+  const [targetDate, setTargetDate] = useState<Date>(
+    props.financialGoal.targetDate,
+  );
   const [showCalendar, setShowCalendar] = useState(false);
   const { mutate: deleteFinancialGoal, isPending: deleteFinancialGoalPending } =
     useDeleteFinancialGoalMutation();
+  const { mutate: updateFinancialGoal, isPending: updateFinancialGoalPending } =
+    useUpdateFinancialGoalMutation();
+  const [notification, setNotification] = useState("");
 
   function handleMonthDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
     const newMonth = new Date(calendarMonth);
@@ -35,6 +43,19 @@ export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
 
   function handleSubmitEditFinancialGoal(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (updateFinancialGoalPending) return;
+    updateFinancialGoal(
+      {
+        financialGoalId: props.financialGoal.financialGoalId,
+        name: nameContent,
+        amount: amountContent * 100,
+        targetDate: targetDate,
+      },
+      {
+        onSuccess: () => setEditMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
   }
 
   function handleSubmitDeleteFinancialGoal() {
@@ -135,6 +156,7 @@ export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
               <FaXmark />
             </div>
           </div>
+          <div>{notification}</div>
         </form>
       ) : (
         <div className="flex justify-between my-2">

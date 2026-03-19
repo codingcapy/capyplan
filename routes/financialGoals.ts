@@ -156,7 +156,9 @@ export const financialGoalsRouter = new Hono()
     "/update",
     zValidator(
       "json",
-      createUpdateSchema(financialGoalsTable)
+      createUpdateSchema(financialGoalsTable, {
+        targetDate: z.coerce.date(),
+      })
         .omit({ financialGoalId: true })
         .extend({
           financialGoalId: z.number(),
