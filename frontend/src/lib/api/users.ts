@@ -15,6 +15,10 @@ type UpdateCurrentPlanArgs = ArgumentTypes<
   typeof client.api.v0.users.update.currentplan.$post
 >[0]["json"];
 
+type ResetPasswordArgs = ArgumentTypes<
+  typeof client.api.v0.users.passwordreset.$post
+>[0]["json"];
+
 async function createUser(args: CreateUserArgs) {
   const res = await client.api.v0.users.$post({ json: args });
   if (!res.ok) {
@@ -101,6 +105,49 @@ export const useUpdateCurrentPlanMutation = (
       queryClient.invalidateQueries({
         queryKey: ["incomes", _data.user.currentPlan],
       });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function resetPassword(args: ResetPasswordArgs) {
+  const token = getSession();
+  const res = await client.api.v0.users.passwordreset.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your plan :( We'll look into it ASAP!";
+    console.log(args);
+    try {
+    } catch (error) {
+      console.log(error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useResetPasswordMutation = (
+  onError?: (message: string) => void,
+) => {
+  return useMutation({
+    mutationFn: resetPassword,
+    onSettled: (data, _error) => {
+      if (!data) return console.log("No data, returning");
+      console.log(data);
     },
     onError: (error) => {
       if (onError) {

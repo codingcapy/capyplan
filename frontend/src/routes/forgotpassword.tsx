@@ -1,17 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa6";
+import { useResetPasswordMutation } from "../lib/api/users";
 
 export const Route = createFileRoute("/forgotpassword")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const [emailContent, setEmailContent] = useState("");
   const [notification, setNotification] = useState("");
+  const { mutate: resetPassword, isPending: resetPasswordPending } =
+    useResetPasswordMutation();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setNotification("Success! Check your email for recovery code");
+    resetPassword(
+      { email: emailContent },
+      {
+        onSuccess: () =>
+          setNotification("Success! Check your email for recovery code"),
+        onError: () =>
+          setNotification(
+            "An error occurred sending recovery code 😵‍💫 we'll look into it ASAP.",
+          ),
+      },
+    );
   }
 
   return (
@@ -32,8 +46,11 @@ function RouteComponent() {
         <form onSubmit={handleSubmit} className="flex flex-col">
           <input
             type="email"
+            value={emailContent}
+            onChange={(e) => setEmailContent(e.target.value)}
             placeholder="Enter email address"
             className="border rounded mb-2 p-2 w-[90vw] max-w-[600px]"
+            required
           />
           <button className="bg-cyan-500 py-2 cursor-pointer">
             Send recovery code
