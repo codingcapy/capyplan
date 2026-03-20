@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PrivacypolicyRouteImport } from './routes/privacypolicy'
+import { Route as ForgotpasswordRouteImport } from './routes/forgotpassword'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ const SignupRoute = SignupRouteImport.update({
 const PrivacypolicyRoute = PrivacypolicyRouteImport.update({
   id: '/privacypolicy',
   path: '/privacypolicy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotpasswordRoute = ForgotpasswordRouteImport.update({
+  id: '/forgotpassword',
+  path: '/forgotpassword',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/forgotpassword': typeof ForgotpasswordRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/forgotpassword': typeof ForgotpasswordRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/forgotpassword': typeof ForgotpasswordRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
@@ -78,16 +87,25 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/demo'
+    | '/forgotpassword'
     | '/privacypolicy'
     | '/signup'
     | '/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/demo' | '/privacypolicy' | '/signup' | '/terms'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/demo'
+    | '/forgotpassword'
+    | '/privacypolicy'
+    | '/signup'
+    | '/terms'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/demo'
+    | '/forgotpassword'
     | '/privacypolicy'
     | '/signup'
     | '/terms'
@@ -97,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   DemoRoute: typeof DemoRoute
+  ForgotpasswordRoute: typeof ForgotpasswordRoute
   PrivacypolicyRoute: typeof PrivacypolicyRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
@@ -123,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/privacypolicy'
       fullPath: '/privacypolicy'
       preLoaderRoute: typeof PrivacypolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgotpassword': {
+      id: '/forgotpassword'
+      path: '/forgotpassword'
+      fullPath: '/forgotpassword'
+      preLoaderRoute: typeof ForgotpasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -153,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   DemoRoute: DemoRoute,
+  ForgotpasswordRoute: ForgotpasswordRoute,
   PrivacypolicyRoute: PrivacypolicyRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,

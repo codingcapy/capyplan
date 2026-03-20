@@ -53,9 +53,15 @@ function IndexPage() {
             id="password"
             name="password"
             placeholder="password"
-            className="border rounded p-2 my-2"
+            className="border rounded p-2 mt-2"
             required
           />
+          <Link
+            to="/forgotpassword"
+            className="my-2 text-xs font-bold text-[#c0c0c0] underline"
+          >
+            Forgot password
+          </Link>
           <button className="my-2 px-5 py-3 bg-cyan-500 font-bold cursor-pointer hover:bg-cyan-400 transition-all ease-in-out duration-300">
             LOGIN
           </button>
