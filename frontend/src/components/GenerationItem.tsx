@@ -41,7 +41,7 @@ export function GenerationItem(props: { g: Generation }) {
           <FaEllipsisVertical size={20} className="cursor-pointer" />
         </div>
       </div>
-      <div className="prose prose-invert max-w-none">
+      <div className="prose prose-invert max-w-none text-sm leading-snug prose-headings:mb-2 prose-headings:mt-3 prose-p:mb-2 prose-li:mb-1 prose-ul:mb-2 prose-h1:text-lg prose-h2:text-base prose-h3:text-base prose-h4:text-base">
         <ReactMarkdown>{props.g.content}</ReactMarkdown>
       </div>
       {showMenu && (
