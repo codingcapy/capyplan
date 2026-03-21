@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import useAuthStore from "../store/AuthStore";
+import { Link } from "@tanstack/react-router";
 
 export function TopNav() {
   const { user, logoutService } = useAuthStore();
@@ -30,8 +31,17 @@ export function TopNav() {
         {user && user.username}
       </div>
       {showMenu && (
-        <div className="absolute top-[40px] right-1 bg-[#404040] px-5 py-2 rounded">
-          <div onClick={logoutService} className="cursor-pointer">
+        <div className="absolute top-[40px] right-5 bg-[#404040] rounded py-2">
+          <Link
+            to="/settings"
+            className="px-5 py-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+          >
+            Settings
+          </Link>
+          <div
+            onClick={logoutService}
+            className="px-5 py-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+          >
             Logout
           </div>
         </div>

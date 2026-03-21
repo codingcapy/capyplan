@@ -151,7 +151,7 @@ ${JSON.stringify(
   2,
 )}
 
-Calculate cashflow and net worth at least twice and ensure your calculations are accurate.
+Calculate cashflow and net worth at least twice and ensure your calculations are accurate. No need to mention that you did this.
 
 Instructions:
 1. Summarize financial health

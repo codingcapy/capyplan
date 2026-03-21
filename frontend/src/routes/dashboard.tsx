@@ -24,7 +24,6 @@ import {
   getGenerationsByPlanIdQueryOptions,
   useCreateGenerationMutation,
 } from "../lib/api/generations";
-import ReactMarkdown from "react-markdown";
 import { GenerationItem } from "../components/GenerationItem";
 
 export const Route = createFileRoute("/dashboard")({
@@ -143,6 +142,10 @@ function Dashboard() {
   useEffect(() => {
     if (!user) navigate({ to: "/" });
   }, [user]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [plan]);
 
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">
