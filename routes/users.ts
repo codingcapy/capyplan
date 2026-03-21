@@ -31,6 +31,10 @@ const updateCurrentPlanSchema = z.object({
   currentPlan: z.number(),
 });
 
+const updatePasswordSchema = z.object({
+  password: z.string(),
+});
+
 const resetPasswordSchema = z.object({
   email: z.string().email(),
 });
@@ -139,6 +143,29 @@ export const usersRouter = new Hono()
       if (updateError) {
         throw new HTTPException(500, {
           message: "Error while updating current plan",
+          cause: updateError,
+        });
+      }
+      return c.json({ user: updateResult[0] }, 200);
+    },
+  )
+  .post(
+    "/update/password",
+    zValidator("json", updatePasswordSchema),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const encrypted = await hashPassword(updateValues.password);
+      const { error: updateError, result: updateResult } = await mightFail(
+        db
+          .update(usersTable)
+          .set({ password: encrypted })
+          .where(eq(usersTable.userId, decodedUser.id))
+          .returning(),
+      );
+      if (updateError) {
+        throw new HTTPException(500, {
+          message: "Error while updating password",
           cause: updateError,
         });
       }

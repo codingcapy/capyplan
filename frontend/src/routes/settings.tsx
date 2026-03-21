@@ -9,7 +9,7 @@ import {
 } from "../lib/api/plans";
 import { useQuery } from "@tanstack/react-query";
 import { useUpdateCurrentPlanMutation } from "../lib/api/users";
-import { FaArrowLeft } from "react-icons/fa6";
+import { FaArrowLeft, FaCheck, FaXmark } from "react-icons/fa6";
 
 export const Route = createFileRoute("/settings")({
   component: RouteComponent,
@@ -40,6 +40,9 @@ function RouteComponent() {
     useUpdateCurrentPlanMutation();
   const [showMenu, setShowMenu] = useState(false);
   const topMenuRef = useRef<HTMLDivElement | null>(null);
+  const [editPasswordMode, setEditPasswordMode] = useState(false);
+  const [editPlanTitleMode, setEditPlanTitleMode] = useState(false);
+  const [planTitleContent, setplanTitleContent] = useState("");
 
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -75,6 +78,11 @@ function RouteComponent() {
   useEffect(() => {
     if (!user) navigate({ to: "/" });
   }, [user]);
+
+  useEffect(() => {
+    if (!plan) return;
+    setplanTitleContent(plan.title);
+  }, [plan]);
 
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
@@ -231,10 +239,33 @@ function RouteComponent() {
           </div>
           <div className="flex">
             <div className="sm:w-[250px]">Password</div>
-            <div className="sm:w-[150px]">●●●●●●●●●●●●</div>
-            <div className="ml-2 border rounded px-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300">
-              Change
-            </div>
+            {editPasswordMode ? (
+              <div className="flex">
+                <input
+                  type="password"
+                  className="sm:w-[150px] border rounded px-1"
+                />
+                <button className="w-[35px] cursor-pointer text-green-500 flex items-center justify-center">
+                  <FaCheck />
+                </button>
+                <div
+                  onClick={() => setEditPasswordMode(false)}
+                  className="cursor-pointer text-red-500 flex items-center justify-center"
+                >
+                  <FaXmark />
+                </div>
+              </div>
+            ) : (
+              <div className="flex">
+                <div className="sm:w-[150px]">●●●●●●●●●●●●</div>
+                <div
+                  onClick={() => setEditPasswordMode(true)}
+                  className="ml-2 border rounded px-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+                >
+                  Change
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div>
@@ -247,10 +278,35 @@ function RouteComponent() {
             <div>
               <div className="my-2 flex">
                 <div className="sm:w-[250px]">Name</div>
-                <div className="sm:w-[150px]">{plan.title}</div>
-                <div className="ml-2 border rounded px-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300">
-                  Change
-                </div>
+                {editPlanTitleMode ? (
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={planTitleContent}
+                      onChange={(e) => setplanTitleContent(e.target.value)}
+                      className="sm:w-[150px] border rounded px-1"
+                    />
+                    <button className="w-[35px] cursor-pointer text-green-500 flex items-center justify-center">
+                      <FaCheck />
+                    </button>
+                    <div
+                      onClick={() => setEditPlanTitleMode(false)}
+                      className="cursor-pointer text-red-500 flex items-center justify-center"
+                    >
+                      <FaXmark />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex">
+                    <div className="sm:w-[150px]">{plan.title}</div>
+                    <div
+                      onClick={() => setEditPlanTitleMode(true)}
+                      className="ml-2 border rounded px-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+                    >
+                      Change
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="text-red-500 cursor-pointer">Delete</div>
             </div>
