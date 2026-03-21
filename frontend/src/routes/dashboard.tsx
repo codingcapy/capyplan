@@ -451,7 +451,9 @@ function Dashboard() {
               ) : generationsError ? (
                 <div>Error loading AI recommendations</div>
               ) : generations ? (
-                generations.map((g) => <GenerationItem g={g} />)
+                generations.map((g) => (
+                  <GenerationItem key={g.generationId} g={g} />
+                ))
               ) : (
                 <div></div>
               )}
