@@ -271,6 +271,7 @@ function RouteComponent() {
                   name="password"
                   id="password"
                   className="sm:w-[150px] border rounded px-1"
+                  required
                 />
                 <button className="w-[35px] cursor-pointer text-green-500 flex items-center justify-center">
                   <FaCheck />
@@ -324,6 +325,7 @@ function RouteComponent() {
                       value={planTitleContent}
                       onChange={(e) => setplanTitleContent(e.target.value)}
                       className="sm:w-[150px] border rounded px-1"
+                      required
                     />
                     <button className="w-[35px] cursor-pointer text-green-500 flex items-center justify-center">
                       <FaCheck />
