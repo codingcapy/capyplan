@@ -8,7 +8,10 @@ import {
   useCreatePlanMutation,
 } from "../lib/api/plans";
 import { useQuery } from "@tanstack/react-query";
-import { useUpdateCurrentPlanMutation } from "../lib/api/users";
+import {
+  useUpdateCurrentPlanMutation,
+  useUpdatePasswordMutation,
+} from "../lib/api/users";
 import { FaArrowLeft, FaCheck, FaXmark } from "react-icons/fa6";
 
 export const Route = createFileRoute("/settings")({
@@ -43,6 +46,9 @@ function RouteComponent() {
   const [editPasswordMode, setEditPasswordMode] = useState(false);
   const [editPlanTitleMode, setEditPlanTitleMode] = useState(false);
   const [planTitleContent, setplanTitleContent] = useState("");
+  const { mutate: updatePassword, isPending: updatePasswordPending } =
+    useUpdatePasswordMutation();
+  const [passwordNotification, setPasswordNotification] = useState("");
 
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -59,7 +65,7 @@ function RouteComponent() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmitCreateWorkspace(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (createPlanPending) return;
     const title = (e.target as HTMLFormElement).plantitle.value;
@@ -69,6 +75,22 @@ function RouteComponent() {
       {
         onSuccess: () => {
           setShowCreatePlanModal(false);
+        },
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
+
+  function handleSubmitUpdatePassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (updatePasswordPending) return;
+    const password = (e.target as HTMLFormElement).password.value;
+    updatePassword(
+      { password },
+      {
+        onSuccess: () => {
+          setEditPasswordMode(false);
+          setPasswordNotification("Success!");
         },
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       },
@@ -194,7 +216,10 @@ function RouteComponent() {
             <div className="text-xl font-bold mb-5">
               Create a new financial plan
             </div>
-            <form onSubmit={handleSubmit} className="flex flex-col">
+            <form
+              onSubmit={handleSubmitCreateWorkspace}
+              className="flex flex-col"
+            >
               <label htmlFor="" className="text-left mb-2">
                 Financial plan name
               </label>
@@ -240,9 +265,11 @@ function RouteComponent() {
           <div className="flex">
             <div className="sm:w-[250px]">Password</div>
             {editPasswordMode ? (
-              <div className="flex">
+              <form onSubmit={handleSubmitUpdatePassword} className="flex">
                 <input
                   type="password"
+                  name="password"
+                  id="password"
                   className="sm:w-[150px] border rounded px-1"
                 />
                 <button className="w-[35px] cursor-pointer text-green-500 flex items-center justify-center">
@@ -254,7 +281,7 @@ function RouteComponent() {
                 >
                   <FaXmark />
                 </div>
-              </div>
+              </form>
             ) : (
               <div className="flex">
                 <div className="sm:w-[150px]">●●●●●●●●●●●●</div>
@@ -266,6 +293,18 @@ function RouteComponent() {
                 </div>
               </div>
             )}
+          </div>
+          <div className="flex">
+            <div className="sm:w-[250px]"></div>
+            <div
+              className={
+                passwordNotification === "Success!"
+                  ? "text-green-500"
+                  : "text-yellow-500"
+              }
+            >
+              {passwordNotification}
+            </div>
           </div>
         </div>
         <div>
