@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { Plan } from "../../../../schemas/plans";
 import { ArgumentTypes, client, ExtractData } from "./client";
+import useAuthStore from "../../store/AuthStore";
 
 type SerializePlan = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.plans.$get>>
@@ -25,6 +26,10 @@ export function getSession() {
 
 type CreatePlanArgs = ArgumentTypes<
   typeof client.api.v0.plans.$post
+>[0]["json"];
+
+type DeletePlanArgs = ArgumentTypes<
+  typeof client.api.v0.plans.delete.$post
 >[0]["json"];
 
 async function createPlan(args: CreatePlanArgs) {
@@ -126,3 +131,59 @@ export const getPlanByIdQueryOptions = (planId: string) =>
     queryKey: ["plan", planId],
     queryFn: () => getPlanById(planId),
   });
+
+async function deletePlan(args: DeletePlanArgs) {
+  const token = getSession();
+  const res = await client.api.v0.plans.delete.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue deleting your plan :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useDeletePlanMutation = (onError?: (message: string) => void) => {
+  const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
+  return useMutation({
+    mutationFn: deletePlan,
+    onSettled: (_data, _error) => {
+      if (!_data) return console.log("No data, returning");
+      setUser({ ..._data.user, createdAt: new Date(_data.user.createdAt) });
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["plan", _data.user.currentPlan.toString()],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};

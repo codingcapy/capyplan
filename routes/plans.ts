@@ -7,9 +7,14 @@ import { mightFail, mightFailSync } from "might-fail";
 import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
 import { and, eq } from "drizzle-orm";
+import { users as usersTable } from "../schemas/users";
 
 const createPlanSchema = z.object({
   title: z.string(),
+});
+
+const deletePlanSchema = z.object({
+  planId: z.number(),
 });
 
 export function requireUser(c: Context) {
@@ -102,4 +107,105 @@ export const plansRouter = new Hono()
         cause: planQueryError,
       });
     return c.json({ plan: planQueryResult[0] });
+  })
+  .post("/delete", zValidator("json", deletePlanSchema), async (c) => {
+    const decodedUser = requireUser(c);
+    const deleteValues = c.req.valid("json");
+    const { result: ownershipCheck, error: ownershipCheckError } =
+      await mightFail(
+        db
+          .select()
+          .from(plansTable)
+          .where(
+            and(
+              eq(plansTable.planId, deleteValues.planId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          ),
+      );
+    if (ownershipCheckError)
+      throw new HTTPException(500, { message: "Ownership check failed" });
+    if (ownershipCheck.length === 0)
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const { error: planDeleteError, result: planDeleteResult } =
+      await mightFail(
+        db
+          .delete(plansTable)
+          .where(eq(plansTable.planId, deleteValues.planId))
+          .returning(),
+      );
+    if (planDeleteError) {
+      console.log("Error while deleting plan");
+      throw new HTTPException(500, {
+        message: "Error while deleting plan",
+        cause: planDeleteError,
+      });
+    }
+    const { result: userQueryResult, error: userQueryError } = await mightFail(
+      db.select().from(usersTable).where(eq(usersTable.userId, decodedUser.id)),
+    );
+    if (userQueryError)
+      throw new HTTPException(500, { message: "user query failed" });
+    if (!userQueryResult[0])
+      throw new HTTPException(500, { message: "user query failed" });
+    const { result: plansCheck, error: plansCheckError } = await mightFail(
+      db.select().from(plansTable).where(eq(plansTable.userId, decodedUser.id)),
+    );
+    if (plansCheckError)
+      throw new HTTPException(500, { message: "plans check failed" });
+    if (plansCheck.length === 0) {
+      const { error: planInsertError, result: planInsertResult } =
+        await mightFail(
+          db
+            .insert(plansTable)
+            .values({
+              userId: decodedUser.id,
+              title: `${userQueryResult[0].username}'s plan`,
+            })
+            .returning(),
+        );
+      if (planInsertError) {
+        console.log("Error while creating plan");
+        console.log(planInsertError);
+        throw new HTTPException(500, {
+          message: "Error while creating plan",
+          cause: planInsertError,
+        });
+      }
+      if (!planInsertResult[0])
+        throw new HTTPException(500, {
+          message: "Error while creating plan",
+          cause: planInsertError,
+        });
+      const { error: updateError, result: updateResult } = await mightFail(
+        db
+          .update(usersTable)
+          .set({ currentPlan: planInsertResult[0].planId })
+          .where(eq(usersTable.userId, decodedUser.id))
+          .returning(),
+      );
+      if (updateError) {
+        throw new HTTPException(500, {
+          message: "Error while updating current plan",
+          cause: updateError,
+        });
+      }
+    } else {
+      if (!plansCheck[0])
+        throw new HTTPException(500, { message: "plans check failed" });
+      const { error: updateError, result: updateResult } = await mightFail(
+        db
+          .update(usersTable)
+          .set({ currentPlan: plansCheck[0].planId })
+          .where(eq(usersTable.userId, decodedUser.id))
+          .returning(),
+      );
+      if (updateError) {
+        throw new HTTPException(500, {
+          message: "Error while updating current plan",
+          cause: updateError,
+        });
+      }
+    }
+    return c.json({ user: userQueryResult[0] }, 200);
   });

@@ -347,7 +347,7 @@ function RouteComponent() {
                   </div>
                 )}
               </div>
-              <div className="text-red-500 cursor-pointer">Delete</div>
+              <div className="text-red-500 cursor-pointer w-[55px]">Delete</div>
             </div>
           ) : (
             <div></div>
