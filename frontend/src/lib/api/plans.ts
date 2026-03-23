@@ -32,6 +32,10 @@ type DeletePlanArgs = ArgumentTypes<
   typeof client.api.v0.plans.delete.$post
 >[0]["json"];
 
+type UpdatePlanArgs = ArgumentTypes<
+  typeof client.api.v0.plans.update.$post
+>[0]["json"];
+
 async function createPlan(args: CreatePlanArgs) {
   const token = getSession();
   const res = await client.api.v0.plans.$post(
@@ -181,6 +185,56 @@ export const useDeletePlanMutation = (onError?: (message: string) => void) => {
       queryClient.invalidateQueries({ queryKey: ["plans"] });
       queryClient.invalidateQueries({
         queryKey: ["plan", data.user.currentPlan],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function UpdatePlan(args: UpdatePlanArgs) {
+  const token = getSession();
+  const res = await client.api.v0.plans.update.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your plan :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useUpdatePlanMutation = (onError?: (message: string) => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UpdatePlan,
+    onSettled: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["plan", data?.plan.planId],
       });
     },
     onError: (error) => {
