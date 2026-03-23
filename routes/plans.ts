@@ -60,7 +60,7 @@ export const plansRouter = new Hono()
           .values({ ...insertValues, userId: decodedUser.id })
           .returning(),
       );
-    if (planInsertError) {
+    if (planInsertError || !planInsertResult[0]) {
       console.log("Error while creating plan");
       console.log(planInsertError);
       throw new HTTPException(500, {
@@ -68,7 +68,20 @@ export const plansRouter = new Hono()
         cause: planInsertError,
       });
     }
-    return c.json({ plan: planInsertResult[0] }, 200);
+    const { error: updateError, result: updateResult } = await mightFail(
+      db
+        .update(usersTable)
+        .set({ currentPlan: planInsertResult[0].planId })
+        .where(eq(usersTable.userId, decodedUser.id))
+        .returning(),
+    );
+    if (updateError) {
+      throw new HTTPException(500, {
+        message: "Error while updating current plan",
+        cause: updateError,
+      });
+    }
+    return c.json({ user: updateResult[0] }, 200);
   })
   .get("/", async (c) => {
     const decodedUser = requireUser(c);

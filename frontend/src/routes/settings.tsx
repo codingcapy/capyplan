@@ -6,6 +6,7 @@ import {
   getPlanByIdQueryOptions,
   getPlansQueryOptions,
   useCreatePlanMutation,
+  useDeletePlanMutation,
 } from "../lib/api/plans";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -49,6 +50,10 @@ function RouteComponent() {
   const { mutate: updatePassword, isPending: updatePasswordPending } =
     useUpdatePasswordMutation();
   const [passwordNotification, setPasswordNotification] = useState("");
+  const [deleteMode, setDeleteMode] = useState(false);
+  const { mutate: deletePlan, isPending: deletePlanPending } =
+    useDeletePlanMutation();
+  const [deleteNotification, setDeleteNotification] = useState("");
 
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -92,6 +97,20 @@ function RouteComponent() {
           setEditPasswordMode(false);
           setPasswordNotification("Success!");
         },
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
+
+  function handleSubmitDeletePlan() {
+    if (deletePlanPending) return;
+    if (!plan) return;
+    deletePlan(
+      {
+        planId: plan.planId,
+      },
+      {
+        onSuccess: () => setDeleteMode(false),
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       },
     );
@@ -349,13 +368,50 @@ function RouteComponent() {
                   </div>
                 )}
               </div>
-              <div className="text-red-500 cursor-pointer w-[55px]">Delete</div>
+              <div
+                onClick={() => setDeleteMode(true)}
+                className="text-red-500 cursor-pointer w-[55px]"
+              >
+                Delete
+              </div>
             </div>
           ) : (
             <div></div>
           )}
         </div>
       </div>
+      {deleteMode && (
+        <div
+          className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-100`}
+        >
+          <div className="text-2xl font-bold">Delete Plan?</div>
+          <div className="my-5">
+            Once you delete this plan, it can’t be restored.
+          </div>
+          <div className="my-5 flex justify-end">
+            <div
+              onClick={handleSubmitDeletePlan}
+              className="p-2 mr-1 bg-red-500 rounded text-white bold secondary-font font-bold cursor-pointer"
+            >
+              {deletePlanPending ? "Deleting..." : "DELETE"}
+            </div>
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setDeleteMode(false);
+              }}
+              className="p-2 ml-1 bg-[#5c5c5c] rounded bold secondary-font font-bold cursor-pointer"
+            >
+              CANCEL
+            </div>
+          </div>
+        </div>
+      )}
+      {deleteMode && (
+        <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
+      )}
+      <div>{deleteNotification}</div>
     </div>
   );
 }

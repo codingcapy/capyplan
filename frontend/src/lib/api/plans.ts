@@ -67,10 +67,15 @@ async function createPlan(args: CreatePlanArgs) {
 
 export const useCreatePlanMutation = (onError?: (message: string) => void) => {
   const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
   return useMutation({
     mutationFn: createPlan,
-    onSettled: () => {
+    onSuccess: (data) => {
+      setUser({ ...data.user, createdAt: new Date(data.user.createdAt) });
       queryClient.invalidateQueries({ queryKey: ["plans"] });
+      queryClient.invalidateQueries({
+        queryKey: ["plan", data.user.currentPlan],
+      });
     },
     onError: (error) => {
       if (onError) {
@@ -170,14 +175,12 @@ export const useDeletePlanMutation = (onError?: (message: string) => void) => {
   const { setUser } = useAuthStore();
   return useMutation({
     mutationFn: deletePlan,
-    onSettled: (_data, _error) => {
-      if (!_data) return console.log("No data, returning");
-      setUser({ ..._data.user, createdAt: new Date(_data.user.createdAt) });
+    onSettled: (data, _error) => {
+      if (!data) return console.log("No data, returning");
+      setUser({ ...data.user, createdAt: new Date(data.user.createdAt) });
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
       queryClient.invalidateQueries({
-        queryKey: ["users"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["plan", _data.user.currentPlan.toString()],
+        queryKey: ["plan", data.user.currentPlan],
       });
     },
     onError: (error) => {
