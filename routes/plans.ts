@@ -203,6 +203,7 @@ export const plansRouter = new Hono()
           cause: updateError,
         });
       }
+      return c.json({ user: updateResult[0] }, 200);
     } else {
       if (!plansCheck[0])
         throw new HTTPException(500, { message: "plans check failed" });
@@ -213,12 +214,12 @@ export const plansRouter = new Hono()
           .where(eq(usersTable.userId, decodedUser.id))
           .returning(),
       );
-      if (updateError) {
+      if (updateError || !updateResult[0]) {
         throw new HTTPException(500, {
           message: "Error while updating current plan",
           cause: updateError,
         });
       }
+      return c.json({ user: updateResult[0] }, 200);
     }
-    return c.json({ user: userQueryResult[0] }, 200);
   });
