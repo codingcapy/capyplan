@@ -27,9 +27,7 @@ export function LeftNav() {
     data: plan,
     isLoading: planLoading,
     error: planError,
-  } = useQuery(
-    getPlanByIdQueryOptions((user && user.currentPlan.toString()) || "0"),
-  );
+  } = useQuery(getPlanByIdQueryOptions((user && user.currentPlan) || 0));
   const { mutate: updateCurrentPlan, isPending: updateCurrentPlanPending } =
     useUpdateCurrentPlanMutation();
 

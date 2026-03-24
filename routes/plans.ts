@@ -18,6 +18,11 @@ const deletePlanSchema = z.object({
   planId: z.number(),
 });
 
+const updatePlanSchema = z.object({
+  planId: z.number(),
+  title: z.string(),
+});
+
 export function requireUser(c: Context) {
   const authHeader = c.req.header("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -224,50 +229,41 @@ export const plansRouter = new Hono()
       return c.json({ user: updateResult[0] }, 200);
     }
   })
-  .post(
-    "/update",
-    zValidator(
-      "json",
-      createUpdateSchema(plansTable).omit({ planId: true }).extend({
-        planId: z.number(),
-      }),
-    ),
-    async (c) => {
-      const decodedUser = requireUser(c);
-      const updateValues = c.req.valid("json");
-      const { result: ownershipCheck, error: ownershipCheckError } =
-        await mightFail(
-          db
-            .select()
-            .from(plansTable)
-            .where(
-              and(
-                eq(plansTable.planId, updateValues.planId),
-                eq(plansTable.userId, decodedUser.id),
-              ),
+  .post("/update", zValidator("json", updatePlanSchema), async (c) => {
+    const decodedUser = requireUser(c);
+    const updateValues = c.req.valid("json");
+    const { result: ownershipCheck, error: ownershipCheckError } =
+      await mightFail(
+        db
+          .select()
+          .from(plansTable)
+          .where(
+            and(
+              eq(plansTable.planId, updateValues.planId),
+              eq(plansTable.userId, decodedUser.id),
             ),
-        );
-      if (ownershipCheckError)
-        throw new HTTPException(500, { message: "Ownership check failed" });
-      if (ownershipCheck.length === 0)
-        throw new HTTPException(401, { message: "Unauthorized" });
-      const { error: planUpdateError, result: planUpdateResult } =
-        await mightFail(
-          db
-            .update(plansTable)
-            .set({
-              title: updateValues.title,
-            })
-            .where(eq(plansTable.planId, updateValues.planId))
-            .returning(),
-        );
-      if (planUpdateError) {
-        console.log("Error while updating plan");
-        throw new HTTPException(500, {
-          message: "Error while updating plan",
-          cause: planUpdateError,
-        });
-      }
-      return c.json({ plan: planUpdateResult[0] }, 200);
-    },
-  );
+          ),
+      );
+    if (ownershipCheckError)
+      throw new HTTPException(500, { message: "Ownership check failed" });
+    if (ownershipCheck.length === 0)
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const { error: planUpdateError, result: planUpdateResult } =
+      await mightFail(
+        db
+          .update(plansTable)
+          .set({
+            title: updateValues.title,
+          })
+          .where(eq(plansTable.planId, updateValues.planId))
+          .returning(),
+      );
+    if (planUpdateError) {
+      console.log("Error while updating plan");
+      throw new HTTPException(500, {
+        message: "Error while updating plan",
+        cause: planUpdateError,
+      });
+    }
+    return c.json({ plan: planUpdateResult[0] }, 200);
+  });

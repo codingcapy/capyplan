@@ -37,9 +37,7 @@ function Dashboard() {
     data: plan,
     isLoading: planLoading,
     error: planError,
-  } = useQuery(
-    getPlanByIdQueryOptions((user && user.currentPlan.toString()) || "0"),
-  );
+  } = useQuery(getPlanByIdQueryOptions((user && user.currentPlan) || 0));
   const [createIncomeMode, setCreateIncomeMode] = useState(false);
   const [createExpenditureMode, setCreateExpenditureMode] = useState(false);
   const [createAssetMode, setCreateAssetMode] = useState(false);

@@ -7,6 +7,7 @@ import {
   getPlansQueryOptions,
   useCreatePlanMutation,
   useDeletePlanMutation,
+  useUpdatePlanMutation,
 } from "../lib/api/plans";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -37,9 +38,7 @@ function RouteComponent() {
     data: plan,
     isLoading: planLoading,
     error: planError,
-  } = useQuery(
-    getPlanByIdQueryOptions((user && user.currentPlan.toString()) || "0"),
-  );
+  } = useQuery(getPlanByIdQueryOptions((user && user.currentPlan) || 0));
   const { mutate: updateCurrentPlan, isPending: updateCurrentPlanPending } =
     useUpdateCurrentPlanMutation();
   const [showMenu, setShowMenu] = useState(false);
@@ -54,6 +53,8 @@ function RouteComponent() {
   const { mutate: deletePlan, isPending: deletePlanPending } =
     useDeletePlanMutation();
   const [deleteNotification, setDeleteNotification] = useState("");
+  const { mutate: updatePlanTitle, isPending: updatePlanTitlePending } =
+    useUpdatePlanMutation();
 
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -111,6 +112,20 @@ function RouteComponent() {
       },
       {
         onSuccess: () => setDeleteMode(false),
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      },
+    );
+  }
+
+  function handleSubmitUpdatePlanTitle(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (updatePlanTitlePending || !plan) return;
+    updatePlanTitle(
+      { planId: plan.planId, title: planTitleContent },
+      {
+        onSuccess: () => {
+          setEditPlanTitleMode(false);
+        },
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       },
     );
@@ -338,7 +353,7 @@ function RouteComponent() {
               <div className="my-2 flex">
                 <div className="sm:w-[250px]">Name</div>
                 {editPlanTitleMode ? (
-                  <div className="flex">
+                  <form onSubmit={handleSubmitUpdatePlanTitle} className="flex">
                     <input
                       type="text"
                       value={planTitleContent}
@@ -355,7 +370,7 @@ function RouteComponent() {
                     >
                       <FaXmark />
                     </div>
-                  </div>
+                  </form>
                 ) : (
                   <div className="flex">
                     <div className="sm:w-[150px]">{plan.title}</div>

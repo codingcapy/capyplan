@@ -114,11 +114,11 @@ export const getPlansQueryOptions = () =>
     queryFn: () => getPlans(),
   });
 
-async function getPlanById(planId: string) {
+async function getPlanById(planId: number) {
   const token = getSession();
   const res = await client.api.v0.plans[":planId"].$get(
     {
-      param: { planId },
+      param: { planId: planId.toString() },
     },
     token
       ? {
@@ -135,7 +135,7 @@ async function getPlanById(planId: string) {
   return mapSerializedPlanToSchema(plan);
 }
 
-export const getPlanByIdQueryOptions = (planId: string) =>
+export const getPlanByIdQueryOptions = (planId: number) =>
   queryOptions({
     queryKey: ["plan", planId],
     queryFn: () => getPlanById(planId),
