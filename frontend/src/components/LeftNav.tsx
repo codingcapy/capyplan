@@ -67,8 +67,8 @@ export function LeftNav() {
   }, [plans]);
 
   return (
-    <div className="hidden sm:block fixed top-0 left-0 h-screen bg-[#101010] w-[250px] z-100">
-      <div className="flex items-center p-5 mb-5">
+    <div className="fixed top-0 left-0 h-screen bg-[#101010] w-[250px] z-110 md:z-90">
+      <div className="flex items-center px-5 pt-16 md:pt-5 mb-5">
         <img src={logo} alt="" className="w-[25px]" />
         <div className="ml-2 text-lg">CapyPlan</div>
       </div>

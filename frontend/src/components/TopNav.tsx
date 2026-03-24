@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import useAuthStore from "../store/AuthStore";
 import { Link } from "@tanstack/react-router";
+import { GiHamburgerMenu } from "react-icons/gi";
 
-export function TopNav() {
+export function TopNav(props: {
+  showLeftNav: boolean;
+  setShowLeftNav: Dispatch<SetStateAction<boolean>>;
+}) {
   const { user, logoutService } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -21,9 +25,15 @@ export function TopNav() {
   return (
     <div
       ref={menuRef}
-      className="fixed top-0 left-0 bg-[#242424] px-5 py-2 w-screen flex justify-between z-90"
+      className="fixed top-0 left-0 bg-[#242424] px-5 py-2 w-screen flex justify-between z-110 md:z-80"
     >
-      <div></div>
+      <div>
+        <GiHamburgerMenu
+          size={25}
+          onClick={() => props.setShowLeftNav(!props.showLeftNav)}
+          className="md:hidden"
+        />
+      </div>
       <div
         onClick={() => setShowMenu(!showMenu)}
         className="px-4 cursor-pointer"

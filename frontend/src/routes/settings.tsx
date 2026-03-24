@@ -397,7 +397,7 @@ function RouteComponent() {
       </div>
       {deleteMode && (
         <div
-          className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-100`}
+          className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-120`}
         >
           <div className="text-2xl font-bold">Delete Plan?</div>
           <div className="my-5">
@@ -424,7 +424,7 @@ function RouteComponent() {
         </div>
       )}
       {deleteMode && (
-        <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
+        <div className="fixed inset-0 bg-black opacity-50 z-110"></div>
       )}
       <div>{deleteNotification}</div>
     </div>

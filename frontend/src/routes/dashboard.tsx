@@ -125,6 +125,9 @@ function Dashboard() {
     assets.reduce((sum, expenditure) => sum + expenditure.value / 100, 0) -
       liabilities.reduce((sum, liability) => sum + liability.amount / 100, 0);
   const [generationNotification, setGenerationNotification] = useState("");
+  const [showLeftNav, setShowLeftNav] = useState(
+    window.innerWidth > 639 ? true : false,
+  );
 
   function handleCreateGeneration() {
     if (createGenerationPending) return;
@@ -147,16 +150,16 @@ function Dashboard() {
 
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">
-      <LeftNav />
-      <TopNav />
+      {showLeftNav && <LeftNav />}
+      <TopNav showLeftNav={showLeftNav} setShowLeftNav={setShowLeftNav} />
       {planLoading ? (
-        <div className="sm:pl-[300px] pt-4 text-lg">Loading...</div>
+        <div className="md:pl-[300px] pt-4 text-lg">Loading...</div>
       ) : planError ? (
-        <div className="sm:pl-[300px] pt-4 text-lg">
+        <div className="md:pl-[300px] pt-4 text-lg">
           There was an error loading your plan. Please try again later.
         </div>
       ) : plan ? (
-        <div className="sm:pl-[240px]">
+        <div className="md:pl-[240px]">
           <div className="pl-5 pt-10 text-4xl font-bold">{plan.title}</div>
           <div className="border-b border-b-[#777777] pb-5">
             {incomesLoading ? (
@@ -475,7 +478,7 @@ function Dashboard() {
       ) : (
         <div></div>
       )}
-      {showRedirectModal && (
+      {/* {showRedirectModal && (
         <div
           className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md z-100`}
         >
@@ -493,9 +496,9 @@ function Dashboard() {
             </div>
           </div>
         </div>
-      )}
-      {showRedirectModal && (
-        <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
+      )} */}
+      {window.innerWidth < 768 && showLeftNav && (
+        <div className="fixed inset-0 bg-black opacity-50 z-100"></div>
       )}
     </div>
   );
