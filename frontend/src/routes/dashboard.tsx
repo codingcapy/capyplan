@@ -194,8 +194,7 @@ function Dashboard() {
                 )}
                 <div className="pt-5">
                   Total income: $
-                  {(totalIncome && totalIncome.toFixed(2)) ||
-                    "total income error"}
+                  {(totalIncome && totalIncome.toFixed(2)) || "0"}
                 </div>
               </div>
             ) : (
@@ -233,8 +232,7 @@ function Dashboard() {
                 )}
                 <div className="pt-5">
                   Total expenditure: $
-                  {(totalExpenditure && totalExpenditure.toFixed(2)) ||
-                    "total expenditure error"}
+                  {(totalExpenditure && totalExpenditure.toFixed(2)) || "0"}
                 </div>
               </div>
             ) : (
@@ -244,8 +242,7 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total cashflow: $
-                {(cashflow && cashflow.toFixed(2)) || "cashflow error"}
+                Total cashflow: ${(cashflow && cashflow.toFixed(2)) || "0"}
               </div>
             </div>
           </div>
@@ -334,7 +331,7 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total net worth: ${(netWorth && netWorth.toFixed(2)) || "error"}
+                Total net worth: ${(netWorth && netWorth.toFixed(2)) || "0"}
               </div>
             </div>
           </div>

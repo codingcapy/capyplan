@@ -375,6 +375,7 @@ function DemoPage() {
                 name="plantitle"
                 id="plantitle"
                 className="border border-[#909090] rounded p-1 mb-2"
+                required
               />
               <div className="flex justify-end">
                 <div
