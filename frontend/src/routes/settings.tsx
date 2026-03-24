@@ -15,6 +15,7 @@ import {
   useUpdatePasswordMutation,
 } from "../lib/api/users";
 import { FaArrowLeft, FaCheck, FaXmark } from "react-icons/fa6";
+import { GiHamburgerMenu } from "react-icons/gi";
 
 export const Route = createFileRoute("/settings")({
   component: RouteComponent,
@@ -55,6 +56,9 @@ function RouteComponent() {
   const [deleteNotification, setDeleteNotification] = useState("");
   const { mutate: updatePlanTitle, isPending: updatePlanTitlePending } =
     useUpdatePlanMutation();
+  const [showLeftNav, setShowLeftNav] = useState(
+    window.innerWidth > 639 ? true : false,
+  );
 
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -163,9 +167,15 @@ function RouteComponent() {
     <div className="bg-[#303030] text-white min-h-screen p-2">
       <div
         ref={topMenuRef}
-        className="fixed top-0 left-0 bg-[#303030] px-5 py-2 w-screen flex justify-between z-90"
+        className="fixed top-0 left-0 bg-[#303030] px-5 py-2 w-screen flex justify-between z-120 sm:z-80"
       >
-        <div></div>
+        <div>
+          <GiHamburgerMenu
+            size={25}
+            onClick={() => setShowLeftNav(!showLeftNav)}
+            className="sm:hidden"
+          />
+        </div>
         <div
           onClick={() => setShowMenu(!showMenu)}
           className="px-4 cursor-pointer"
@@ -189,115 +199,117 @@ function RouteComponent() {
           </div>
         )}
       </div>
-      <div className="hidden sm:block fixed top-0 left-0 h-screen bg-[#303030] w-[250px] z-100">
-        <div className="hover:text-cyan-500 transition-all ease-in-out duration-300 flex p-5 mb-10">
-          <Link to="/" className="flex justify-center items-center">
-            <FaArrowLeft />
-            <div className="hidden sm:block sm:pl-2">Back to dashboard</div>
-          </Link>
-        </div>
-        <div className="px-5">Financial Plan</div>
-        <div
-          ref={menuRef}
-          onClick={() => setShowDropdown(!showDropdown)}
-          className="border border-[#555555] rounded m-2 px-3 py-2 flex cursor-pointer hover:bg-[#202020] transition-all ease-in-out duration-300"
-        >
-          <div className="w-[175px] line-clamp-1">
-            {planLoading ? (
-              <div>Loading...</div>
-            ) : planError ? (
-              <div>Error loading plan</div>
-            ) : plan ? (
-              plan.title
-            ) : (
-              <div></div>
-            )}
+      {showLeftNav && (
+        <div className="fixed top-0 left-0 h-screen bg-[#303030] w-[250px] z-110 sm:z-90">
+          <div className="hover:text-cyan-500 transition-all ease-in-out duration-300 flex px-5 pt-16 sm:pt-5 mb-10">
+            <Link to="/" className="flex justify-center items-center">
+              <FaArrowLeft />
+              <div className="pl-2">Back to dashboard</div>
+            </Link>
           </div>
-          <div className="ml-5 mt-1">
-            <PiCaretDownBold />
-          </div>
-        </div>
-        {showDropdown && (
-          <div className="custom-scrollbar relative bg-[#303030] rounded m-2 px-3 py-2 max-h-[175px] overflow-y-auto">
-            <div className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"></div>
-            {plansLoading ? (
-              <div>Loading plans...</div>
-            ) : plansError ? (
-              <div>Error loading plans</div>
-            ) : plans ? (
-              plans.map((p) => (
-                <div
-                  onClick={() => updateCurrentPlan({ currentPlan: p.planId })}
-                  key={p.planId}
-                  className="py-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
-                >
-                  {p.title}
-                </div>
-              ))
-            ) : (
-              <div></div>
-            )}
-            <div
-              onClick={() => setShowCreatePlanModal(!showCreatePlanModal)}
-              className="sticky py-1 bottom-0 bg-[#303030] cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
-            >
-              + create new plan
+          <div className="px-5">Financial Plan</div>
+          <div
+            ref={menuRef}
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="border border-[#555555] rounded m-2 px-3 py-2 flex cursor-pointer hover:bg-[#202020] transition-all ease-in-out duration-300"
+          >
+            <div className="w-[175px] line-clamp-1">
+              {planLoading ? (
+                <div>Loading...</div>
+              ) : planError ? (
+                <div>Error loading plan</div>
+              ) : plan ? (
+                plan.title
+              ) : (
+                <div></div>
+              )}
+            </div>
+            <div className="ml-5 mt-1">
+              <PiCaretDownBold />
             </div>
           </div>
-        )}
-        {showCreatePlanModal && (
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-1000">
-            <div className="text-xl font-bold mb-5">
-              Create a new financial plan
-            </div>
-            <form
-              onSubmit={handleSubmitCreateWorkspace}
-              className="flex flex-col"
-            >
-              <label htmlFor="" className="text-left mb-2">
-                Financial plan name
-              </label>
-              <input
-                type="text"
-                name="plantitle"
-                id="plantitle"
-                className="border border-[#909090] rounded p-1 mb-2"
-              />
-              <div className="flex justify-end">
-                <div
-                  onClick={() => setShowCreatePlanModal(false)}
-                  className="px-3 py-1 mx-1 cursor-pointer"
-                >
-                  CANCEL
-                </div>
-                <button
-                  type="submit"
-                  className="px-3 py-1 mx-1 bg-cyan-500 rounded"
-                >
-                  {createPlanPending ? "Creating..." : "CREATE"}
-                </button>
+          {showDropdown && (
+            <div className="custom-scrollbar relative bg-[#303030] rounded m-2 px-3 py-2 max-h-[175px] overflow-y-auto">
+              <div className="py-1 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"></div>
+              {plansLoading ? (
+                <div>Loading plans...</div>
+              ) : plansError ? (
+                <div>Error loading plans</div>
+              ) : plans ? (
+                plans.map((p) => (
+                  <div
+                    onClick={() => updateCurrentPlan({ currentPlan: p.planId })}
+                    key={p.planId}
+                    className="py-2 cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+                  >
+                    {p.title}
+                  </div>
+                ))
+              ) : (
+                <div></div>
+              )}
+              <div
+                onClick={() => setShowCreatePlanModal(!showCreatePlanModal)}
+                className="sticky py-1 bottom-0 bg-[#303030] cursor-pointer hover:text-cyan-500 transition-all ease-in-out duration-300"
+              >
+                + create new plan
               </div>
-            </form>
-          </div>
-        )}
-        {showCreatePlanModal && (
-          <div className="fixed inset-0 bg-black opacity-50 z-900"></div>
-        )}
-      </div>
-      <div className="sm:pl-[300px] pt-7">
+            </div>
+          )}
+          {showCreatePlanModal && (
+            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-1000">
+              <div className="text-xl font-bold mb-5">
+                Create a new financial plan
+              </div>
+              <form
+                onSubmit={handleSubmitCreateWorkspace}
+                className="flex flex-col"
+              >
+                <label htmlFor="" className="text-left mb-2">
+                  Financial plan name
+                </label>
+                <input
+                  type="text"
+                  name="plantitle"
+                  id="plantitle"
+                  className="border border-[#909090] rounded p-1 mb-2"
+                />
+                <div className="flex justify-end">
+                  <div
+                    onClick={() => setShowCreatePlanModal(false)}
+                    className="px-3 py-1 mx-1 cursor-pointer"
+                  >
+                    CANCEL
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-3 py-1 mx-1 bg-cyan-500 rounded"
+                  >
+                    {createPlanPending ? "Creating..." : "CREATE"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+          {showCreatePlanModal && (
+            <div className="fixed inset-0 bg-black opacity-50 z-900"></div>
+          )}
+        </div>
+      )}
+      <div className="sm:pl-[300px] pt-16 sm:pt-7">
         <div className="text-4xl font-bold">Settings</div>
         <div className="mt-5 mb-10">
           <div className="text-2xl font-bold mb-2">Account</div>
           <div className="flex">
-            <div className="sm:w-[250px]">Username</div>
+            <div className="w-[150px] sm:w-[250px]">Username</div>
             <div>{user && user.username}</div>
           </div>
           <div className="flex">
-            <div className="sm:w-[250px]">Email</div>
+            <div className="w-[150px] sm:w-[250px]">Email</div>
             <div>{user && user.email}</div>
           </div>
           <div className="flex">
-            <div className="sm:w-[250px]">Password</div>
+            <div className="w-[150px] sm:w-[250px]">Password</div>
             {editPasswordMode ? (
               <form onSubmit={handleSubmitUpdatePassword} className="flex">
                 <input
@@ -330,7 +342,7 @@ function RouteComponent() {
             )}
           </div>
           <div className="flex">
-            <div className="sm:w-[250px]"></div>
+            <div className="w-[150px] sm:w-[250px]"></div>
             <div
               className={
                 passwordNotification === "Success!"
@@ -351,7 +363,7 @@ function RouteComponent() {
           ) : plan ? (
             <div>
               <div className="my-2 flex">
-                <div className="sm:w-[250px]">Name</div>
+                <div className="w-[150px] sm:w-[250px]">Name</div>
                 {editPlanTitleMode ? (
                   <form onSubmit={handleSubmitUpdatePlanTitle} className="flex">
                     <input
@@ -423,9 +435,10 @@ function RouteComponent() {
           </div>
         </div>
       )}
-      {deleteMode && (
-        <div className="fixed inset-0 bg-black opacity-50 z-110"></div>
-      )}
+      {deleteMode ||
+        (window.innerWidth < 639 && showLeftNav && (
+          <div className="fixed inset-0 bg-black opacity-50 z-100"></div>
+        ))}
       <div>{deleteNotification}</div>
     </div>
   );
