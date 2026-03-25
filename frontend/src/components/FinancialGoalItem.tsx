@@ -17,7 +17,7 @@ export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
     props.financialGoal.targetDate,
   );
   const [amountContent, setAmountContent] = useState(
-    props.financialGoal.amount,
+    props.financialGoal.amount / 100,
   );
   const [targetDate, setTargetDate] = useState<Date>(
     props.financialGoal.targetDate,
@@ -48,7 +48,7 @@ export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
       {
         financialGoalId: props.financialGoal.financialGoalId,
         name: nameContent,
-        amount: Math.round(amountContent),
+        amount: Math.round(amountContent * 100),
         targetDate: targetDate,
       },
       {
