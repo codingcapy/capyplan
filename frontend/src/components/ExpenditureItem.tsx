@@ -85,7 +85,13 @@ export function ExpenditureItem(props: { expenditure: Expenditure }) {
           className="flex justify-between my-2"
         >
           <div className="w-[50%]">{props.expenditure.name}</div>
-          <div className="w-[50%]">${props.expenditure.amount / 100}</div>
+          <div className="w-[50%]">
+            $
+            {(props.expenditure.amount / 100).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
           <MdModeEditOutline
             onClick={() => setEditMode(true)}
             size={20}

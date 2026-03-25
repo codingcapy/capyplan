@@ -107,7 +107,13 @@ export function IncomeItem(props: { income: Income }) {
         <div key={props.income.incomeId} className="flex justify-between my-2">
           <div className="w-[25%]">{props.income.company}</div>
           <div className="w-[25%]">{props.income.position}</div>
-          <div className="w-[25%]">${props.income.amount / 100}</div>
+          <div className="w-[25%]">
+            $
+            {(props.income.amount / 100).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
           <div className="w-[25%]">{props.income.tax / 100}%</div>
           <MdModeEditOutline
             size={20}

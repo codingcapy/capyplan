@@ -100,7 +100,13 @@ export function LiabilityItem(props: { liability: Liability }) {
       ) : (
         <div className="flex justify-between my-2">
           <div className="w-[33%]">{props.liability.name}</div>
-          <div className="w-[33%]">${props.liability.amount / 100}</div>
+          <div className="w-[33%]">
+            $
+            {(props.liability.amount / 100).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
           <div className="w-[33%]">{props.liability.interest / 100}</div>
           <MdModeEditOutline
             onClick={() => setEditMode(true)}

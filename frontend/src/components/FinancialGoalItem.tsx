@@ -161,7 +161,13 @@ export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
       ) : (
         <div className="flex justify-between my-2">
           <div className="w-[33%]">{props.financialGoal.name}</div>
-          <div className="w-[33%]">${props.financialGoal.amount / 100}</div>
+          <div className="w-[33%]">
+            $
+            {(props.financialGoal.amount / 100).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
           <div className="w-[33%]">
             {format(props.financialGoal.targetDate, "yyyy-MM-dd")}
           </div>

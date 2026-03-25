@@ -453,7 +453,13 @@ function DemoPage() {
                   >
                     <div className="w-[25%]">{income.company}</div>
                     <div className="w-[25%]">{income.position}</div>
-                    <div className="w-[25%]">${income.amount}</div>
+                    <div className="w-[25%]">
+                      $
+                      {income.amount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
                     <div className="w-[25%]">{income.tax}%</div>
                     <MdModeEditOutline
                       size={20}
@@ -543,11 +549,16 @@ function DemoPage() {
             )}
             <div className="pt-5">
               Total income: $
-              {incomes.reduce(
-                (sum, income) =>
-                  sum + (income.amount * (100 - income.tax)) / 100,
-                0,
-              )}
+              {incomes
+                .reduce(
+                  (sum, income) =>
+                    sum + (income.amount * (100 - income.tax)) / 100,
+                  0,
+                )
+                .toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
             </div>
           </div>
         </div>
@@ -575,7 +586,13 @@ function DemoPage() {
                     className="flex justify-between my-2"
                   >
                     <div className="w-[50%]">{expenditure.name}</div>
-                    <div className="w-[50%]">${expenditure.amount}</div>
+                    <div className="w-[50%]">
+                      $
+                      {expenditure.amount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
                     <MdModeEditOutline
                       size={20}
                       onClick={() =>
@@ -645,10 +662,12 @@ function DemoPage() {
             )}
             <div className="pt-5">
               Total expenditure: $
-              {expenditures.reduce(
-                (sum, expenditure) => sum + expenditure.amount,
-                0,
-              )}
+              {expenditures
+                .reduce((sum, expenditure) => sum + expenditure.amount, 0)
+                .toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
             </div>
           </div>
         </div>
@@ -656,15 +675,20 @@ function DemoPage() {
           <div className="pl-5">
             <div className="pt-5 font-bold">
               Total cashflow: $
-              {incomes.reduce(
-                (sum, income) =>
-                  sum + (income.amount * (100 - income.tax)) / 100,
-                0,
-              ) -
+              {(
+                incomes.reduce(
+                  (sum, income) =>
+                    sum + (income.amount * (100 - income.tax)) / 100,
+                  0,
+                ) -
                 expenditures.reduce(
                   (sum, expenditure) => sum + expenditure.amount,
                   0,
-                )}
+                )
+              ).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
           </div>
         </div>
@@ -692,7 +716,13 @@ function DemoPage() {
                     className="flex justify-between my-2"
                   >
                     <div className="w-[33%]">{asset.name}</div>
-                    <div className="w-[33%]">${asset.value}</div>
+                    <div className="w-[33%]">
+                      $
+                      {asset.value.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
                     <div className="w-[33%]">{asset.roi}</div>
                     <MdModeEditOutline
                       onClick={() => setEditAssetPointer(asset.assetId)}
@@ -772,7 +802,12 @@ function DemoPage() {
             )}
             <div className="pt-5">
               Total assets: $
-              {assets.reduce((sum, asset) => sum + asset.value, 0)}
+              {assets
+                .reduce((sum, asset) => sum + asset.value, 0)
+                .toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
             </div>
           </div>
         </div>
@@ -800,7 +835,13 @@ function DemoPage() {
                     className="flex justify-between my-2"
                   >
                     <div className="w-[33%]">{liability.name}</div>
-                    <div className="w-[33%]">${liability.amount}</div>
+                    <div className="w-[33%]">
+                      $
+                      {liability.amount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
                     <div className="w-[33%]">{liability.interest}</div>
                     <MdModeEditOutline
                       onClick={() =>
@@ -884,10 +925,12 @@ function DemoPage() {
             )}
             <div className="pt-5">
               Total liabilities: $
-              {liabilities.reduce(
-                (sum, liability) => sum + liability.amount,
-                0,
-              )}
+              {liabilities
+                .reduce((sum, liability) => sum + liability.amount, 0)
+                .toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
             </div>
           </div>
         </div>
@@ -895,11 +938,16 @@ function DemoPage() {
           <div className="pl-5">
             <div className="pt-5 font-bold">
               Total net worth: $
-              {assets.reduce((sum, asset) => sum + asset.value, 0) -
+              {(
+                assets.reduce((sum, asset) => sum + asset.value, 0) -
                 liabilities.reduce(
                   (sum, liability) => sum + liability.amount,
                   0,
-                )}
+                )
+              ).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
           </div>
         </div>
@@ -933,7 +981,13 @@ function DemoPage() {
                     className="flex justify-between my-2"
                   >
                     <div className="w-[33%]">{financialGoal.name}</div>
-                    <div className="w-[33%]">${financialGoal.amount}</div>
+                    <div className="w-[33%]">
+                      $
+                      {financialGoal.amount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
                     <div className="w-[33%]">
                       {format(financialGoal.target, "yyyy-MM-dd")}
                     </div>

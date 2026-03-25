@@ -194,7 +194,12 @@ function Dashboard() {
                 )}
                 <div className="pt-5">
                   Total income: $
-                  {(totalIncome && totalIncome.toFixed(2)) || "0"}
+                  {(totalIncome &&
+                    totalIncome.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })) ||
+                    "0"}
                 </div>
               </div>
             ) : (
@@ -232,7 +237,12 @@ function Dashboard() {
                 )}
                 <div className="pt-5">
                   Total expenditure: $
-                  {(totalExpenditure && totalExpenditure.toFixed(2)) || "0"}
+                  {(totalExpenditure &&
+                    totalExpenditure.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })) ||
+                    "0"}
                 </div>
               </div>
             ) : (
@@ -242,7 +252,13 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total cashflow: ${(cashflow && cashflow.toFixed(2)) || "0"}
+                Total cashflow: $
+                {(cashflow &&
+                  cashflow.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })) ||
+                  "0"}
               </div>
             </div>
           </div>
@@ -280,7 +296,10 @@ function Dashboard() {
                   Total assets: $
                   {assets
                     .reduce((sum, asset) => sum + asset.value / 100, 0)
-                    .toFixed(2)}
+                    .toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                 </div>
               </div>
             ) : (
@@ -321,7 +340,10 @@ function Dashboard() {
                   Total liabilities: $
                   {liabilities
                     .reduce((sum, liability) => sum + liability.amount / 100, 0)
-                    .toFixed(2)}
+                    .toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                 </div>
               </div>
             ) : (
@@ -331,7 +353,13 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total net worth: ${(netWorth && netWorth.toFixed(2)) || "0"}
+                Total net worth: $
+                {(netWorth &&
+                  netWorth.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })) ||
+                  "0"}
               </div>
             </div>
           </div>
