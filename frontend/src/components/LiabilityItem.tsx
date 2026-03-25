@@ -29,8 +29,8 @@ export function LiabilityItem(props: { liability: Liability }) {
       {
         liabilityId: props.liability.liabilityId,
         name: nameContent,
-        amount: amountContent * 100,
-        interest: interestContent * 100,
+        amount: Math.round(amountContent * 100),
+        interest: Math.round(interestContent * 100),
       },
       {
         onSuccess: () => setEditMode(false),

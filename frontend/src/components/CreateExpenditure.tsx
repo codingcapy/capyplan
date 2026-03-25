@@ -14,8 +14,9 @@ export function CreateExpenditure(props: {
     e.preventDefault();
     if (createExpenditurePending) return;
     const expenditurename = (e.target as HTMLFormElement).expenditurename.value;
-    const amount =
-      parseFloat((e.target as HTMLFormElement).expenditureamount.value) * 100;
+    const amount = Math.round(
+      parseFloat((e.target as HTMLFormElement).expenditureamount.value) * 100,
+    );
     createExpenditure(
       {
         planId: props.plan.planId,

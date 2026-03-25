@@ -25,9 +25,10 @@ export function CreateFinancialGoal(props: {
       {
         planId: props.plan.planId,
         name: (e.target as HTMLFormElement).financialgoalname.value,
-        amount:
+        amount: Math.round(
           parseFloat((e.target as HTMLFormElement).financialgoalamount.value) *
-          100,
+            100,
+        ),
         targetDate: targetDate,
       },
       {

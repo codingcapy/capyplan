@@ -25,8 +25,8 @@ export function AssetItem(props: { asset: Asset }) {
       {
         assetId: props.asset.assetId,
         name: nameContent,
-        value: valueContent * 100,
-        roi: roiContent * 100,
+        value: Math.round(valueContent * 100),
+        roi: Math.round(roiContent * 100),
       },
       {
         onSuccess: () => setEditMode(false),

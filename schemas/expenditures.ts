@@ -6,10 +6,13 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
+import { plans } from "./plans";
 
 export const expenditures = pgTable("expenditures", {
   expenditureId: serial("expenditure_id").primaryKey(),
-  planId: integer("plan_id").notNull(),
+  planId: integer("plan_id")
+    .references(() => plans.planId, { onDelete: "cascade" })
+    .notNull(),
   name: varchar("name").notNull().default(""),
   amount: integer("amount").notNull().default(0), // Stored as cents to avoid floating point issues
   status: varchar("status").default("active").notNull(),

@@ -26,7 +26,7 @@ export function ExpenditureItem(props: { expenditure: Expenditure }) {
       {
         expenditureId: props.expenditure.expenditureId,
         name: nameContent,
-        amount: amountContent * 100,
+        amount: Math.round(amountContent * 100),
       },
       {
         onSuccess: () => setEditMode(false),

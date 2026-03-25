@@ -15,8 +15,12 @@ export function CreateIncome(props: {
     if (createIncomePending) return;
     const company = (e.target as HTMLFormElement).company.value;
     const position = (e.target as HTMLFormElement).position.value;
-    const amount = parseFloat((e.target as HTMLFormElement).amount.value) * 100;
-    const tax = parseFloat((e.target as HTMLFormElement).tax.value) * 100;
+    const amount = Math.round(
+      parseFloat((e.target as HTMLFormElement).amount.value) * 100,
+    );
+    const tax = Math.round(
+      parseFloat((e.target as HTMLFormElement).tax.value) * 100,
+    );
     createIncome(
       { planId: props.plan.planId, company, position, amount, tax },
       {

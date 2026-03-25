@@ -27,8 +27,8 @@ export function IncomeItem(props: { income: Income }) {
         incomeId: props.income.incomeId,
         company: companyContent,
         position: positionContent,
-        amount: amountContent * 100,
-        tax: taxContent * 100,
+        amount: Math.round(amountContent * 100),
+        tax: Math.round(taxContent * 100),
       },
       {
         onSuccess: () => setEditMode(false),

@@ -48,7 +48,7 @@ export function FinancialGoalItem(props: { financialGoal: FinancialGoal }) {
       {
         financialGoalId: props.financialGoal.financialGoalId,
         name: nameContent,
-        amount: amountContent * 100,
+        amount: Math.round(amountContent),
         targetDate: targetDate,
       },
       {

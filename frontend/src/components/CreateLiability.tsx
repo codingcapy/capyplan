@@ -17,11 +17,13 @@ export function CreateLiability(props: {
       {
         planId: props.plan.planId,
         name: (e.target as HTMLFormElement).liabilityname.value,
-        amount:
+        amount: Math.round(
           parseFloat((e.target as HTMLFormElement).liabilityamount.value) * 100,
-        interest:
+        ),
+        interest: Math.round(
           parseFloat((e.target as HTMLFormElement).liabilityinterest.value) *
-          100,
+            100,
+        ),
       },
       {
         onSuccess: () => props.setCreateLiabilityMode(false),
