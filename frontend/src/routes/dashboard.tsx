@@ -207,7 +207,28 @@ function Dashboard() {
                   —
                 </div>
                 <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ₣
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
                   ₩
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ₹
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ₽
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ₺
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ฿
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ₪
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  R
                 </div>
               </div>
             )}

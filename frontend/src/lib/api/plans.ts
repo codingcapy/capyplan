@@ -14,6 +14,7 @@ type SerializePlan = ExtractData<
 export function mapSerializedPlanToSchema(serialized: SerializePlan): Plan {
   return {
     ...serialized,
+    dateOfBirth: new Date(serialized.dateOfBirth),
     createdAt: new Date(serialized.createdAt),
   };
 }
@@ -34,6 +35,10 @@ type DeletePlanArgs = ArgumentTypes<
 
 type UpdatePlanArgs = ArgumentTypes<
   typeof client.api.v0.plans.update.$post
+>[0]["json"];
+
+type UpdateCurrencyArgs = ArgumentTypes<
+  typeof client.api.v0.plans.update.currency.$post
 >[0]["json"];
 
 async function createPlan(args: CreatePlanArgs) {
@@ -195,7 +200,7 @@ export const useDeletePlanMutation = (onError?: (message: string) => void) => {
   });
 };
 
-async function UpdatePlan(args: UpdatePlanArgs) {
+async function updatePlan(args: UpdatePlanArgs) {
   const token = getSession();
   const res = await client.api.v0.plans.update.$post(
     { json: args },
@@ -231,7 +236,59 @@ async function UpdatePlan(args: UpdatePlanArgs) {
 export const useUpdatePlanMutation = (onError?: (message: string) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: UpdatePlan,
+    mutationFn: updatePlan,
+    onSettled: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["plan", data?.plan.planId],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function updateCurrency(args: UpdateCurrencyArgs) {
+  const token = getSession();
+  const res = await client.api.v0.plans.update.currency.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your currency :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useUpdatCurrencyMutation = (
+  onError?: (message: string) => void,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateCurrency,
     onSettled: (data) => {
       queryClient.invalidateQueries({
         queryKey: ["plan", data?.plan.planId],

@@ -9,9 +9,9 @@ export const plans = pgTable("plans", {
     .notNull(),
   title: varchar("title").notNull(),
   icon: varchar("icon"),
-  currency: varchar("currency").default("CAD").notNull(),
+  currency: varchar("currency").default("$").notNull(),
   location: varchar("location").default("Canada").notNull(),
-  date_of_birth: timestamp("date_of_birth").defaultNow().notNull(),
+  dateOfBirth: timestamp("date_of_birth").defaultNow().notNull(),
   status: varchar("status").default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

@@ -18,9 +18,14 @@ const deletePlanSchema = z.object({
   planId: z.number(),
 });
 
-const updatePlanSchema = z.object({
+const updateTitleSchema = z.object({
   planId: z.number(),
   title: z.string(),
+});
+
+const updateCurrencySchema = z.object({
+  planId: z.number(),
+  currency: z.string(),
 });
 
 export function requireUser(c: Context) {
@@ -229,7 +234,49 @@ export const plansRouter = new Hono()
       return c.json({ user: updateResult[0] }, 200);
     }
   })
-  .post("/update", zValidator("json", updatePlanSchema), async (c) => {
+  .post(
+    "/update/currency",
+    zValidator("json", updateCurrencySchema),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { result: ownershipCheck, error: ownershipCheckError } =
+        await mightFail(
+          db
+            .select()
+            .from(plansTable)
+            .where(
+              and(
+                eq(plansTable.planId, updateValues.planId),
+                eq(plansTable.userId, decodedUser.id),
+              ),
+            ),
+        );
+      if (ownershipCheckError)
+        throw new HTTPException(500, { message: "Ownership check failed" });
+      if (ownershipCheck.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
+      const { error: planUpdateError, result: planUpdateResult } =
+        await mightFail(
+          db
+            .update(plansTable)
+            .set({
+              currency: updateValues.currency,
+            })
+            .where(eq(plansTable.planId, updateValues.planId))
+            .returning(),
+        );
+      if (planUpdateError) {
+        console.log("Error while updating currency");
+        throw new HTTPException(500, {
+          message: "Error while updating currency",
+          cause: planUpdateError,
+        });
+      }
+      return c.json({ plan: planUpdateResult[0] }, 200);
+    },
+  )
+  .post("/update", zValidator("json", updateTitleSchema), async (c) => {
     const decodedUser = requireUser(c);
     const updateValues = c.req.valid("json");
     const { result: ownershipCheck, error: ownershipCheckError } =
@@ -259,9 +306,9 @@ export const plansRouter = new Hono()
           .returning(),
       );
     if (planUpdateError) {
-      console.log("Error while updating plan");
+      console.log("Error while updating plan title");
       throw new HTTPException(500, {
-        message: "Error while updating plan",
+        message: "Error while updating plan title",
         cause: planUpdateError,
       });
     }
