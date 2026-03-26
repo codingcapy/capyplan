@@ -1,0 +1,40 @@
+import { Plan } from "../../../schemas/plans";
+import { useUpdatCurrencyMutation } from "../lib/api/plans";
+
+export function CurrencyComponent(props: { plan: Plan }) {
+  const { mutate: updateCurrency, isPending: updateCurrencyPending } =
+    useUpdatCurrencyMutation();
+  const currencySymbols = [
+    "$",
+    "€",
+    "¥",
+    "£",
+    "₩",
+    "CHF",
+    "₣",
+    "₹",
+    "₽",
+    "₫",
+    "₱",
+    "₺",
+    "฿",
+    "₪",
+    "R",
+    "₴",
+  ];
+
+  return (
+    <div className="absolute top-12 left-23.5 border border-[#a0a0a0] bg-[#303030] custom-scrollbar h-[200px] overflow-y-auto">
+      {currencySymbols.map((s) => (
+        <div
+          onClick={() =>
+            updateCurrency({ planId: props.plan.planId, currency: s })
+          }
+          className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300"
+        >
+          {s}
+        </div>
+      ))}
+    </div>
+  );
+}

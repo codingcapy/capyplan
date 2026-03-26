@@ -26,6 +26,7 @@ import {
 } from "../lib/api/generations";
 import { GenerationItem } from "../components/GenerationItem";
 import { PiCaretDownBold } from "react-icons/pi";
+import { CurrencyComponent } from "../components/CurrencyComponent";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -186,52 +187,10 @@ function Dashboard() {
               onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
               className="flex border border-[#a0a0a0] px-1 items-center justify-center cursor-pointer hover:bg-[#303030] transition-all ease-in-out duration-300"
             >
-              <div className="mr-2 font-bold">$</div>
+              <div className="mr-2 font-bold">{plan.currency}</div>
               <PiCaretDownBold />
             </div>
-            {showCurrencyDropdown && (
-              <div className="absolute top-12 left-23.5 border border-[#a0a0a0] bg-[#303030] ">
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  $
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  €
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ¥
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  £
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  —
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ₣
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ₩
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ₹
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ₽
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ₺
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ฿
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  ₪
-                </div>
-                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
-                  R
-                </div>
-              </div>
-            )}
+            {showCurrencyDropdown && <CurrencyComponent plan={plan} />}
           </div>
           <div className="border-b border-b-[#777777] pb-5">
             {incomesLoading ? (
@@ -265,7 +224,7 @@ function Dashboard() {
                   </div>
                 )}
                 <div className="pt-5">
-                  Total income: $
+                  Total income: {plan.currency}
                   {(totalIncome &&
                     totalIncome.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -308,7 +267,7 @@ function Dashboard() {
                   </div>
                 )}
                 <div className="pt-5">
-                  Total expenditure: $
+                  Total expenditure: {plan.currency}
                   {(totalExpenditure &&
                     totalExpenditure.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -324,7 +283,7 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total cashflow: $
+                Total cashflow: {plan.currency}
                 {(cashflow &&
                   cashflow.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -365,7 +324,7 @@ function Dashboard() {
                   </div>
                 )}
                 <div className="pt-5">
-                  Total assets: $
+                  Total assets: {plan.currency}
                   {assets
                     .reduce((sum, asset) => sum + asset.value / 100, 0)
                     .toLocaleString(undefined, {
@@ -409,7 +368,7 @@ function Dashboard() {
                   </div>
                 )}
                 <div className="pt-5">
-                  Total liabilities: $
+                  Total liabilities: {plan.currency}
                   {liabilities
                     .reduce((sum, liability) => sum + liability.amount / 100, 0)
                     .toLocaleString(undefined, {
@@ -425,7 +384,7 @@ function Dashboard() {
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
             <div className="pl-5">
               <div className="pt-5 font-bold">
-                Total net worth: $
+                Total net worth: {plan.currency}
                 {(netWorth &&
                   netWorth.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
