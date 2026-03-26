@@ -13,7 +13,7 @@ import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
 import { DemoEditAsset } from "../components/DemoEditAsset";
 import { DemoEditLiability } from "../components/DemoEditLiability";
 import { DemoEditFinancialGoal } from "../components/DemoEditFinancialGoal";
-import { MONTHS, YEARS } from "../lib/utils";
+import { currencySymbols, MONTHS, YEARS } from "../lib/utils";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/demo")({
 type Plan = {
   planId: string;
   title: string;
+  currency: string;
 };
 
 type Income = {
@@ -77,6 +78,7 @@ function DemoPage() {
   const initialPlan: Plan = {
     planId: initialPlanId,
     title: "Demo Plan",
+    currency: "$",
   };
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -106,12 +108,18 @@ function DemoPage() {
   const [showRedirectModal, setShowRedirectModal] = useState(false);
   const navigate = useNavigate();
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const currencyRef = useRef<HTMLDivElement | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState(
+    plan?.currency || "$",
+  );
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const newPlan = {
       planId: uuidv4(),
       title: (e.target as HTMLFormElement).plantitle.value,
+      currency: "$",
     };
     setPlans([...plans, newPlan]);
     setCurrentPlan(newPlan.planId);
@@ -273,6 +281,17 @@ function DemoPage() {
     setEditFinancialGoalPointer("none");
   }
 
+  function handleSubmitEditCurrency(currency: string) {
+    const newPlan = {
+      planId: currentPlan,
+      title: plan?.title || "",
+      currency,
+    };
+    setPlans((prev) =>
+      prev.map((p) => (p.planId === currentPlan ? newPlan : p)),
+    );
+  }
+
   function handleMonthDropdown(e: React.ChangeEvent<HTMLSelectElement>) {
     const newMonth = new Date(calendarMonth);
     newMonth.setMonth(parseInt(e.target.value));
@@ -291,9 +310,24 @@ function DemoPage() {
     }
   }
 
+  function handleClickOutsideCurrency(event: MouseEvent) {
+    if (
+      currencyRef.current &&
+      !currencyRef.current.contains(event.target as Node)
+    ) {
+      setShowCurrencyDropdown(false);
+    }
+  }
+
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideCurrency);
+    return () =>
+      document.removeEventListener("click", handleClickOutsideCurrency);
   }, []);
 
   useEffect(() => {
@@ -426,6 +460,29 @@ function DemoPage() {
         <div className="pl-5 pt-20 xl:pt-12 text-4xl font-bold">
           {plan ? plan.title : "No plan found"}
         </div>
+        <div className="relative pl-5 pt-5 flex items-center">
+          <div className="mr-2">Currency:</div>
+          <div
+            ref={currencyRef}
+            onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+            className="flex border border-[#a0a0a0] px-1 items-center justify-center cursor-pointer hover:bg-[#303030] transition-all ease-in-out duration-300"
+          >
+            <div className="mr-2 font-bold">{(plan && plan.currency) || 0}</div>
+            <PiCaretDownBold />
+          </div>
+          {showCurrencyDropdown && (
+            <div className="absolute top-12 left-23.5 border border-[#a0a0a0] bg-[#303030] custom-scrollbar h-[200px] overflow-y-auto">
+              {currencySymbols.map((s) => (
+                <div
+                  onClick={() => handleSubmitEditCurrency(s)}
+                  className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300"
+                >
+                  {s}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="border-b border-b-[#777777] pb-5">
           <div className="pl-5">
             <div className="pt-5 text-3xl font-bold">Income</div>
@@ -454,7 +511,7 @@ function DemoPage() {
                     <div className="w-[25%]">{income.company}</div>
                     <div className="w-[25%]">{income.position}</div>
                     <div className="w-[25%]">
-                      $
+                      {plan && plan.currency}
                       {income.amount.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -548,7 +605,7 @@ function DemoPage() {
               </div>
             )}
             <div className="pt-5">
-              Total income: $
+              Total income: {(plan && plan.currency) || "$"}
               {incomes
                 .reduce(
                   (sum, income) =>
@@ -587,7 +644,7 @@ function DemoPage() {
                   >
                     <div className="w-[50%]">{expenditure.name}</div>
                     <div className="w-[50%]">
-                      $
+                      {(plan && plan.currency) || "$"}
                       {expenditure.amount.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -661,7 +718,7 @@ function DemoPage() {
               </div>
             )}
             <div className="pt-5">
-              Total expenditure: $
+              Total expenditure: {(plan && plan.currency) || "$"}
               {expenditures
                 .reduce((sum, expenditure) => sum + expenditure.amount, 0)
                 .toLocaleString(undefined, {
@@ -674,7 +731,7 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] bg-[#303030] pb-5">
           <div className="pl-5">
             <div className="pt-5 font-bold">
-              Total cashflow: $
+              Total cashflow: {(plan && plan.currency) || "$"}
               {(
                 incomes.reduce(
                   (sum, income) =>
@@ -717,7 +774,7 @@ function DemoPage() {
                   >
                     <div className="w-[33%]">{asset.name}</div>
                     <div className="w-[33%]">
-                      $
+                      {(plan && plan.currency) || "$"}
                       {asset.value.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -801,7 +858,7 @@ function DemoPage() {
               </div>
             )}
             <div className="pt-5">
-              Total assets: $
+              Total assets: {(plan && plan.currency) || "$"}
               {assets
                 .reduce((sum, asset) => sum + asset.value, 0)
                 .toLocaleString(undefined, {
@@ -836,7 +893,7 @@ function DemoPage() {
                   >
                     <div className="w-[33%]">{liability.name}</div>
                     <div className="w-[33%]">
-                      $
+                      {(plan && plan.currency) || "$"}
                       {liability.amount.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -924,7 +981,7 @@ function DemoPage() {
               </div>
             )}
             <div className="pt-5">
-              Total liabilities: $
+              Total liabilities: {(plan && plan.currency) || "$"}
               {liabilities
                 .reduce((sum, liability) => sum + liability.amount, 0)
                 .toLocaleString(undefined, {
@@ -937,7 +994,7 @@ function DemoPage() {
         <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
           <div className="pl-5">
             <div className="pt-5 font-bold">
-              Total net worth: $
+              Total net worth: {(plan && plan.currency) || "$"}
               {(
                 assets.reduce((sum, asset) => sum + asset.value, 0) -
                 liabilities.reduce(
@@ -982,7 +1039,7 @@ function DemoPage() {
                   >
                     <div className="w-[33%]">{financialGoal.name}</div>
                     <div className="w-[33%]">
-                      $
+                      {(plan && plan.currency) || "$"}
                       {financialGoal.amount.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,

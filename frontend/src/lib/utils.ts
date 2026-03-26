@@ -18,3 +18,22 @@ export const YEARS = Array.from(
   { length: END_YEAR - START_YEAR + 1 },
   (_, i) => START_YEAR + i,
 );
+
+export const currencySymbols = [
+  "$",
+  "€",
+  "¥",
+  "£",
+  "₩",
+  "CHF",
+  "₣",
+  "₹",
+  "₽",
+  "₫",
+  "₱",
+  "₺",
+  "฿",
+  "₪",
+  "R",
+  "₴",
+];
