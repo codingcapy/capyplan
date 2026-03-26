@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useAuthStore from "../store/AuthStore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LeftNav } from "../components/LeftNav";
 import { TopNav } from "../components/TopNav";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ import {
   useCreateGenerationMutation,
 } from "../lib/api/generations";
 import { GenerationItem } from "../components/GenerationItem";
+import { PiCaretDownBold } from "react-icons/pi";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -128,6 +129,8 @@ function Dashboard() {
   const [showLeftNav, setShowLeftNav] = useState(
     window.innerWidth > 639 ? true : false,
   );
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const currencyRef = useRef<HTMLDivElement | null>(null);
 
   function handleCreateGeneration() {
     if (createGenerationPending) return;
@@ -140,6 +143,15 @@ function Dashboard() {
     );
   }
 
+  function handleClickOutsideCurrency(event: MouseEvent) {
+    if (
+      currencyRef.current &&
+      !currencyRef.current.contains(event.target as Node)
+    ) {
+      setShowCurrencyDropdown(false);
+    }
+  }
+
   useEffect(() => {
     if (!user) navigate({ to: "/" });
   }, [user]);
@@ -147,6 +159,12 @@ function Dashboard() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [plan]);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideCurrency);
+    return () =>
+      document.removeEventListener("click", handleClickOutsideCurrency);
+  }, []);
 
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">
@@ -161,6 +179,39 @@ function Dashboard() {
       ) : plan ? (
         <div className="md:pl-[240px]">
           <div className="pl-5 pt-10 text-4xl font-bold">{plan.title}</div>
+          <div className="relative pl-5 pt-5 flex items-center">
+            <div className="mr-2">Currency:</div>
+            <div
+              ref={currencyRef}
+              onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+              className="flex border border-[#a0a0a0] px-1 items-center justify-center cursor-pointer hover:bg-[#303030] transition-all ease-in-out duration-300"
+            >
+              <div className="mr-2 font-bold">$</div>
+              <PiCaretDownBold />
+            </div>
+            {showCurrencyDropdown && (
+              <div className="absolute top-12 left-23.5 border border-[#a0a0a0] bg-[#303030] ">
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  $
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  €
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ¥
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  £
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  —
+                </div>
+                <div className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300">
+                  ₩
+                </div>
+              </div>
+            )}
+          </div>
           <div className="border-b border-b-[#777777] pb-5">
             {incomesLoading ? (
               <div>Loading income items...</div>
