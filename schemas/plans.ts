@@ -11,7 +11,7 @@ export const plans = pgTable("plans", {
   icon: varchar("icon"),
   currency: varchar("currency").default("$").notNull(),
   location: varchar("location").default("Canada").notNull(),
-  dateOfBirth: timestamp("date_of_birth").defaultNow().notNull(),
+  yearOfBirth: varchar("year_of_birth").default("1990").notNull(),
   status: varchar("status").default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

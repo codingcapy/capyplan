@@ -432,6 +432,20 @@ function Dashboard() {
               <div></div>
             )}
           </div>
+          <div className="border-b border-b-[#777777] pb-5">
+            <div className="pl-5">
+              <div className="pt-5 text-3xl font-bold">
+                Additional Information
+              </div>
+              <div className="my-2">
+                <div className="flex">
+                  <div className="my-2 w-[33%]">Year of Birth</div>
+                  <div>{plan.yearOfBirth}</div>
+                </div>
+                <div className="my-2 w-[33%]">Country of Residence</div>
+              </div>
+            </div>
+          </div>
           <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
             <div className="pl-5">
               <div className="pt-5 text-3xl font-bold">Recommendations</div>

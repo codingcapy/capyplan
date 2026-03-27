@@ -14,7 +14,6 @@ type SerializePlan = ExtractData<
 export function mapSerializedPlanToSchema(serialized: SerializePlan): Plan {
   return {
     ...serialized,
-    dateOfBirth: new Date(serialized.dateOfBirth),
     createdAt: new Date(serialized.createdAt),
   };
 }
