@@ -27,6 +27,8 @@ import {
 import { GenerationItem } from "../components/GenerationItem";
 import { PiCaretDownBold } from "react-icons/pi";
 import { CurrencyComponent } from "../components/CurrencyComponent";
+import { CountriesDropdown } from "../components/CountriesDropdown";
+import { YearsDropdown } from "../components/YearsDropdown";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -95,7 +97,6 @@ function Dashboard() {
   });
   const { mutate: createGeneration, isPending: createGenerationPending } =
     useCreateGenerationMutation();
-  const [showRedirectModal, setShowRedirectModal] = useState(false);
   const totalIncome =
     incomes &&
     incomes.reduce(
@@ -132,6 +133,10 @@ function Dashboard() {
   );
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const currencyRef = useRef<HTMLDivElement | null>(null);
+  const [editYearMode, setEditYearMode] = useState(false);
+  const [editCountryMode, setEditCountryMode] = useState(false);
+  const yearRef = useRef<HTMLDivElement | null>(null);
+  const countryRef = useRef<HTMLDivElement | null>(null);
 
   function handleCreateGeneration() {
     if (createGenerationPending) return;
@@ -153,6 +158,21 @@ function Dashboard() {
     }
   }
 
+  function handleClickOutsideYear(event: MouseEvent) {
+    if (yearRef.current && !yearRef.current.contains(event.target as Node)) {
+      setEditYearMode(false);
+    }
+  }
+
+  function handleClickOutsideCountry(event: MouseEvent) {
+    if (
+      countryRef.current &&
+      !countryRef.current.contains(event.target as Node)
+    ) {
+      setEditCountryMode(false);
+    }
+  }
+
   useEffect(() => {
     if (!user) navigate({ to: "/" });
   }, [user]);
@@ -165,6 +185,17 @@ function Dashboard() {
     document.addEventListener("click", handleClickOutsideCurrency);
     return () =>
       document.removeEventListener("click", handleClickOutsideCurrency);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideYear);
+    return () => document.removeEventListener("click", handleClickOutsideYear);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideCountry);
+    return () =>
+      document.removeEventListener("click", handleClickOutsideCountry);
   }, []);
 
   return (
@@ -438,11 +469,30 @@ function Dashboard() {
                 Additional Information
               </div>
               <div className="my-2">
-                <div className="flex">
-                  <div className="my-2 w-[33%]">Year of Birth</div>
-                  <div>{plan.yearOfBirth}</div>
+                <div className="relative flex my-2">
+                  <div className="w-[32%]">Year of Birth</div>
+                  <div
+                    ref={yearRef}
+                    onClick={() => setEditYearMode(!editYearMode)}
+                    className="flex border border-[#a0a0a0] px-1 items-center justify-center cursor-pointer hover:bg-[#303030] transition-all ease-in-out duration-300"
+                  >
+                    <div className="mr-2">{plan.yearOfBirth}</div>
+                    <PiCaretDownBold />
+                  </div>
+                  {editYearMode && <YearsDropdown plan={plan} />}
                 </div>
-                <div className="my-2 w-[33%]">Country of Residence</div>
+                <div className="relative flex my-2">
+                  <div className="w-[32%]">Country of Residence</div>
+                  <div
+                    ref={countryRef}
+                    onClick={() => setEditCountryMode(!editCountryMode)}
+                    className="flex border border-[#a0a0a0] px-1 items-center justify-center cursor-pointer hover:bg-[#303030] transition-all ease-in-out duration-300"
+                  >
+                    <div className="mr-2">{plan.location}</div>
+                    <PiCaretDownBold />
+                  </div>
+                  {editCountryMode && <CountriesDropdown plan={plan} />}
+                </div>
               </div>
             </div>
           </div>
@@ -548,25 +598,6 @@ function Dashboard() {
       ) : (
         <div></div>
       )}
-      {/* {showRedirectModal && (
-        <div
-          className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md z-100`}
-        >
-          <div className="text-2xl font-bold">COMING SOON</div>
-          <div className="my-5">
-            The back-end AI generation pipeline is being constructed, and the
-            front-end will be built for you 🚧
-          </div>
-          <div className="my-5 flex justify-end">
-            <div
-              onClick={() => setShowRedirectModal(false)}
-              className="p-2 mr-1 bg-cyan-600 rounded text-white bold secondary-font font-bold cursor-pointer"
-            >
-              I will wait patiently
-            </div>
-          </div>
-        </div>
-      )} */}
       {window.innerWidth < 768 && showLeftNav && (
         <div className="fixed inset-0 bg-black opacity-50 z-100"></div>
       )}
