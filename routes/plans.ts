@@ -28,6 +28,16 @@ const updateCurrencySchema = z.object({
   currency: z.string(),
 });
 
+const updateYearOfBirthSchema = z.object({
+  planId: z.number(),
+  yearOfBirth: z.string(),
+});
+
+const updateLocationSchema = z.object({
+  planId: z.number(),
+  location: z.string(),
+});
+
 export function requireUser(c: Context) {
   const authHeader = c.req.header("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -270,6 +280,90 @@ export const plansRouter = new Hono()
         console.log("Error while updating currency");
         throw new HTTPException(500, {
           message: "Error while updating currency",
+          cause: planUpdateError,
+        });
+      }
+      return c.json({ plan: planUpdateResult[0] }, 200);
+    },
+  )
+  .post(
+    "/update/yearofbirth",
+    zValidator("json", updateYearOfBirthSchema),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { result: ownershipCheck, error: ownershipCheckError } =
+        await mightFail(
+          db
+            .select()
+            .from(plansTable)
+            .where(
+              and(
+                eq(plansTable.planId, updateValues.planId),
+                eq(plansTable.userId, decodedUser.id),
+              ),
+            ),
+        );
+      if (ownershipCheckError)
+        throw new HTTPException(500, { message: "Ownership check failed" });
+      if (ownershipCheck.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
+      const { error: planUpdateError, result: planUpdateResult } =
+        await mightFail(
+          db
+            .update(plansTable)
+            .set({
+              yearOfBirth: updateValues.yearOfBirth,
+            })
+            .where(eq(plansTable.planId, updateValues.planId))
+            .returning(),
+        );
+      if (planUpdateError) {
+        console.log("Error while updating year of birth");
+        throw new HTTPException(500, {
+          message: "Error while updating year of birth",
+          cause: planUpdateError,
+        });
+      }
+      return c.json({ plan: planUpdateResult[0] }, 200);
+    },
+  )
+  .post(
+    "/update/location",
+    zValidator("json", updateLocationSchema),
+    async (c) => {
+      const decodedUser = requireUser(c);
+      const updateValues = c.req.valid("json");
+      const { result: ownershipCheck, error: ownershipCheckError } =
+        await mightFail(
+          db
+            .select()
+            .from(plansTable)
+            .where(
+              and(
+                eq(plansTable.planId, updateValues.planId),
+                eq(plansTable.userId, decodedUser.id),
+              ),
+            ),
+        );
+      if (ownershipCheckError)
+        throw new HTTPException(500, { message: "Ownership check failed" });
+      if (ownershipCheck.length === 0)
+        throw new HTTPException(401, { message: "Unauthorized" });
+      const { error: planUpdateError, result: planUpdateResult } =
+        await mightFail(
+          db
+            .update(plansTable)
+            .set({
+              location: updateValues.location,
+            })
+            .where(eq(plansTable.planId, updateValues.planId))
+            .returning(),
+        );
+      if (planUpdateError) {
+        console.log("Error while updating location");
+        throw new HTTPException(500, {
+          message: "Error while updating location",
           cause: planUpdateError,
         });
       }
