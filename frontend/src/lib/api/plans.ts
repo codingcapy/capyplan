@@ -40,6 +40,14 @@ type UpdateCurrencyArgs = ArgumentTypes<
   typeof client.api.v0.plans.update.currency.$post
 >[0]["json"];
 
+type UpdateYearOfBirthArgs = ArgumentTypes<
+  typeof client.api.v0.plans.update.yearofbirth.$post
+>[0]["json"];
+
+type UpdateLocationArgs = ArgumentTypes<
+  typeof client.api.v0.plans.update.location.$post
+>[0]["json"];
+
 async function createPlan(args: CreatePlanArgs) {
   const token = getSession();
   const res = await client.api.v0.plans.$post(
@@ -282,12 +290,116 @@ async function updateCurrency(args: UpdateCurrencyArgs) {
   return result;
 }
 
-export const useUpdatCurrencyMutation = (
+export const useUpdateCurrencyMutation = (
   onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateCurrency,
+    onSettled: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["plan", data?.plan.planId],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function updateYearOfBirth(args: UpdateYearOfBirthArgs) {
+  const token = getSession();
+  const res = await client.api.v0.plans.update.yearofbirth.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your year of birth :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useUpdateYearOfBirthMutation = (
+  onError?: (message: string) => void,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateYearOfBirth,
+    onSettled: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["plan", data?.plan.planId],
+      });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function updateLocation(args: UpdateLocationArgs) {
+  const token = getSession();
+  const res = await client.api.v0.plans.update.location.$post(
+    { json: args },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue updating your country of residence :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  return result;
+}
+
+export const useUpdateLocationMutation = (
+  onError?: (message: string) => void,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateLocation,
     onSettled: (data) => {
       queryClient.invalidateQueries({
         queryKey: ["plan", data?.plan.planId],
