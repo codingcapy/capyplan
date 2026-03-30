@@ -1,6 +1,8 @@
 # capyplan
 
-GenAI Financial plan under construction. Create financial plans and generate recommendations using AI.
+Fully featured, enterprise-grade, production-grade GenAI financial plan app. 
+Go beyond simple budgeting apps. Create extensive financial plans and generate detailed recommendations using AI.
+I used my 7+ years of expertise working in the financial industry and 3+ years of expertise in full stack software development to build this app.
 
 Live at: https://capyplan.up.railway.app/
 
