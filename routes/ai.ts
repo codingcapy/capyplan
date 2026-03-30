@@ -36,7 +36,7 @@ export const aiRouter = new Hono().post(
           ),
         ),
     );
-    if (planError)
+    if (planError || !plan[0])
       throw new HTTPException(500, { message: "Plan lookup failed" });
     if (!plan || plan.length === 0)
       throw new HTTPException(401, { message: "Unauthorized" });
@@ -125,6 +125,67 @@ export const aiRouter = new Hono().post(
         message: "error querying financial goals",
         cause: financialGoalsQueryError,
       });
+
+    const totalIncome =
+      Math.round(
+        incomesQueryResult.reduce(
+          (sum, income) =>
+            sum + ((income.amount / 100) * (100 - income.tax / 100)) / 100,
+          0,
+        ) * 100,
+      ) / 100;
+    const totalExpenditure =
+      Math.round(
+        expendituresQueryResult.reduce(
+          (sum, expenditure) => sum + expenditure.amount / 100,
+          0,
+        ) * 100,
+      ) / 100;
+    const cashflow = totalIncome - totalExpenditure;
+    const totalAssets =
+      Math.round(
+        assetsQueryResult.reduce((sum, asset) => sum + asset.value / 100, 0) *
+          100,
+      ) / 100;
+    const totalLiabilities =
+      Math.round(
+        liabilitiesQueryResult.reduce(
+          (sum, liability) => sum + liability.amount / 100,
+          0,
+        ) * 100,
+      ) / 100;
+    const netWorth = totalAssets - totalLiabilities;
+    const incomesText = incomesQueryResult
+      .map(
+        (i) =>
+          `${i.position}${i.company && ` at ${i.company}`}: ${plan[0]!.currency}${(i.amount / 100).toFixed(2)} with tax %${(i.tax / 100).toFixed(2)} therefore net ${((i.amount / 100) * (100 - i.tax / 100) / 100).toFixed(2)}`,
+      )
+      .join("\n");
+    const expendituresText = expendituresQueryResult
+      .map((e) => `${e.name}: $${(e.amount / 100).toFixed(2)}`)
+      .join("\n");
+
+    const assetsText = assetsQueryResult
+      .map(
+        (a) =>
+          `${a.name}: $${(a.value / 100).toFixed(2)} with ROI %${(a.roi / 100).toFixed(2)}`,
+      )
+      .join("\n");
+
+    const liabilitiesText = liabilitiesQueryResult
+      .map(
+        (l) =>
+          `${l.name}: $${(l.amount / 100).toFixed(2)} with interest %${(l.interest / 100).toFixed(2)}`,
+      )
+      .join("\n");
+
+    const financialGoalsText = financialGoalsQueryResult
+      .map(
+        (e) =>
+          `${e.name}: $${(e.amount / 100).toFixed(2)} with target date ${e.targetDate}`,
+      )
+      .join("\n");
+
     const completion = await openai.responses.create({
       model: "gpt-5.4",
       temperature: 0.4,
@@ -137,35 +198,38 @@ export const aiRouter = new Hono().post(
         {
           role: "user",
           content: `
-Here is my financial data in JSON, all monetary amounts, values, taxes, interest and roi must be divided by 100 for their true value, and tax and interest and roi are percentages:
+          Provide financial advice for the following client data
 
-${JSON.stringify(
-  {
-    incomes: incomesQueryResult,
-    expenditures: expendituresQueryResult,
-    assets: assetsQueryResult,
-    liabilities: liabilitiesQueryResult,
-    goals: financialGoalsQueryResult,
-  },
-  null,
-  2,
-)}
+          Year of birth: ${plan[0].yearOfBirth}
+          Country of residence: ${plan[0].location}
+          Currency: ${plan[0].currency}
+          Total income: ${totalIncome}
+          Total expenditure: ${totalExpenditure}
+          Cashflow: ${cashflow}
+          Total assets: ${totalAssets}
+          Total liabilities: ${totalLiabilities}
+          Net worth: ${netWorth}
 
-Calculate cashflow and net worth at least twice and ensure your calculations are accurate. No need to mention that you did this.
+          Here is the raw data for your reference. DO NOT try to derive values from these as I already provided you with the correct values above. Only use this data to potentially reference specific items if you deem necessary to do so, such as glaring loan item that requires urgent treatment or significant income source or asset or financial goal.
 
-Instructions:
-1. Summarize financial health
-2. Identify risks
-3. Analyze cash flow
-4. Provide debt strategy
-5. Suggest investment approach
-6. Give prioritized action plan
+          INCOME SOURCES (monthly):
+          ${incomesText}
 
-Only use provided data.
-Don't bother regurgitating or listing out all the details in the JSON again, only mention items when needed to explain something.
-Only output titles, paragraphs and maybe some lists.
-ALWAYS start with "Based on the provided financial data, here's a comprehensive analysis of your"
-`,
+          EXPENDITURES (monthly):
+          ${expendituresText}
+
+          ASSETS:
+          ${assetsText}
+
+          LIABILITIES:
+          ${liabilitiesText}
+
+          FINANCIAL GOALS:
+          ${financialGoalsText}
+
+          Limit your advice to no more than 1500 characters
+          ALWAYS take into consideration the client's age and country of residence and whether this means they are willing to take more risks or retired and comfortable or trying to raise a family
+          ALWAYS start with "Based on the provided financial data, here's a comprehensive analysis of your"
         },
       ],
     });

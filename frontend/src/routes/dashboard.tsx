@@ -125,7 +125,7 @@ function Dashboard() {
   const netWorth =
     assets &&
     liabilities &&
-    assets.reduce((sum, expenditure) => sum + expenditure.value / 100, 0) -
+    assets.reduce((sum, asset) => sum + asset.value / 100, 0) -
       liabilities.reduce((sum, liability) => sum + liability.amount / 100, 0);
   const [generationNotification, setGenerationNotification] = useState("");
   const [showLeftNav, setShowLeftNav] = useState(
