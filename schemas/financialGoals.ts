@@ -4,6 +4,7 @@ import {
   timestamp,
   serial,
   integer,
+  bigint,
 } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 import { plans } from "./plans";
@@ -14,7 +15,7 @@ export const financialGoals = pgTable("financial_goals", {
     .references(() => plans.planId, { onDelete: "cascade" })
     .notNull(),
   name: varchar("name").notNull().default(""),
-  amount: integer("amount").notNull().default(0), // Stored as cents to avoid floating point issues
+  amount: bigint("amount", { mode: "number" }).notNull().default(0), // Stored as cents to avoid floating point issues
   targetDate: timestamp("target_date").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

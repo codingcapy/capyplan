@@ -4,6 +4,7 @@ import {
   timestamp,
   serial,
   integer,
+  bigint,
 } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 import { plans } from "./plans";
@@ -14,7 +15,7 @@ export const assets = pgTable("assets", {
     .references(() => plans.planId, { onDelete: "cascade" })
     .notNull(),
   name: varchar("name").notNull().default(""),
-  value: integer("value").notNull().default(0), // Stored as cents to avoid floating point issues
+  value: bigint("value", { mode: "number" }).notNull().default(0), // Stored as cents to avoid floating point issues
   roi: integer("roi").notNull().default(0),
   status: varchar("status").default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
