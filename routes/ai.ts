@@ -158,7 +158,7 @@ export const aiRouter = new Hono().post(
     const incomesText = incomesQueryResult
       .map(
         (i) =>
-          `${i.position}${i.company && ` at ${i.company}`}: ${plan[0]!.currency}${(i.amount / 100).toFixed(2)} with tax %${(i.tax / 100).toFixed(2)} therefore net ${((i.amount / 100) * (100 - i.tax / 100) / 100).toFixed(2)}`,
+          `${i.position}${i.company && ` at ${i.company}`}: ${plan[0]!.currency}${(i.amount / 100).toFixed(2)} with tax %${(i.tax / 100).toFixed(2)} therefore net ${(((i.amount / 100) * (100 - i.tax / 100)) / 100).toFixed(2)}`,
       )
       .join("\n");
     const expendituresText = expendituresQueryResult
@@ -229,7 +229,7 @@ export const aiRouter = new Hono().post(
 
           Limit your advice to no more than 1500 characters
           ALWAYS take into consideration the client's age and country of residence and whether this means they are willing to take more risks or retired and comfortable or trying to raise a family
-          ALWAYS start with "Based on the provided financial data, here's a comprehensive analysis of your"
+          ALWAYS start with "Based on the provided financial data, here's a comprehensive analysis of your"`,
         },
       ],
     });
