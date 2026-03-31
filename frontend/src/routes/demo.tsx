@@ -13,7 +13,13 @@ import { DemoEditExpenditure } from "../components/DemoEditExpenditure";
 import { DemoEditAsset } from "../components/DemoEditAsset";
 import { DemoEditLiability } from "../components/DemoEditLiability";
 import { DemoEditFinancialGoal } from "../components/DemoEditFinancialGoal";
-import { currencySymbols, MONTHS, YEARS } from "../lib/utils";
+import {
+  birthYears,
+  countries,
+  currencySymbols,
+  MONTHS,
+  YEARS,
+} from "../lib/utils";
 
 export const Route = createFileRoute("/demo")({
   component: DemoPage,
@@ -23,6 +29,8 @@ type Plan = {
   planId: string;
   title: string;
   currency: string;
+  yearOfBirth: string;
+  location: string;
 };
 
 type Income = {
@@ -79,6 +87,8 @@ function DemoPage() {
     planId: initialPlanId,
     title: "Demo Plan",
     currency: "$",
+    yearOfBirth: "1990",
+    location: "Canada",
   };
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -113,6 +123,10 @@ function DemoPage() {
   const [selectedCurrency, setSelectedCurrency] = useState(
     plan?.currency || "$",
   );
+  const yearRef = useRef<HTMLDivElement | null>(null);
+  const [editYearMode, setEditYearMode] = useState(false);
+  const countryRef = useRef<HTMLDivElement | null>(null);
+  const [editCountryMode, setEditCountryMode] = useState(false);
 
   function handleSubmitCreatePlan(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -120,6 +134,8 @@ function DemoPage() {
       planId: uuidv4(),
       title: (e.target as HTMLFormElement).plantitle.value,
       currency: "$",
+      yearOfBirth: "1990",
+      location: "Canada",
     };
     setPlans([...plans, newPlan]);
     setCurrentPlan(newPlan.planId);
@@ -286,6 +302,8 @@ function DemoPage() {
       planId: currentPlan,
       title: plan?.title || "",
       currency,
+      yearOfBirth: plan?.yearOfBirth || "1990",
+      location: plan?.location || "Canada",
     };
     setPlans((prev) =>
       prev.map((p) => (p.planId === currentPlan ? newPlan : p)),
@@ -304,6 +322,32 @@ function DemoPage() {
     setCalendarMonth(newMonth);
   }
 
+  function handleUpdateYearOfBirth(y: string) {
+    const newPlan = {
+      planId: currentPlan,
+      title: plan?.title || "",
+      currency: plan?.currency || "$",
+      yearOfBirth: y,
+      location: plan?.location || "Canada",
+    };
+    setPlans((prev) =>
+      prev.map((p) => (p.planId === currentPlan ? newPlan : p)),
+    );
+  }
+
+  function handleUpdateLocation(l: string) {
+    const newPlan = {
+      planId: currentPlan,
+      title: plan?.title || "",
+      currency: plan?.currency || "$",
+      yearOfBirth: plan?.yearOfBirth || "1990",
+      location: l,
+    };
+    setPlans((prev) =>
+      prev.map((p) => (p.planId === currentPlan ? newPlan : p)),
+    );
+  }
+
   function handleClickOutside(event: MouseEvent) {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
       setShowDropdown(false);
@@ -319,6 +363,21 @@ function DemoPage() {
     }
   }
 
+  function handleClickOutsideYear(event: MouseEvent) {
+    if (yearRef.current && !yearRef.current.contains(event.target as Node)) {
+      setEditYearMode(false);
+    }
+  }
+
+  function handleClickOutsideCountry(event: MouseEvent) {
+    if (
+      countryRef.current &&
+      !countryRef.current.contains(event.target as Node)
+    ) {
+      setEditCountryMode(false);
+    }
+  }
+
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
@@ -328,6 +387,17 @@ function DemoPage() {
     document.addEventListener("click", handleClickOutsideCurrency);
     return () =>
       document.removeEventListener("click", handleClickOutsideCurrency);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideYear);
+    return () => document.removeEventListener("click", handleClickOutsideYear);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideCountry);
+    return () =>
+      document.removeEventListener("click", handleClickOutsideCountry);
   }, []);
 
   useEffect(() => {
@@ -1174,6 +1244,61 @@ function DemoPage() {
                 + Add financial goal
               </div>
             )}
+          </div>
+        </div>
+        <div className="border-b border-b-[#777777] pb-5">
+          <div className="pl-5">
+            <div className="pt-5 text-3xl font-bold">
+              Additional Information
+            </div>
+            <div className="my-2">
+              <div className="relative flex my-2">
+                <div className="w-[32%]">Year of Birth</div>
+                <div
+                  ref={yearRef}
+                  onClick={() => setEditYearMode(!editYearMode)}
+                  className="flex border border-[#a0a0a0] px-1 items-center justify-center cursor-pointer hover:bg-[#303030] transition-all ease-in-out duration-300"
+                >
+                  <div className="mr-2">{plan && plan.yearOfBirth}</div>
+                  <PiCaretDownBold />
+                </div>
+                {editYearMode && (
+                  <div className="absolute top-8 left-[32%] border border-[#a0a0a0] bg-[#303030] custom-scrollbar h-[150px] overflow-y-auto z-[120]">
+                    {birthYears.map((y) => (
+                      <div
+                        onClick={() => handleUpdateYearOfBirth(y)}
+                        className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300"
+                      >
+                        {y}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="relative flex my-2">
+                <div className="w-[32%]">Country of Residence</div>
+                <div
+                  ref={countryRef}
+                  onClick={() => setEditCountryMode(!editCountryMode)}
+                  className="flex border border-[#a0a0a0] px-1 items-center justify-center cursor-pointer hover:bg-[#303030] transition-all ease-in-out duration-300"
+                >
+                  <div className="mr-2">{plan && plan.location}</div>
+                  <PiCaretDownBold />
+                </div>
+                {editCountryMode && (
+                  <div className="absolute top-8 left-[32%] border border-[#a0a0a0] bg-[#303030] custom-scrollbar h-[150px] overflow-y-auto">
+                    {countries.map((c) => (
+                      <div
+                        onClick={() => handleUpdateLocation(c)}
+                        className="pl-1 pr-5 cursor-pointer hover:bg-[#222222] transition-all ease-in-out duration-300"
+                      >
+                        {c}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         <div className="border-b border-b-[#777777] pb-5 bg-[#303030]">
