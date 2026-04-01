@@ -405,27 +405,23 @@ function DemoPage() {
     setPlan(selectedPlan || null);
   }, [currentPlan, plans]);
 
-  const totalIncome = incomes.reduce(
-    (sum, income) => sum + (income.amount * (100 - income.tax)) / 100,
-    0,
-  );
-  const totalExpenditure = expenditures.reduce(
-    (sum, expenditure) => sum + expenditure.amount,
-    0,
-  );
-  const cashflow =
-    incomes.reduce(
+  const totalIncome = incomes
+    .filter((i) => i.planId === currentPlan)
+    .reduce(
       (sum, income) => sum + (income.amount * (100 - income.tax)) / 100,
       0,
-    ) - expenditures.reduce((sum, expenditure) => sum + expenditure.amount, 0);
-  const totalAssets = assets.reduce((sum, asset) => sum + asset.value, 0);
-  const totalLiabilities = liabilities.reduce(
-    (sum, liability) => sum + liability.amount,
-    0,
-  );
-  const netWorth =
-    assets.reduce((sum, asset) => sum + asset.value, 0) -
-    liabilities.reduce((sum, liability) => sum + liability.amount, 0);
+    );
+  const totalExpenditure = expenditures
+    .filter((e) => e.planId === currentPlan)
+    .reduce((sum, expenditure) => sum + expenditure.amount, 0);
+  const cashflow = totalIncome - totalExpenditure;
+  const totalAssets = assets
+    .filter((a) => a.planId === currentPlan)
+    .reduce((sum, asset) => sum + asset.value, 0);
+  const totalLiabilities = liabilities
+    .filter((l) => l.planId === currentPlan)
+    .reduce((sum, liability) => sum + liability.amount, 0);
+  const netWorth = totalAssets - totalLiabilities;
 
   return (
     <div className="bg-[#242424] text-white min-h-screen p-2">
@@ -464,42 +460,6 @@ function DemoPage() {
               + create new plan
             </div>
           </div>
-        )}
-        {showCreatePlanModal && (
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-100">
-            <div className="text-xl font-bold mb-5">
-              Create a new financial plan
-            </div>
-            <form onSubmit={handleSubmitCreatePlan} className="flex flex-col">
-              <label htmlFor="" className="text-left mb-2">
-                Financial plan name
-              </label>
-              <input
-                type="text"
-                name="plantitle"
-                id="plantitle"
-                className="border border-[#909090] rounded p-1 mb-2"
-                required
-              />
-              <div className="flex justify-end">
-                <div
-                  onClick={() => setShowCreatePlanModal(false)}
-                  className="px-3 py-1 mx-1 cursor-pointer"
-                >
-                  CANCEL
-                </div>
-                <button
-                  type="submit"
-                  className="px-3 py-1 mx-1 bg-cyan-500 rounded"
-                >
-                  CREATE
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-        {showCreatePlanModal && (
-          <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
         )}
       </div>
       <div className="fixed top-0 left-0 p-2.5 w-screen flex justify-between bg-[#242424]">
@@ -677,6 +637,7 @@ function DemoPage() {
             <div className="pt-5">
               Total income: {(plan && plan.currency) || "$"}
               {incomes
+                .filter((i) => i.planId === currentPlan)
                 .reduce(
                   (sum, income) =>
                     sum + (income.amount * (100 - income.tax)) / 100,
@@ -790,6 +751,7 @@ function DemoPage() {
             <div className="pt-5">
               Total expenditure: {(plan && plan.currency) || "$"}
               {expenditures
+                .filter((e) => e.planId === currentPlan)
                 .reduce((sum, expenditure) => sum + expenditure.amount, 0)
                 .toLocaleString(undefined, {
                   minimumFractionDigits: 2,
@@ -803,15 +765,16 @@ function DemoPage() {
             <div className="pt-5 font-bold">
               Total cashflow: {(plan && plan.currency) || "$"}
               {(
-                incomes.reduce(
-                  (sum, income) =>
-                    sum + (income.amount * (100 - income.tax)) / 100,
-                  0,
-                ) -
-                expenditures.reduce(
-                  (sum, expenditure) => sum + expenditure.amount,
-                  0,
-                )
+                incomes
+                  .filter((i) => i.planId === currentPlan)
+                  .reduce(
+                    (sum, income) =>
+                      sum + (income.amount * (100 - income.tax)) / 100,
+                    0,
+                  ) -
+                expenditures
+                  .filter((e) => e.planId === currentPlan)
+                  .reduce((sum, expenditure) => sum + expenditure.amount, 0)
               ).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -930,6 +893,7 @@ function DemoPage() {
             <div className="pt-5">
               Total assets: {(plan && plan.currency) || "$"}
               {assets
+                .filter((a) => a.planId === currentPlan)
                 .reduce((sum, asset) => sum + asset.value, 0)
                 .toLocaleString(undefined, {
                   minimumFractionDigits: 2,
@@ -1053,6 +1017,7 @@ function DemoPage() {
             <div className="pt-5">
               Total liabilities: {(plan && plan.currency) || "$"}
               {liabilities
+                .filter((l) => l.planId === currentPlan)
                 .reduce((sum, liability) => sum + liability.amount, 0)
                 .toLocaleString(undefined, {
                   minimumFractionDigits: 2,
@@ -1066,11 +1031,12 @@ function DemoPage() {
             <div className="pt-5 font-bold">
               Total net worth: {(plan && plan.currency) || "$"}
               {(
-                assets.reduce((sum, asset) => sum + asset.value, 0) -
-                liabilities.reduce(
-                  (sum, liability) => sum + liability.amount,
-                  0,
-                )
+                assets
+                  .filter((a) => a.planId === currentPlan)
+                  .reduce((sum, asset) => sum + asset.value, 0) -
+                liabilities
+                  .filter((l) => l.planId === currentPlan)
+                  .reduce((sum, liability) => sum + liability.amount, 0)
               ).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -1408,6 +1374,42 @@ function DemoPage() {
       )}
       {showRedirectModal && (
         <div className="fixed inset-0 bg-black opacity-50 z-90"></div>
+      )}
+      {showCreatePlanModal && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#222222] p-6 rounded shadow-lg w-[90%] max-w-md text-center z-150">
+          <div className="text-xl font-bold mb-5">
+            Create a new financial plan
+          </div>
+          <form onSubmit={handleSubmitCreatePlan} className="flex flex-col">
+            <label htmlFor="" className="text-left mb-2">
+              Financial plan name
+            </label>
+            <input
+              type="text"
+              name="plantitle"
+              id="plantitle"
+              className="border border-[#909090] rounded p-1 mb-2"
+              required
+            />
+            <div className="flex justify-end">
+              <div
+                onClick={() => setShowCreatePlanModal(false)}
+                className="px-3 py-1 mx-1 cursor-pointer"
+              >
+                CANCEL
+              </div>
+              <button
+                type="submit"
+                className="px-3 py-1 mx-1 bg-cyan-500 rounded"
+              >
+                CREATE
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      {showCreatePlanModal && (
+        <div className="fixed inset-0 bg-black opacity-50 z-140"></div>
       )}
     </div>
   );
