@@ -435,10 +435,9 @@ function RouteComponent() {
           </div>
         </div>
       )}
-      {deleteMode ||
-        (window.innerWidth < 639 && showLeftNav && (
-          <div className="fixed inset-0 bg-black opacity-50 z-100"></div>
-        ))}
+      {(deleteMode || (window.innerWidth < 639 && showLeftNav)) && (
+        <div className="fixed inset-0 bg-black opacity-50 z-100"></div>
+      )}
       <div>{deleteNotification}</div>
     </div>
   );
