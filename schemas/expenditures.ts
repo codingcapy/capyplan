@@ -14,9 +14,9 @@ export const expenditures = pgTable("expenditures", {
   planId: integer("plan_id")
     .references(() => plans.planId, { onDelete: "cascade" })
     .notNull(),
-  name: varchar("name").notNull().default(""),
+  name: varchar("name", { length: 255 }).notNull().default(""),
   amount: bigint("amount", { mode: "number" }).notNull().default(0), // Stored as cents to avoid floating point issues
-  status: varchar("status").default("active").notNull(),
+  status: varchar("status", { length: 50 }).default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

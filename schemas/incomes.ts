@@ -14,11 +14,11 @@ export const incomes = pgTable("incomes", {
   planId: integer("plan_id")
     .references(() => plans.planId, { onDelete: "cascade" })
     .notNull(),
-  company: varchar("company").notNull().default(""),
-  position: varchar("position").notNull().default(""),
+  company: varchar("company", { length: 255 }).notNull().default(""),
+  position: varchar("position", { length: 255 }).notNull().default(""),
   amount: bigint("amount", { mode: "number" }).notNull().default(0), // Stored as cents to avoid floating point issues
   tax: integer("tax").notNull().default(0),
-  status: varchar("status").default("active").notNull(),
+  status: varchar("status", { length: 50 }).default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

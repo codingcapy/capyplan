@@ -32,7 +32,7 @@ const updateCurrentPlanSchema = z.object({
 });
 
 const updatePasswordSchema = z.object({
-  password: z.string(),
+  password: z.string().max(128),
 });
 
 const resetPasswordSchema = z.object({

@@ -11,7 +11,7 @@ import { users as usersTable } from "../schemas/users";
 import { createUpdateSchema } from "drizzle-zod";
 
 const createPlanSchema = z.object({
-  title: z.string(),
+  title: z.string().max(80),
 });
 
 const deletePlanSchema = z.object({
@@ -20,12 +20,12 @@ const deletePlanSchema = z.object({
 
 const updateTitleSchema = z.object({
   planId: z.number(),
-  title: z.string(),
+  title: z.string().max(80),
 });
 
 const updateCurrencySchema = z.object({
   planId: z.number(),
-  currency: z.string(),
+  currency: z.string().max(80),
 });
 
 const updateYearOfBirthSchema = z.object({
@@ -35,7 +35,7 @@ const updateYearOfBirthSchema = z.object({
 
 const updateLocationSchema = z.object({
   planId: z.number(),
-  location: z.string(),
+  location: z.string().max(80),
 });
 
 export function requireUser(c: Context) {
