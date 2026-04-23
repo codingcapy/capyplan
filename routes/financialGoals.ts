@@ -40,15 +40,13 @@ export const financialGoalsRouter = new Hono()
       throw new HTTPException(500, { message: "Plan lookup failed" });
     if (!plan || plan.length === 0)
       throw new HTTPException(401, { message: "Unauthorized" });
-    const {
-      result: financialGoalCountResult,
-      error: financialGoalCountError,
-    } = await mightFail(
-      db
-        .select({ count: count() })
-        .from(financialGoalsTable)
-        .where(eq(financialGoalsTable.planId, insertValues.planId)),
-    );
+    const { result: financialGoalCountResult, error: financialGoalCountError } =
+      await mightFail(
+        db
+          .select({ count: count() })
+          .from(financialGoalsTable)
+          .where(eq(financialGoalsTable.planId, insertValues.planId)),
+      );
     if (financialGoalCountError)
       throw new HTTPException(500, {
         message: "Financial goal count lookup failed",

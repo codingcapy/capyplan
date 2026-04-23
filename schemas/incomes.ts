@@ -5,21 +5,26 @@ import {
   serial,
   integer,
   bigint,
+  index,
 } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 import { plans } from "./plans";
 
-export const incomes = pgTable("incomes", {
-  incomeId: serial("income_id").primaryKey(),
-  planId: integer("plan_id")
-    .references(() => plans.planId, { onDelete: "cascade" })
-    .notNull(),
-  company: varchar("company", { length: 255 }).notNull().default(""),
-  position: varchar("position", { length: 255 }).notNull().default(""),
-  amount: bigint("amount", { mode: "number" }).notNull().default(0), // Stored as cents to avoid floating point issues
-  tax: integer("tax").notNull().default(0),
-  status: varchar("status", { length: 50 }).default("active").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const incomes = pgTable(
+  "incomes",
+  {
+    incomeId: serial("income_id").primaryKey(),
+    planId: integer("plan_id")
+      .references(() => plans.planId, { onDelete: "cascade" })
+      .notNull(),
+    company: varchar("company", { length: 255 }).notNull().default(""),
+    position: varchar("position", { length: 255 }).notNull().default(""),
+    amount: bigint("amount", { mode: "number" }).notNull().default(0), // Stored as cents to avoid floating point issues
+    tax: integer("tax").notNull().default(0),
+    status: varchar("status", { length: 50 }).default("active").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("incomes_plan_id_idx").on(table.planId)],
+);
 
 export type Income = InferSelectModel<typeof incomes>;
