@@ -14,6 +14,7 @@ import { assets as assetsTable } from "../schemas/assets";
 import { liabilities as liabilitiesTable } from "../schemas/liabilities";
 import { financialGoals as financialGoalsTable } from "../schemas/financialGoals";
 import { generations as generationsTable } from "../schemas/generations";
+import { enforceRateLimit } from "./rateLimit";
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -23,6 +24,7 @@ export const aiRouter = new Hono().post(
   "/generate",
   zValidator("json", z.object({ planId: z.number() })),
   async (c) => {
+    enforceRateLimit(c, "ai-generate", 3, 60_000);
     const decodedUser = requireUser(c);
     const generationValues = c.req.valid("json");
     const { result: plan, error: planError } = await mightFail(

@@ -8,6 +8,7 @@ import { users as usersTable } from "../schemas/users";
 import { createInsertSchema } from "drizzle-zod";
 import { randomBytes, scrypt } from "crypto";
 import { promisify } from "util";
+import { enforceRateLimit } from "./rateLimit";
 
 const scryptAsync = promisify(scrypt);
 
@@ -32,6 +33,7 @@ const loginSchema = z.object({
 export const userRouter = new Hono()
   .post("/login", zValidator("json", loginSchema), async (c) => {
     try {
+      enforceRateLimit(c, "login", 10, 60_000);
       const loginInfo = c.req.valid("json");
       const queryResult = await db
         .select()

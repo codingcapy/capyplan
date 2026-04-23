@@ -13,6 +13,7 @@ import { requireUser } from "./plans";
 import { plans as plansTable } from "../schemas/plans";
 import { Resend } from "resend";
 import { passwordResetTokens as passwordResetTokensTable } from "../schemas/passwordResetTokens";
+import { enforceRateLimit } from "./rateLimit";
 
 const scryptAsync = promisify(scrypt);
 
@@ -197,6 +198,7 @@ export const usersRouter = new Hono()
     "/passwordreset",
     zValidator("json", resetPasswordSchema),
     async (c) => {
+      enforceRateLimit(c, "passwordreset", 5, 60_000);
       const resetValues = c.req.valid("json");
       const code = randomBytes(32).toString("hex");
       const hashedCode = hashResetToken(code);
@@ -268,6 +270,7 @@ export const usersRouter = new Hono()
     "/passwordreset/confirm",
     zValidator("json", confirmPasswordResetSchema),
     async (c) => {
+      enforceRateLimit(c, "passwordreset-confirm", 10, 60_000);
       const confirmValues = c.req.valid("json");
       const tokenHash = hashResetToken(confirmValues.token);
       const now = new Date();
