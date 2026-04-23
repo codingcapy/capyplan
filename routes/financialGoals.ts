@@ -6,7 +6,7 @@ import { assertIsParsableInt, requireUser } from "./plans";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import z from "zod";
 
@@ -40,6 +40,23 @@ export const financialGoalsRouter = new Hono()
       throw new HTTPException(500, { message: "Plan lookup failed" });
     if (!plan || plan.length === 0)
       throw new HTTPException(401, { message: "Unauthorized" });
+    const {
+      result: financialGoalCountResult,
+      error: financialGoalCountError,
+    } = await mightFail(
+      db
+        .select({ count: count() })
+        .from(financialGoalsTable)
+        .where(eq(financialGoalsTable.planId, insertValues.planId)),
+    );
+    if (financialGoalCountError)
+      throw new HTTPException(500, {
+        message: "Financial goal count lookup failed",
+      });
+    if ((financialGoalCountResult[0]?.count ?? 0) >= 20)
+      throw new HTTPException(400, {
+        message: "Financial goal limit of 20 reached for this plan",
+      });
     const {
       error: financialGoalInsertError,
       result: financialGoalInsertResult,

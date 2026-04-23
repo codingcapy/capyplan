@@ -5,7 +5,7 @@ import { expenditures as expendituresTable } from "../schemas/expenditures";
 import { assertIsParsableInt, requireUser } from "./plans";
 import { mightFail } from "might-fail";
 import { db } from "../db";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { plans as plansTable } from "../schemas/plans";
 import { HTTPException } from "hono/http-exception";
 import z from "zod";
@@ -43,6 +43,21 @@ export const expendituresRouter = new Hono()
         throw new HTTPException(500, { message: "Plan lookup failed" });
       if (!plan || plan.length === 0)
         throw new HTTPException(401, { message: "Unauthorized" });
+      const { result: expenditureCountResult, error: expenditureCountError } =
+        await mightFail(
+          db
+            .select({ count: count() })
+            .from(expendituresTable)
+            .where(eq(expendituresTable.planId, insertValues.planId)),
+        );
+      if (expenditureCountError)
+        throw new HTTPException(500, {
+          message: "Expenditure count lookup failed",
+        });
+      if ((expenditureCountResult[0]?.count ?? 0) >= 20)
+        throw new HTTPException(400, {
+          message: "Expenditure limit of 20 reached for this plan",
+        });
       const { error: expenditureInsertError, result: expenditureInsertResult } =
         await mightFail(
           db.insert(expendituresTable).values(insertValues).returning(),

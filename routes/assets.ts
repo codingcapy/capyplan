@@ -6,7 +6,7 @@ import { assertIsParsableInt, requireUser } from "./plans";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import z from "zod";
 
@@ -43,6 +43,19 @@ export const assetsRouter = new Hono()
         throw new HTTPException(500, { message: "Plan lookup failed" });
       if (!plan || plan.length === 0)
         throw new HTTPException(401, { message: "Unauthorized" });
+      const { result: assetCountResult, error: assetCountError } =
+        await mightFail(
+          db
+            .select({ count: count() })
+            .from(assetsTable)
+            .where(eq(assetsTable.planId, insertValues.planId)),
+        );
+      if (assetCountError)
+        throw new HTTPException(500, { message: "Asset count lookup failed" });
+      if ((assetCountResult[0]?.count ?? 0) >= 20)
+        throw new HTTPException(400, {
+          message: "Asset limit of 20 reached for this plan",
+        });
       const { error: assetInsertError, result: assetInsertResult } =
         await mightFail(
           db.insert(assetsTable).values(insertValues).returning(),

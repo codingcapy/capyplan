@@ -6,7 +6,7 @@ import { incomes as incomesTable } from "../schemas/incomes";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import z from "zod";
 import { plans as plansTable } from "../schemas/plans";
 
@@ -43,6 +43,19 @@ export const incomesRouter = new Hono()
         throw new HTTPException(500, { message: "Plan lookup failed" });
       if (!plan || plan.length === 0)
         throw new HTTPException(401, { message: "Unauthorized" });
+      const { result: incomeCountResult, error: incomeCountError } =
+        await mightFail(
+          db
+            .select({ count: count() })
+            .from(incomesTable)
+            .where(eq(incomesTable.planId, insertValues.planId)),
+        );
+      if (incomeCountError)
+        throw new HTTPException(500, { message: "Income count lookup failed" });
+      if ((incomeCountResult[0]?.count ?? 0) >= 20)
+        throw new HTTPException(400, {
+          message: "Income limit of 20 reached for this plan",
+        });
       const { error: incomeInsertError, result: incomeInsertResult } =
         await mightFail(
           db.insert(incomesTable).values(insertValues).returning(),
