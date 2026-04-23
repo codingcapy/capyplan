@@ -12,7 +12,7 @@ type CreateGenerationArgs = ArgumentTypes<
 >[0]["json"];
 
 type SerializeGeneration = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.generations[":planId"]["$get"]>>
+  Awaited<ReturnType<(typeof client.api.v0.generations)[":planId"]["$get"]>>
 >["generations"][number];
 
 type DeleteGenerationArgs = ArgumentTypes<

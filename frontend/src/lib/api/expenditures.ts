@@ -20,7 +20,7 @@ type UpdateExpenditureArgs = ArgumentTypes<
 >[0]["json"];
 
 type SerializeExpenditure = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.expenditures[":planId"]["$get"]>>
+  Awaited<ReturnType<(typeof client.api.v0.expenditures)[":planId"]["$get"]>>
 >["expenditures"][number];
 
 export function mapSerializedExpenditureToSchema(

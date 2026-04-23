@@ -20,7 +20,7 @@ type UpdateIncomeArgs = ArgumentTypes<
 >[0]["json"];
 
 type SerializeIncome = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.incomes[":planId"]["$get"]>>
+  Awaited<ReturnType<(typeof client.api.v0.incomes)[":planId"]["$get"]>>
 >["incomes"][number];
 
 export function mapSerializedIncomeToSchema(

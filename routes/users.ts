@@ -2,16 +2,17 @@ import { Hono } from "hono";
 import { db } from "../db";
 import { promisify } from "util";
 import { randomUUIDv7 } from "bun";
-import { scrypt, randomBytes } from "crypto";
+import { scrypt, randomBytes, createHash } from "crypto";
 import z from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { mightFail } from "might-fail";
 import { users as usersTable } from "../schemas/users";
-import { eq } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { requireUser } from "./plans";
 import { plans as plansTable } from "../schemas/plans";
 import { Resend } from "resend";
+import { passwordResetTokens as passwordResetTokensTable } from "../schemas/passwordResetTokens";
 
 const scryptAsync = promisify(scrypt);
 
@@ -24,6 +25,10 @@ async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
   return `${salt}:${derivedKey.toString("hex")}`;
+}
+
+function hashResetToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
 }
 
 const createUserSchema = z.object({
@@ -42,6 +47,11 @@ const updatePasswordSchema = z.object({
 
 const resetPasswordSchema = z.object({
   email: z.string().email(),
+});
+
+const confirmPasswordResetSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8).max(128),
 });
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -189,7 +199,7 @@ export const usersRouter = new Hono()
     async (c) => {
       const resetValues = c.req.valid("json");
       const code = randomBytes(32).toString("hex");
-      const hashedCode = await hashPassword(code);
+      const hashedCode = hashResetToken(code);
       const { error: userQueryError, result: userQueryResult } =
         await mightFail(
           db
@@ -204,43 +214,132 @@ export const usersRouter = new Hono()
         });
       }
       if (!userQueryResult[0]) return c.json({ success: true }); // silent — don't leak existence
-      const originalPassword = userQueryResult[0].password;
-      const { error: updateError, result: updateResult } = await mightFail(
+      const user = userQueryResult[0];
+      const { error: cleanupError } = await mightFail(
         db
-          .update(usersTable)
-          .set({ password: hashedCode })
-          .where(eq(usersTable.email, resetValues.email))
-          .returning(),
+          .delete(passwordResetTokensTable)
+          .where(eq(passwordResetTokensTable.userId, user.userId)),
       );
-      if (updateError) {
+      if (cleanupError) {
         throw new HTTPException(500, {
-          message: "Error while updating current plan",
-          cause: updateError,
+          message: "Error preparing password reset",
+          cause: cleanupError,
         });
       }
-      if (updateResult.length > 0) {
-        const { data, error: sendError } = await resend.emails.send({
-          from: "onboarding@resend.dev",
-          to: resetValues.email,
-          subject: "CapyPlan Password Reset Request",
-          html: `
-    <p>A password reset request was submitted for this email address.</p>
-    <p>Your temporary password is:</p>
-    <pre>${code}</pre>
-    <p>Please login and change your password immediately in your settings menu.</p>
-    <p>Best regards,</p>
-    <p>The CapyPlan Team</p>
-  `,
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 30);
+      const { error: tokenInsertError } = await mightFail(
+        db.insert(passwordResetTokensTable).values({
+          userId: user.userId,
+          tokenHash: hashedCode,
+          expiresAt,
+        }),
+      );
+      if (tokenInsertError) {
+        throw new HTTPException(500, {
+          message: "Error creating password reset token",
+          cause: tokenInsertError,
         });
-        if (sendError) {
-          console.error("[resend] Failed:", sendError);
-          await db
-            .update(usersTable)
-            .set({ password: originalPassword })
-            .where(eq(usersTable.email, resetValues.email));
-          return c.json({ success: false }, 500);
-        }
+      }
+      const { error: sendError } = await resend.emails.send({
+        from: "onboarding@resend.dev",
+        to: resetValues.email,
+        subject: "CapyPlan Password Reset Request",
+        html: `
+  <p>A password reset request was submitted for this email address.</p>
+  <p>Your one-time recovery code is:</p>
+  <pre>${code}</pre>
+  <p>This code expires in 30 minutes and can only be used once.</p>
+  <p>Return to the password recovery page and enter this code with your new password.</p>
+  <p>Best regards,</p>
+  <p>The CapyPlan Team</p>
+`,
+      });
+      if (sendError) {
+        console.error("[resend] Failed:", sendError);
+        await db
+          .delete(passwordResetTokensTable)
+          .where(eq(passwordResetTokensTable.userId, user.userId));
+        return c.json({ success: false }, 500);
       }
       return c.json({ success: true });
+    },
+  )
+  .post(
+    "/passwordreset/confirm",
+    zValidator("json", confirmPasswordResetSchema),
+    async (c) => {
+      const confirmValues = c.req.valid("json");
+      const tokenHash = hashResetToken(confirmValues.token);
+      const now = new Date();
+      const { error: expiredTokenCleanupError } = await mightFail(
+        db
+          .delete(passwordResetTokensTable)
+          .where(lt(passwordResetTokensTable.expiresAt, now)),
+      );
+      if (expiredTokenCleanupError) {
+        throw new HTTPException(500, {
+          message: "Error preparing password reset confirmation",
+          cause: expiredTokenCleanupError,
+        });
+      }
+      const { error: tokenQueryError, result: tokenQueryResult } =
+        await mightFail(
+          db
+            .select()
+            .from(passwordResetTokensTable)
+            .where(eq(passwordResetTokensTable.tokenHash, tokenHash)),
+        );
+      if (tokenQueryError) {
+        throw new HTTPException(500, {
+          message: "Error validating reset token",
+          cause: tokenQueryError,
+        });
+      }
+      const resetToken = tokenQueryResult[0];
+      if (!resetToken || resetToken.expiresAt < now) {
+        throw new HTTPException(400, {
+          message: "Recovery code is invalid or expired",
+        });
+      }
+      const encryptedPassword = await hashPassword(confirmValues.password);
+      const { error: passwordUpdateError, result: passwordUpdateResult } =
+        await mightFail(
+          db
+            .update(usersTable)
+            .set({ password: encryptedPassword })
+            .where(eq(usersTable.userId, resetToken.userId))
+            .returning(),
+        );
+      if (passwordUpdateError) {
+        throw new HTTPException(500, {
+          message: "Error updating password",
+          cause: passwordUpdateError,
+        });
+      }
+      const { error: tokenDeleteError } = await mightFail(
+        db
+          .delete(passwordResetTokensTable)
+          .where(
+            and(
+              eq(passwordResetTokensTable.userId, resetToken.userId),
+              eq(passwordResetTokensTable.tokenHash, tokenHash),
+            ),
+          ),
+      );
+      if (tokenDeleteError) {
+        throw new HTTPException(500, {
+          message: "Error finalizing password reset",
+          cause: tokenDeleteError,
+        });
+      }
+      return c.json(
+        {
+          success: true,
+          user: passwordUpdateResult[0]
+            ? toSafeUser(passwordUpdateResult[0])
+            : null,
+        },
+        200,
+      );
     },
   );

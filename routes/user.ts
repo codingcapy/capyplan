@@ -71,7 +71,9 @@ export const userRouter = new Hono()
         //@ts-ignore
         .where(eq(usersTable.userId, decodedUser.id));
       const user = response[0];
-      return c.json({ result: { user: user ? toSafeUser(user) : null, token } });
+      return c.json({
+        result: { user: user ? toSafeUser(user) : null, token },
+      });
     } catch (err) {
       c.status(401);
       return c.json({ message: "Unauthorized" });

@@ -23,6 +23,10 @@ type ResetPasswordArgs = ArgumentTypes<
   typeof client.api.v0.users.passwordreset.$post
 >[0]["json"];
 
+type ConfirmPasswordResetArgs = ArgumentTypes<
+  typeof client.api.v0.users.passwordreset.confirm.$post
+>[0]["json"];
+
 async function createUser(args: CreateUserArgs) {
   const res = await client.api.v0.users.$post({ json: args });
   if (!res.ok) {
@@ -153,6 +157,43 @@ export const useResetPasswordMutation = (
       if (!data) return console.log("No data, returning");
       console.log(data);
     },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};
+
+async function confirmPasswordReset(args: ConfirmPasswordResetArgs) {
+  const res = await client.api.v0.users.passwordreset.confirm.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue resetting your password :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  return res.json();
+}
+
+export const useConfirmPasswordResetMutation = (
+  onError?: (message: string) => void,
+) => {
+  return useMutation({
+    mutationFn: confirmPasswordReset,
     onError: (error) => {
       if (onError) {
         onError(error.message);
