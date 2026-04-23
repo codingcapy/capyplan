@@ -20,7 +20,7 @@ type UpdateLiabilityArgs = ArgumentTypes<
 >[0]["json"];
 
 type SerializeLiability = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.liabilities.$get>>
+  Awaited<ReturnType<typeof client.api.v0.liabilities[":planId"]["$get"]>>
 >["liabilities"][number];
 
 export function mapSerializedLiabilityToSchema(

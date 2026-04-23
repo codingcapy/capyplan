@@ -72,21 +72,6 @@ export const expendituresRouter = new Hono()
       return c.json({ expenditure: expenditureInsertResult[0] }, 200);
     },
   )
-  .get("/", async (c) => {
-    const { result: expendituresQueryResult, error: expendituresQueryError } =
-      await mightFail(
-        db
-          .select()
-          .from(expendituresTable)
-          .where(eq(expendituresTable.planId, 5)),
-      );
-    if (expendituresQueryError)
-      throw new HTTPException(500, {
-        message: "error querying expenditures",
-        cause: expendituresQueryError,
-      });
-    return c.json({ expenditures: expendituresQueryResult });
-  })
   .get("/:planId", async (c) => {
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);

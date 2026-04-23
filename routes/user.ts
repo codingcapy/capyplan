@@ -11,6 +11,11 @@ import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
 
+function toSafeUser(user: typeof usersTable.$inferSelect) {
+  const { password, ...safeUser } = user;
+  return safeUser;
+}
+
 export async function verifyPassword(hash: string, password: string) {
   const parts = hash.split(":");
   if (parts.length !== 2) throw new Error("Invalid hash format");
@@ -44,7 +49,7 @@ export const userRouter = new Hono()
       const token = jwt.sign({ id: user.userId }, process.env.JWT_SECRET!, {
         expiresIn: "14 days",
       });
-      return c.json({ result: { user, token } });
+      return c.json({ result: { user: toSafeUser(user), token } });
     } catch (error) {
       console.error(error);
       c.status(500);
@@ -66,9 +71,9 @@ export const userRouter = new Hono()
         //@ts-ignore
         .where(eq(usersTable.userId, decodedUser.id));
       const user = response[0];
-      return c.json({ result: { user, token } });
+      return c.json({ result: { user: user ? toSafeUser(user) : null, token } });
     } catch (err) {
       c.status(401);
-      return c.json({ err });
+      return c.json({ message: "Unauthorized" });
     }
   });

@@ -20,7 +20,7 @@ type UpdateFinancialGoalArgs = ArgumentTypes<
 >[0]["json"];
 
 type SerializeFinancialGoal = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.financialgoals.$get>>
+  Awaited<ReturnType<typeof client.api.v0.financialgoals[":planId"]["$get"]>>
 >["financialGoals"][number];
 
 export function mapSerializedFinancialGoalToSchema(

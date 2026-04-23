@@ -54,7 +54,7 @@ export const liabilitiesRouter = new Hono()
         throw new HTTPException(500, {
           message: "Liability count lookup failed",
         });
-      if (liabilityCountResult[0].count >= 20)
+      if ((liabilityCountResult[0]?.count ?? 0) >= 20)
         throw new HTTPException(400, {
           message: "Liability limit of 20 reached for this plan",
         });
@@ -72,21 +72,6 @@ export const liabilitiesRouter = new Hono()
       return c.json({ liability: liabilityInsertResult[0] }, 200);
     },
   )
-  .get("/", async (c) => {
-    const { result: liabilitiesQueryResult, error: liabilitiesQueryError } =
-      await mightFail(
-        db
-          .select()
-          .from(liabilitiesTable)
-          .where(eq(liabilitiesTable.planId, 5)),
-      );
-    if (liabilitiesQueryError)
-      throw new HTTPException(500, {
-        message: "error querying liabilities",
-        cause: liabilitiesQueryError,
-      });
-    return c.json({ liabilities: liabilitiesQueryResult });
-  })
   .get("/:planId", async (c) => {
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);

@@ -14,21 +14,6 @@ const deleteGenerationSchema = z.object({
 });
 
 export const generationsRouter = new Hono()
-  .get("/", async (c) => {
-    const { result: generationsQueryResult, error: generationsQueryError } =
-      await mightFail(
-        db
-          .select()
-          .from(generationsTable)
-          .where(eq(generationsTable.planId, 5)),
-      );
-    if (generationsQueryError)
-      throw new HTTPException(500, {
-        message: "error querying generations",
-        cause: generationsQueryError,
-      });
-    return c.json({ generations: generationsQueryResult });
-  })
   .get("/:planId", async (c) => {
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);

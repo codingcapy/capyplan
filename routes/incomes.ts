@@ -70,18 +70,6 @@ export const incomesRouter = new Hono()
       return c.json({ plan: incomeInsertResult[0] }, 200);
     },
   )
-  .get("/", async (c) => {
-    const { result: incomesQueryResult, error: incomesQueryError } =
-      await mightFail(
-        db.select().from(incomesTable).where(eq(incomesTable.planId, 5)),
-      );
-    if (incomesQueryError)
-      throw new HTTPException(500, {
-        message: "error querying incomes",
-        cause: incomesQueryError,
-      });
-    return c.json({ incomes: incomesQueryResult });
-  })
   .get("/:planId", async (c) => {
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);

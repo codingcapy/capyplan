@@ -70,18 +70,6 @@ export const assetsRouter = new Hono()
       return c.json({ asset: assetInsertResult[0] }, 200);
     },
   )
-  .get("/", async (c) => {
-    const { result: assetsQueryResult, error: assetsQueryError } =
-      await mightFail(
-        db.select().from(assetsTable).where(eq(assetsTable.planId, 5)),
-      );
-    if (assetsQueryError)
-      throw new HTTPException(500, {
-        message: "error querying assets",
-        cause: assetsQueryError,
-      });
-    return c.json({ assets: assetsQueryResult });
-  })
   .get("/:planId", async (c) => {
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);

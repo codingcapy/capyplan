@@ -20,7 +20,7 @@ type UpdateAssetArgs = ArgumentTypes<
 >[0]["json"];
 
 type SerializeAsset = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.assets.$get>>
+  Awaited<ReturnType<typeof client.api.v0.assets[":planId"]["$get"]>>
 >["assets"][number];
 
 export function mapSerializedAssetToSchema(serialized: SerializeAsset): Asset {

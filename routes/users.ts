@@ -15,6 +15,11 @@ import { Resend } from "resend";
 
 const scryptAsync = promisify(scrypt);
 
+function toSafeUser(user: typeof usersTable.$inferSelect) {
+  const { password, ...safeUser } = user;
+  return safeUser;
+}
+
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
@@ -125,7 +130,7 @@ export const usersRouter = new Hono()
         cause: planInsertError,
       });
     }
-    return c.json({ user: userInsertResult[0] }, 200);
+    return c.json({ user: toSafeUser(newUser) }, 200);
   })
   .post(
     "/update/currentplan",
@@ -146,7 +151,10 @@ export const usersRouter = new Hono()
           cause: updateError,
         });
       }
-      return c.json({ user: updateResult[0] }, 200);
+      return c.json(
+        { user: updateResult[0] ? toSafeUser(updateResult[0]) : null },
+        200,
+      );
     },
   )
   .post(
@@ -169,7 +177,10 @@ export const usersRouter = new Hono()
           cause: updateError,
         });
       }
-      return c.json({ user: updateResult[0] }, 200);
+      return c.json(
+        { user: updateResult[0] ? toSafeUser(updateResult[0]) : null },
+        200,
+      );
     },
   )
   .post(

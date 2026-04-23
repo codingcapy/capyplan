@@ -70,23 +70,6 @@ export const financialGoalsRouter = new Hono()
     }
     return c.json({ financialGoal: financialGoalInsertResult[0] }, 200);
   })
-  .get("/", async (c) => {
-    const {
-      result: financialGoalsQueryResult,
-      error: financialGoalsQueryError,
-    } = await mightFail(
-      db
-        .select()
-        .from(financialGoalsTable)
-        .where(eq(financialGoalsTable.planId, 5)),
-    );
-    if (financialGoalsQueryError)
-      throw new HTTPException(500, {
-        message: "error querying financial goals",
-        cause: financialGoalsQueryError,
-      });
-    return c.json({ financialGoals: financialGoalsQueryResult });
-  })
   .get("/:planId", async (c) => {
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);
