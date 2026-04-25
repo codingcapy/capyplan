@@ -42,86 +42,64 @@ export const aiRouter = new Hono().post(
       throw new HTTPException(500, { message: "Plan lookup failed" });
     if (!plan || plan.length === 0)
       throw new HTTPException(401, { message: "Unauthorized" });
-    // const [incomes, expenditures, assets, liabilities, financialGoals] =
-    //   await Promise.all([
-    //     db
-    //       .select()
-    //       .from(incomesTable)
-    //       .where(eq(incomesTable.planId, generationValues.planId)),
-    //     db
-    //       .select()
-    //       .from(expendituresTable)
-    //       .where(eq(expendituresTable.planId, generationValues.planId)),
-    //     db
-    //       .select()
-    //       .from(assetsTable)
-    //       .where(eq(assetsTable.planId, generationValues.planId)),
-    //     db
-    //       .select()
-    //       .from(liabilitiesTable)
-    //       .where(eq(liabilitiesTable.planId, generationValues.planId)),
-    //     db
-    //       .select()
-    //       .from(financialGoalsTable)
-    //       .where(eq(financialGoalsTable.planId, generationValues.planId)),
-    //   ]);
-    const { result: incomesQueryResult, error: incomesQueryError } =
-      await mightFail(
+    const [
+      { result: incomesQueryResult, error: incomesQueryError },
+      { result: expendituresQueryResult, error: expendituresQueryError },
+      { result: assetsQueryResult, error: assetsQueryError },
+      { result: liabilitiesQueryResult, error: liabilitiesQueryError },
+      { result: financialGoalsQueryResult, error: financialGoalsQueryError },
+    ] = await Promise.all([
+      mightFail(
         db
           .select()
           .from(incomesTable)
           .where(eq(incomesTable.planId, generationValues.planId)),
-      );
+      ),
+      mightFail(
+        db
+          .select()
+          .from(expendituresTable)
+          .where(eq(expendituresTable.planId, generationValues.planId)),
+      ),
+      mightFail(
+        db
+          .select()
+          .from(assetsTable)
+          .where(eq(assetsTable.planId, generationValues.planId)),
+      ),
+      mightFail(
+        db
+          .select()
+          .from(liabilitiesTable)
+          .where(eq(liabilitiesTable.planId, generationValues.planId)),
+      ),
+      mightFail(
+        db
+          .select()
+          .from(financialGoalsTable)
+          .where(eq(financialGoalsTable.planId, generationValues.planId)),
+      ),
+    ]);
     if (incomesQueryError)
       throw new HTTPException(500, {
         message: "error querying incomes",
         cause: incomesQueryError,
       });
-    const { result: expendituresQueryResult, error: expendituresQueryError } =
-      await mightFail(
-        db
-          .select()
-          .from(expendituresTable)
-          .where(eq(expendituresTable.planId, generationValues.planId)),
-      );
     if (expendituresQueryError)
       throw new HTTPException(500, {
         message: "error querying expenditures",
         cause: expendituresQueryError,
       });
-    const { result: assetsQueryResult, error: assetsQueryError } =
-      await mightFail(
-        db
-          .select()
-          .from(assetsTable)
-          .where(eq(assetsTable.planId, generationValues.planId)),
-      );
     if (assetsQueryError)
       throw new HTTPException(500, {
         message: "error querying assets",
         cause: assetsQueryError,
       });
-    const { result: liabilitiesQueryResult, error: liabilitiesQueryError } =
-      await mightFail(
-        db
-          .select()
-          .from(liabilitiesTable)
-          .where(eq(liabilitiesTable.planId, generationValues.planId)),
-      );
     if (liabilitiesQueryError)
       throw new HTTPException(500, {
         message: "error querying liabilities",
         cause: liabilitiesQueryError,
       });
-    const {
-      result: financialGoalsQueryResult,
-      error: financialGoalsQueryError,
-    } = await mightFail(
-      db
-        .select()
-        .from(financialGoalsTable)
-        .where(eq(financialGoalsTable.planId, generationValues.planId)),
-    );
     if (financialGoalsQueryError)
       throw new HTTPException(500, {
         message: "error querying financial goals",
