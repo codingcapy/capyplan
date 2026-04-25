@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { generations as generationsTable } from "../schemas/generations";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { assertIsParsableInt, requireUser } from "./plans";
 import { plans as plansTable } from "../schemas/plans";
@@ -13,10 +13,16 @@ const deleteGenerationSchema = z.object({
   generationId: z.number(),
 });
 
+const getGenerationsSchema = z.object({
+  cursor: z.coerce.number().optional(),
+  limit: z.coerce.number().min(1).max(50).default(10),
+});
+
 export const generationsRouter = new Hono()
-  .get("/:planId", async (c) => {
+  .get("/:planId", zValidator("query", getGenerationsSchema), async (c) => {
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);
+    const { cursor, limit } = c.req.valid("query");
     const decodedUser = requireUser(c);
     const { result: plan, error: planError } = await mightFail(
       db
@@ -32,19 +38,34 @@ export const generationsRouter = new Hono()
     if (planError)
       throw new HTTPException(500, { message: "Plan lookup failed" });
     if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
+    const whereClause = cursor
+      ? and(
+          eq(generationsTable.planId, planId),
+          lt(generationsTable.generationId, cursor),
+        )
+      : eq(generationsTable.planId, planId);
     const { result: generationsQueryResult, error: generationsQueryError } =
       await mightFail(
         db
           .select()
           .from(generationsTable)
-          .where(eq(generationsTable.planId, planId)),
+          .where(whereClause)
+          .orderBy(desc(generationsTable.generationId))
+          .limit(limit + 1),
       );
     if (generationsQueryError)
       throw new HTTPException(500, {
         message: "error querying generations",
         cause: generationsQueryError,
       });
-    return c.json({ generations: generationsQueryResult });
+    const hasMore = generationsQueryResult.length > limit;
+    const generations = hasMore
+      ? generationsQueryResult.slice(0, limit)
+      : generationsQueryResult;
+    const lastGeneration = generations[generations.length - 1];
+    const nextCursor =
+      hasMore && lastGeneration ? lastGeneration.generationId : null;
+    return c.json({ generations, nextCursor });
   })
   .post("/delete", zValidator("json", deleteGenerationSchema), async (c) => {
     const decodedUser = requireUser(c);

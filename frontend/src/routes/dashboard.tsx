@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useAuthStore from "../store/AuthStore";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { LeftNav } from "../components/LeftNav";
 import { TopNav } from "../components/TopNav";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getPlanByIdQueryOptions } from "../lib/api/plans";
 import { CreateIncome } from "../components/CreateIncome";
 import { CreateExpenditure } from "../components/CreateExpenditure";
@@ -21,7 +21,7 @@ import { LiabilityItem } from "../components/LiabilityItem";
 import { getFinancialGoalsByPlanIdQueryOptions } from "../lib/api/financialGoals";
 import { FinancialGoalItem } from "../components/FinancialGoalItem";
 import {
-  getGenerationsByPlanIdQueryOptions,
+  getGenerationsInfiniteQueryOptions,
   useCreateGenerationMutation,
 } from "../lib/api/generations";
 import { GenerationItem } from "../components/GenerationItem";
@@ -88,13 +88,40 @@ function Dashboard() {
     enabled: !!plan?.planId,
   });
   const {
-    data: generations,
+    data: generationsData,
     isLoading: generationsLoading,
     error: generationsError,
-  } = useQuery({
-    ...getGenerationsByPlanIdQueryOptions(plan?.planId ?? 0),
+    fetchNextPage: fetchNextGenerationsPage,
+    hasNextPage: hasNextGenerationsPage,
+    isFetchingNextPage: isFetchingNextGenerationsPage,
+  } = useInfiniteQuery({
+    ...getGenerationsInfiniteQueryOptions(plan?.planId ?? 0),
     enabled: !!plan?.planId,
   });
+  const generations = generationsData?.pages.flatMap((p) => p.generations);
+  const generationsSentinelRef = useRef<HTMLDivElement | null>(null);
+  const fetchNextGenerationsPageCallback = useCallback(() => {
+    if (hasNextGenerationsPage && !isFetchingNextGenerationsPage) {
+      fetchNextGenerationsPage();
+    }
+  }, [
+    hasNextGenerationsPage,
+    isFetchingNextGenerationsPage,
+    fetchNextGenerationsPage,
+  ]);
+
+  useEffect(() => {
+    const sentinel = generationsSentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) fetchNextGenerationsPageCallback();
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [fetchNextGenerationsPageCallback]);
   const { mutate: createGeneration, isPending: createGenerationPending } =
     useCreateGenerationMutation();
   const totalIncome =
@@ -575,9 +602,17 @@ function Dashboard() {
               ) : generationsError ? (
                 <div>Error loading AI recommendations</div>
               ) : generations ? (
-                generations.map((g) => (
-                  <GenerationItem key={g.generationId} g={g} />
-                ))
+                <>
+                  {generations.map((g) => (
+                    <GenerationItem key={g.generationId} g={g} />
+                  ))}
+                  <div ref={generationsSentinelRef} />
+                  {isFetchingNextGenerationsPage && (
+                    <div className="py-3 text-sm text-[#a0a0a0]">
+                      Loading more...
+                    </div>
+                  )}
+                </>
               ) : (
                 <div></div>
               )}
