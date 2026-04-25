@@ -44,13 +44,15 @@ export function enforceRateLimit(
   }
 
   existing.count += 1;
+}
 
-  // Best-effort cleanup to prevent unbounded map growth.
-  if (buckets.size > 10_000) {
-    for (const [key, bucket] of buckets) {
-      if (now - bucket.windowStart >= windowMs) {
-        buckets.delete(key);
-      }
+// Periodically purge expired buckets out-of-band to avoid blocking requests.
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, bucket] of buckets) {
+    // Use a generous TTL since windowMs varies per route; 10 minutes covers all current windows.
+    if (now - bucket.windowStart >= 10 * 60_000) {
+      buckets.delete(key);
     }
   }
-}
+}, 5 * 60_000).unref();

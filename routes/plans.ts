@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import { mightFail, mightFailSync } from "might-fail";
 import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { users as usersTable } from "../schemas/users";
 import { createUpdateSchema } from "drizzle-zod";
 
@@ -73,6 +73,18 @@ export const plansRouter = new Hono()
       throw new HTTPException(400, {
         message: "Plan title length exceeds max char limit",
         cause: Error(),
+      });
+    const { result: planCountResult, error: planCountError } = await mightFail(
+      db
+        .select({ count: count() })
+        .from(plansTable)
+        .where(eq(plansTable.userId, decodedUser.id)),
+    );
+    if (planCountError)
+      throw new HTTPException(500, { message: "Plan count lookup failed" });
+    if ((planCountResult[0]?.count ?? 0) >= 20)
+      throw new HTTPException(400, {
+        message: "Plan limit of 20 reached for this account",
       });
     const { error: planInsertError, result: planInsertResult } =
       await mightFail(
