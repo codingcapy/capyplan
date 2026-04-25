@@ -3,11 +3,13 @@ import { create } from "zustand";
 import { type User } from "../../../schemas/users";
 import { setSession } from "../services/jwt.service";
 
+export type SafeUser = Omit<User, "password">;
+
 const useAuthStore = create<{
-  user: User | null;
+  user: SafeUser | null;
   authLoading: boolean;
   tokenLoading: boolean;
-  setUser: (args: User) => void;
+  setUser: (args: SafeUser) => void;
   logoutService: () => void;
   loginService: (email: string, password: string) => void;
 }>((set, get) => ({

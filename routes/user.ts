@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import { db } from "../db";
 import { users as usersTable } from "../schemas/users";
 import { createInsertSchema } from "drizzle-zod";
-import { randomBytes, scrypt } from "crypto";
+import { randomBytes, scrypt, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { enforceRateLimit } from "./rateLimit";
 
@@ -22,7 +22,9 @@ export async function verifyPassword(hash: string, password: string) {
   if (parts.length !== 2) throw new Error("Invalid hash format");
   const [salt, keyHex] = parts as [string, string];
   const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
-  return derivedKey.toString("hex") === keyHex;
+  const storedKey = Buffer.from(keyHex, "hex");
+  if (derivedKey.length !== storedKey.length) return false;
+  return timingSafeEqual(derivedKey, storedKey);
 }
 
 const loginSchema = z.object({

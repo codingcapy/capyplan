@@ -10,6 +10,7 @@ import { users as usersTable } from "../schemas/users";
 import { and, eq, lt } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { requireUser } from "./plans";
+import { verifyPassword } from "./user";
 import { plans as plansTable } from "../schemas/plans";
 import { Resend } from "resend";
 import { passwordResetTokens as passwordResetTokensTable } from "../schemas/passwordResetTokens";
@@ -43,7 +44,8 @@ const updateCurrentPlanSchema = z.object({
 });
 
 const updatePasswordSchema = z.object({
-  password: z.string().max(128),
+  currentPassword: z.string().max(128),
+  password: z.string().min(8).max(128),
 });
 
 const resetPasswordSchema = z.object({
@@ -175,6 +177,25 @@ export const usersRouter = new Hono()
     async (c) => {
       const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      const { error: userQueryError, result: userQueryResult } =
+        await mightFail(
+          db
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.userId, decodedUser.id)),
+        );
+      if (userQueryError || !userQueryResult[0]) {
+        throw new HTTPException(500, { message: "Error fetching user" });
+      }
+      const isCurrentPasswordValid = await verifyPassword(
+        userQueryResult[0].password,
+        updateValues.currentPassword,
+      );
+      if (!isCurrentPasswordValid) {
+        throw new HTTPException(401, {
+          message: "Current password is incorrect",
+        });
+      }
       const encrypted = await hashPassword(updateValues.password);
       const { error: updateError, result: updateResult } = await mightFail(
         db

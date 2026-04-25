@@ -94,15 +94,21 @@ function RouteComponent() {
   function handleSubmitUpdatePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (updatePasswordPending) return;
+    const currentPassword = (e.target as HTMLFormElement).currentPassword.value;
     const password = (e.target as HTMLFormElement).password.value;
+    if (password.length < 8) {
+      setPasswordNotification("New password must be at least 8 characters.");
+      return;
+    }
     updatePassword(
-      { password },
+      { currentPassword, password },
       {
         onSuccess: () => {
           setEditPasswordMode(false);
           setPasswordNotification("Success!");
         },
-        onError: (errorMessage) => setNotification(errorMessage.toString()),
+        onError: (errorMessage) =>
+          setPasswordNotification(errorMessage.message),
       },
     );
   }
@@ -314,9 +320,18 @@ function RouteComponent() {
               <form onSubmit={handleSubmitUpdatePassword} className="flex">
                 <input
                   type="password"
+                  name="currentPassword"
+                  id="currentPassword"
+                  placeholder="Current"
+                  className="sm:w-[130px] border rounded px-1 mr-1"
+                  required
+                />
+                <input
+                  type="password"
                   name="password"
                   id="password"
-                  className="sm:w-[150px] border rounded px-1"
+                  placeholder="New"
+                  className="sm:w-[130px] border rounded px-1"
                   required
                 />
                 <button className="w-[35px] cursor-pointer text-green-500 flex items-center justify-center">
@@ -347,7 +362,7 @@ function RouteComponent() {
               className={
                 passwordNotification === "Success!"
                   ? "text-green-500"
-                  : "text-yellow-500"
+                  : "text-red-500"
               }
             >
               {passwordNotification}

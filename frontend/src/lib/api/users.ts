@@ -102,7 +102,7 @@ export const useUpdateCurrentPlanMutation = (
   return useMutation({
     mutationFn: updateCurrentPlan,
     onSettled: (_data, _error) => {
-      if (!_data) return console.log("No data, returning");
+      if (!_data || !_data.user) return console.log("No data, returning");
       setUser({ ..._data.user, createdAt: new Date(_data.user.createdAt) });
       queryClient.invalidateQueries({
         queryKey: ["users"],
