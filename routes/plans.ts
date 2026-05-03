@@ -8,6 +8,11 @@ import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
 import { and, count, eq } from "drizzle-orm";
 import { users as usersTable } from "../schemas/users";
+
+function toSafeUser(user: typeof usersTable.$inferSelect) {
+  const { password, ...safeUser } = user;
+  return safeUser;
+}
 import { createUpdateSchema } from "drizzle-zod";
 
 const createPlanSchema = z.object({
@@ -114,7 +119,10 @@ export const plansRouter = new Hono()
         cause: updateError,
       });
     }
-    return c.json({ user: updateResult[0] }, 200);
+    return c.json(
+      { user: updateResult[0] ? toSafeUser(updateResult[0]) : null },
+      200,
+    );
   })
   .get("/", async (c) => {
     const decodedUser = requireUser(c);
@@ -236,7 +244,10 @@ export const plansRouter = new Hono()
           cause: updateError,
         });
       }
-      return c.json({ user: updateResult[0] }, 200);
+      return c.json(
+        { user: updateResult[0] ? toSafeUser(updateResult[0]) : null },
+        200,
+      );
     } else {
       if (!plansCheck[0])
         throw new HTTPException(500, { message: "plans check failed" });
@@ -253,7 +264,7 @@ export const plansRouter = new Hono()
           cause: updateError,
         });
       }
-      return c.json({ user: updateResult[0] }, 200);
+      return c.json({ user: toSafeUser(updateResult[0]) }, 200);
     }
   })
   .post(
