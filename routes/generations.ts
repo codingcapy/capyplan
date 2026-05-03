@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { generations as generationsTable } from "../schemas/generations";
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, lt } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { assertIsParsableInt, requireUser } from "./plans";
 import { plans as plansTable } from "../schemas/plans";
@@ -24,20 +24,6 @@ export const generationsRouter = new Hono()
     const planId = assertIsParsableInt(planIdString);
     const { cursor, limit } = c.req.valid("query");
     const decodedUser = requireUser(c);
-    const { result: plan, error: planError } = await mightFail(
-      db
-        .select()
-        .from(plansTable)
-        .where(
-          and(
-            eq(plansTable.planId, planId),
-            eq(plansTable.userId, decodedUser.id),
-          ),
-        ),
-    );
-    if (planError)
-      throw new HTTPException(500, { message: "Plan lookup failed" });
-    if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
     const whereClause = cursor
       ? and(
           eq(generationsTable.planId, planId),
@@ -47,8 +33,15 @@ export const generationsRouter = new Hono()
     const { result: generationsQueryResult, error: generationsQueryError } =
       await mightFail(
         db
-          .select()
+          .select(getTableColumns(generationsTable))
           .from(generationsTable)
+          .innerJoin(
+            plansTable,
+            and(
+              eq(generationsTable.planId, plansTable.planId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          )
           .where(whereClause)
           .orderBy(desc(generationsTable.generationId))
           .limit(limit + 1),

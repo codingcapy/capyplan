@@ -5,7 +5,7 @@ import { expenditures as expendituresTable } from "../schemas/expenditures";
 import { assertIsParsableInt, requireUser } from "./plans";
 import { mightFail } from "might-fail";
 import { db } from "../db";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, getTableColumns } from "drizzle-orm";
 import { plans as plansTable } from "../schemas/plans";
 import { HTTPException } from "hono/http-exception";
 import z from "zod";
@@ -28,33 +28,27 @@ export const expendituresRouter = new Hono()
     async (c) => {
       const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
-      const { result: plan, error: planError } = await mightFail(
+      const { result: planCheck, error: planCheckError } = await mightFail(
         db
-          .select()
+          .select({ expenditureCount: count(expendituresTable.expenditureId) })
           .from(plansTable)
+          .leftJoin(
+            expendituresTable,
+            eq(expendituresTable.planId, plansTable.planId),
+          )
           .where(
             and(
               eq(plansTable.planId, insertValues.planId),
               eq(plansTable.userId, decodedUser.id),
             ),
-          ),
+          )
+          .groupBy(plansTable.planId),
       );
-      if (planError)
+      if (planCheckError)
         throw new HTTPException(500, { message: "Plan lookup failed" });
-      if (!plan || plan.length === 0)
+      if (planCheck.length === 0)
         throw new HTTPException(401, { message: "Unauthorized" });
-      const { result: expenditureCountResult, error: expenditureCountError } =
-        await mightFail(
-          db
-            .select({ count: count() })
-            .from(expendituresTable)
-            .where(eq(expendituresTable.planId, insertValues.planId)),
-        );
-      if (expenditureCountError)
-        throw new HTTPException(500, {
-          message: "Expenditure count lookup failed",
-        });
-      if ((expenditureCountResult[0]?.count ?? 0) >= 20)
+      if ((planCheck[0]?.expenditureCount ?? 0) >= 20)
         throw new HTTPException(400, {
           message: "Expenditure limit of 20 reached for this plan",
         });
@@ -76,25 +70,18 @@ export const expendituresRouter = new Hono()
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);
     const decodedUser = requireUser(c);
-    const { result: plan, error: planError } = await mightFail(
-      db
-        .select()
-        .from(plansTable)
-        .where(
-          and(
-            eq(plansTable.planId, planId),
-            eq(plansTable.userId, decodedUser.id),
-          ),
-        ),
-    );
-    if (planError)
-      throw new HTTPException(500, { message: "Plan lookup failed" });
-    if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
     const { result: expendituresQueryResult, error: expendituresQueryError } =
       await mightFail(
         db
-          .select()
+          .select(getTableColumns(expendituresTable))
           .from(expendituresTable)
+          .innerJoin(
+            plansTable,
+            and(
+              eq(expendituresTable.planId, plansTable.planId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          )
           .where(eq(expendituresTable.planId, planId)),
       );
     if (expendituresQueryError)

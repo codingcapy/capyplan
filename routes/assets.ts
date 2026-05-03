@@ -6,7 +6,7 @@ import { assertIsParsableInt, requireUser } from "./plans";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, getTableColumns } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import z from "zod";
 
@@ -28,31 +28,24 @@ export const assetsRouter = new Hono()
     async (c) => {
       const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
-      const { result: plan, error: planError } = await mightFail(
+      const { result: planCheck, error: planCheckError } = await mightFail(
         db
-          .select()
+          .select({ assetCount: count(assetsTable.assetId) })
           .from(plansTable)
+          .leftJoin(assetsTable, eq(assetsTable.planId, plansTable.planId))
           .where(
             and(
               eq(plansTable.planId, insertValues.planId),
               eq(plansTable.userId, decodedUser.id),
             ),
-          ),
+          )
+          .groupBy(plansTable.planId),
       );
-      if (planError)
+      if (planCheckError)
         throw new HTTPException(500, { message: "Plan lookup failed" });
-      if (!plan || plan.length === 0)
+      if (planCheck.length === 0)
         throw new HTTPException(401, { message: "Unauthorized" });
-      const { result: assetCountResult, error: assetCountError } =
-        await mightFail(
-          db
-            .select({ count: count() })
-            .from(assetsTable)
-            .where(eq(assetsTable.planId, insertValues.planId)),
-        );
-      if (assetCountError)
-        throw new HTTPException(500, { message: "Asset count lookup failed" });
-      if ((assetCountResult[0]?.count ?? 0) >= 20)
+      if ((planCheck[0]?.assetCount ?? 0) >= 20)
         throw new HTTPException(400, {
           message: "Asset limit of 20 reached for this plan",
         });
@@ -74,23 +67,19 @@ export const assetsRouter = new Hono()
     const { planId: planIdString } = c.req.param();
     const planId = assertIsParsableInt(planIdString);
     const decodedUser = requireUser(c);
-    const { result: plan, error: planError } = await mightFail(
-      db
-        .select()
-        .from(plansTable)
-        .where(
-          and(
-            eq(plansTable.planId, planId),
-            eq(plansTable.userId, decodedUser.id),
-          ),
-        ),
-    );
-    if (planError)
-      throw new HTTPException(500, { message: "Plan lookup failed" });
-    if (!plan) throw new HTTPException(401, { message: "Unauthorized" });
     const { result: assetsQueryResult, error: assetsQueryError } =
       await mightFail(
-        db.select().from(assetsTable).where(eq(assetsTable.planId, planId)),
+        db
+          .select(getTableColumns(assetsTable))
+          .from(assetsTable)
+          .innerJoin(
+            plansTable,
+            and(
+              eq(assetsTable.planId, plansTable.planId),
+              eq(plansTable.userId, decodedUser.id),
+            ),
+          )
+          .where(eq(assetsTable.planId, planId)),
       );
     if (assetsQueryError)
       throw new HTTPException(500, {

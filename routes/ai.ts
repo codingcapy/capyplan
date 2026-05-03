@@ -22,7 +22,7 @@ export const openai = new OpenAI({
 
 /** Strip newlines and limit length to prevent prompt injection from user data. */
 function sp(value: string | null | undefined, maxLen = 200): string {
-  if (!value) return "";
+  if (!value || typeof value !== "string") return "";
   return value.replace(/[\r\n]+/g, " ").slice(0, maxLen);
 }
 
