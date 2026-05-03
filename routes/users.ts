@@ -34,9 +34,9 @@ function hashResetToken(token: string) {
 }
 
 const createUserSchema = z.object({
-  username: z.string().max(32),
-  email: z.string().max(256),
-  password: z.string().max(128),
+  username: z.string().min(1).max(32),
+  email: z.email({ pattern: z.regexes.html5Email }).max(256),
+  password: z.string().min(8).max(128),
 });
 
 const updateCurrentPlanSchema = z.object({
@@ -60,92 +60,129 @@ const confirmPasswordResetSchema = z.object({
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const usersRouter = new Hono()
-  .post("/", zValidator("json", createUserSchema), async (c) => {
-    enforceRateLimit(c, "signup", 5, 60_000);
-    const insertValues = c.req.valid("json");
-    const { error: emailQueryError, result: emailQueryResult } =
-      await mightFail(
-        db
-          .select()
-          .from(usersTable)
-          .where(eq(usersTable.email, insertValues.email)),
-      );
-    if (emailQueryError) {
-      throw new HTTPException(500, {
-        message: "Error while fetching user",
-        cause: emailQueryError,
-      });
-    }
-    if (emailQueryResult.length > 0) {
-      return c.json(
-        { message: "An account with this email already exists" },
-        409,
-      );
-    }
-    const { error: usernameQueryError, result: usernameQueryResult } =
-      await mightFail(
-        db
-          .select()
-          .from(usersTable)
-          .where(eq(usersTable.username, insertValues.username)),
-      );
-    if (usernameQueryError) {
-      throw new HTTPException(500, {
-        message: "Error while fetching user",
-        cause: usernameQueryError,
-      });
-    }
-    if (usernameQueryResult.length > 0) {
-      return c.json(
-        { message: "An account with this username already exists" },
-        409,
-      );
-    }
-    const encrypted = await hashPassword(insertValues.password);
-    const userId = randomUUIDv7();
-    const { error: userInsertError, result: userInsertResult } =
-      await mightFail(
-        db
-          .insert(usersTable)
-          .values({
-            userId: userId,
-            username: insertValues.username,
-            email: insertValues.email,
-            password: encrypted,
-          })
-          .returning(),
-      );
-    if (userInsertError) {
-      console.log("Error while creating user");
-      throw new HTTPException(500, {
-        message: "Error while creating user",
-        cause: userInsertError,
-      });
-    }
-    const newUser = userInsertResult[0];
-    if (!newUser) {
-      throw new HTTPException(500, { message: "User insert returned no rows" });
-    }
-    const { error: planInsertError, result: planInsertResult } =
-      await mightFail(
-        db
-          .insert(plansTable)
-          .values({
-            userId: newUser.userId,
-            title: `${newUser.username}'s plan`,
-          })
-          .returning(),
-      );
-    if (planInsertError) {
-      console.log("Error while creating plan");
-      console.log(planInsertError);
-      throw new HTTPException(500, {
-        message: "Error while creating plan",
-        cause: planInsertError,
-      });
-    }
-    return c.json({ user: toSafeUser(newUser) }, 200);
-  })
+  .post(
+    "/",
+    zValidator("json", createUserSchema, (result, c) => {
+      if (!result.success) {
+        console.error(
+          "[signup] Validation failed:",
+          JSON.stringify(result.error.issues),
+        );
+        return c.json(
+          { message: "Validation failed", issues: result.error.issues },
+          400,
+        );
+      }
+    }),
+    async (c) => {
+      enforceRateLimit(c, "signup", 5, 60_000);
+      const insertValues = c.req.valid("json");
+      const { error: emailQueryError, result: emailQueryResult } =
+        await mightFail(
+          db
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.email, insertValues.email)),
+        );
+      if (emailQueryError) {
+        throw new HTTPException(500, {
+          message: "Error while fetching user",
+          cause: emailQueryError,
+        });
+      }
+      if (emailQueryResult.length > 0) {
+        return c.json(
+          { message: "An account with this email already exists" },
+          409,
+        );
+      }
+      const { error: usernameQueryError, result: usernameQueryResult } =
+        await mightFail(
+          db
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.username, insertValues.username)),
+        );
+      if (usernameQueryError) {
+        throw new HTTPException(500, {
+          message: "Error while fetching user",
+          cause: usernameQueryError,
+        });
+      }
+      if (usernameQueryResult.length > 0) {
+        return c.json(
+          { message: "An account with this username already exists" },
+          409,
+        );
+      }
+      const encrypted = await hashPassword(insertValues.password);
+      const userId = randomUUIDv7();
+      const { error: userInsertError, result: userInsertResult } =
+        await mightFail(
+          db
+            .insert(usersTable)
+            .values({
+              userId: userId,
+              username: insertValues.username,
+              email: insertValues.email,
+              password: encrypted,
+            })
+            .returning(),
+        );
+      if (userInsertError) {
+        console.log("Error while creating user");
+        throw new HTTPException(500, {
+          message: "Error while creating user",
+          cause: userInsertError,
+        });
+      }
+      const newUser = userInsertResult[0];
+      if (!newUser) {
+        throw new HTTPException(500, {
+          message: "User insert returned no rows",
+        });
+      }
+      const { error: planInsertError, result: planInsertResult } =
+        await mightFail(
+          db
+            .insert(plansTable)
+            .values({
+              userId: newUser.userId,
+              title: `${newUser.username}'s plan`,
+            })
+            .returning(),
+        );
+      if (planInsertError) {
+        console.log("Error while creating plan");
+        console.log(planInsertError);
+        throw new HTTPException(500, {
+          message: "Error while creating plan",
+          cause: planInsertError,
+        });
+      }
+      const newPlan = planInsertResult[0];
+      if (!newPlan) {
+        throw new HTTPException(500, {
+          message: "Plan insert returned no rows",
+        });
+      }
+      const { error: currentPlanUpdateError, result: currentPlanUpdateResult } =
+        await mightFail(
+          db
+            .update(usersTable)
+            .set({ currentPlan: newPlan.planId })
+            .where(eq(usersTable.userId, newUser.userId))
+            .returning(),
+        );
+      if (currentPlanUpdateError || !currentPlanUpdateResult[0]) {
+        throw new HTTPException(500, {
+          message: "Error while setting current plan",
+          cause: currentPlanUpdateError,
+        });
+      }
+      return c.json({ user: toSafeUser(currentPlanUpdateResult[0]) }, 200);
+    },
+  )
   .post(
     "/update/currentplan",
     zValidator("json", updateCurrentPlanSchema),

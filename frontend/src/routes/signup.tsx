@@ -25,10 +25,13 @@ function SignupPage() {
     const username = (e.target as HTMLFormElement).username.value;
     const email = (e.target as HTMLFormElement).email.value;
     const password = (e.target as HTMLFormElement).password.value;
-    if (username.length > 255) return setNotification("Username too long!");
+    if (username.length > 32)
+      return setNotification("Username too long! Max 32 characters");
     if (email.length > 255) return setNotification("Email too long!");
     if (password.length > 80)
       return setNotification("Password too long! Max character limit is 80");
+    if (password.length < 8)
+      return setNotification("Password must be at least 8 characters");
     createUser(
       { username, password, email },
       {

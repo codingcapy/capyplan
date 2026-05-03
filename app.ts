@@ -17,7 +17,15 @@ import { generationsRouter } from "./routes/generations";
 const app = new Hono();
 
 app.use("*", logger());
-app.use("*", cors());
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "https://capyplan.up.railway.app"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
 const PORT = parseInt(process.env.PORT!) || 3333;
 
