@@ -5,6 +5,10 @@ import { setSession } from "../services/jwt.service";
 
 export type SafeUser = Omit<User, "password">;
 
+const API_BASE = import.meta.env.DEV
+  ? "http://localhost:3333"
+  : "https://capyplan.up.railway.app";
+
 const useAuthStore = create<{
   user: SafeUser | null;
   authLoading: boolean;
@@ -25,7 +29,7 @@ const useAuthStore = create<{
     set({ authLoading: true });
     try {
       const res = await axios.post(
-        `https://capyplan.up.railway.app/api/v0/user/login`,
+        `${API_BASE}/api/v0/user/login`,
         {
           email,
           password,
@@ -45,7 +49,7 @@ const useAuthStore = create<{
   loginWithToken: async () => {
     try {
       const res = await axios.post(
-        `https://capyplan.up.railway.app/api/v0/user/validation`,
+        `${API_BASE}/api/v0/user/validation`,
       );
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);

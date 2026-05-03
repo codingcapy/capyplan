@@ -20,6 +20,12 @@ export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
+/** Strip newlines and limit length to prevent prompt injection from user data. */
+function sp(value: string | null | undefined, maxLen = 200): string {
+  if (!value) return "";
+  return value.replace(/[\r\n]+/g, " ").slice(0, maxLen);
+}
+
 export const aiRouter = new Hono().post(
   "/generate",
   zValidator("json", z.object({ planId: z.number() })),
@@ -138,31 +144,31 @@ export const aiRouter = new Hono().post(
     const incomesText = incomesQueryResult
       .map(
         (i) =>
-          `${i.position}${i.company && ` at ${i.company}`}: ${plan[0]!.currency}${(i.amount / 100).toFixed(2)} with tax %${(i.tax / 100).toFixed(2)} therefore net ${(((i.amount / 100) * (100 - i.tax / 100)) / 100).toFixed(2)}`,
+          `${sp(i.position)}${i.company && ` at ${sp(i.company)}`}: ${plan[0]!.currency}${(i.amount / 100).toFixed(2)} with tax %${(i.tax / 100).toFixed(2)} therefore net ${(((i.amount / 100) * (100 - i.tax / 100)) / 100).toFixed(2)}`,
       )
       .join("\n");
     const expendituresText = expendituresQueryResult
-      .map((e) => `${e.name}: $${(e.amount / 100).toFixed(2)}`)
+      .map((e) => `${sp(e.name)}: $${(e.amount / 100).toFixed(2)}`)
       .join("\n");
 
     const assetsText = assetsQueryResult
       .map(
         (a) =>
-          `${a.name}: $${(a.value / 100).toFixed(2)} with ROI %${(a.roi / 100).toFixed(2)}`,
+          `${sp(a.name)}: $${(a.value / 100).toFixed(2)} with ROI %${(a.roi / 100).toFixed(2)}`,
       )
       .join("\n");
 
     const liabilitiesText = liabilitiesQueryResult
       .map(
         (l) =>
-          `${l.name}: $${(l.amount / 100).toFixed(2)} with interest %${(l.interest / 100).toFixed(2)}`,
+          `${sp(l.name)}: $${(l.amount / 100).toFixed(2)} with interest %${(l.interest / 100).toFixed(2)}`,
       )
       .join("\n");
 
     const financialGoalsText = financialGoalsQueryResult
       .map(
         (e) =>
-          `${e.name}: $${(e.amount / 100).toFixed(2)} with target date ${e.targetDate}`,
+          `${sp(e.name)}: $${(e.amount / 100).toFixed(2)} with target date ${sp(e.targetDate)}`,
       )
       .join("\n");
 
@@ -180,9 +186,9 @@ export const aiRouter = new Hono().post(
           content: `
           Provide financial advice for the following client data
 
-          Year of birth: ${plan[0].yearOfBirth}
-          Country of residence: ${plan[0].location}
-          Currency: ${plan[0].currency}
+          Year of birth: ${sp(plan[0].yearOfBirth, 10)}
+          Country of residence: ${sp(plan[0].location)}
+          Currency: ${sp(plan[0].currency, 10)}
           Total income: ${totalIncome}
           Total expenditure: ${totalExpenditure}
           Cashflow: ${cashflow}

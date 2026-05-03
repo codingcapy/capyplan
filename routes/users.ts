@@ -189,6 +189,27 @@ export const usersRouter = new Hono()
     async (c) => {
       const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      // Verify plan ownership (0 is the sentinel "no plan" value)
+      if (updateValues.currentPlan !== 0) {
+        const { error: planCheckError, result: planCheckResult } =
+          await mightFail(
+            db
+              .select()
+              .from(plansTable)
+              .where(
+                and(
+                  eq(plansTable.planId, updateValues.currentPlan),
+                  eq(plansTable.userId, decodedUser.id),
+                ),
+              ),
+          );
+        if (planCheckError)
+          throw new HTTPException(500, {
+            message: "Plan ownership check failed",
+          });
+        if (planCheckResult.length === 0)
+          throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: updateError, result: updateResult } = await mightFail(
         db
           .update(usersTable)
@@ -302,7 +323,7 @@ export const usersRouter = new Hono()
         });
       }
       const { error: sendError } = await resend.emails.send({
-        from: "onboarding@resend.dev",
+        from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
         to: resetValues.email,
         subject: "CapyPlan Password Reset Request",
         html: `
