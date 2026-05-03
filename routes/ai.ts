@@ -172,18 +172,23 @@ export const aiRouter = new Hono().post(
       )
       .join("\n");
 
-    const completion = await openai.responses.create({
-      model: "gpt-5.4",
-      temperature: 0.4,
-      input: [
+    const ac = new AbortController();
+    const timeoutId = setTimeout(() => ac.abort(), 30_000);
+    let completion;
+    try {
+      completion = await openai.responses.create(
         {
-          role: "system",
-          content:
-            "You are a certified financial planner providing clear financial advice.",
-        },
-        {
-          role: "user",
-          content: `
+          model: "gpt-5.4",
+          temperature: 0.4,
+          input: [
+            {
+              role: "system",
+              content:
+                "You are a certified financial planner providing clear financial advice.",
+            },
+            {
+              role: "user",
+              content: `
           Provide financial advice for the following client data
 
           Year of birth: ${sp(plan[0].yearOfBirth, 10)}
@@ -216,9 +221,19 @@ export const aiRouter = new Hono().post(
           Limit your advice to no more than 1500 characters
           ALWAYS take into consideration the client's age and country of residence and whether this means they are willing to take more risks or retired and comfortable or trying to raise a family
           ALWAYS start with "Based on the provided financial data, here's a comprehensive analysis of your"`,
+            },
+          ],
         },
-      ],
-    });
+        { signal: ac.signal },
+      );
+    } catch (err: any) {
+      if (err?.name === "AbortError" || ac.signal.aborted) {
+        throw new HTTPException(504, { message: "AI generation timed out" });
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     const content = completion.output_text || "error generating recommendation";
     const { error: generationInsertError, result: generationInsertResult } =

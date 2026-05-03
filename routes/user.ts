@@ -43,7 +43,8 @@ export const userRouter = new Hono()
         .where(eq(usersTable.email, loginInfo.email));
       const user = queryResult[0];
       if (!user) return c.json({ result: { user: null, token: null } });
-      if (user.status !== "active") return c.json({ result: { user: null, token: null } });
+      if (user.status !== "active")
+        return c.json({ result: { user: null, token: null } });
       const isPasswordValid = await verifyPassword(
         user.password,
         loginInfo.password,
@@ -77,7 +78,10 @@ export const userRouter = new Hono()
         .where(eq(usersTable.userId, decodedUser.id));
       const user = response[0];
       return c.json({
-        result: { user: user && user.status === "active" ? toSafeUser(user) : null, token },
+        result: {
+          user: user && user.status === "active" ? toSafeUser(user) : null,
+          token,
+        },
       });
     } catch (err) {
       c.status(401);

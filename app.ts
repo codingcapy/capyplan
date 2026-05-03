@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { compress } from "hono/compress";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { serveStatic } from "hono/bun";
@@ -18,6 +19,7 @@ import { generationsRouter } from "./routes/generations";
 const app = new Hono();
 
 app.use("*", logger());
+app.use("*", compress());
 app.use("*", secureHeaders());
 app.use(
   "*",
