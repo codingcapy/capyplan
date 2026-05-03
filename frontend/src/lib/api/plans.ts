@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { Plan } from "../../../../schemas/plans";
 import { ArgumentTypes, client, ExtractData } from "./client";
-import useAuthStore from "../../store/AuthStore";
+import useAuthStore, { type SafeUser } from "../../store/AuthStore";
 
 type SerializePlan = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.plans.$get>>
@@ -87,7 +87,11 @@ export const useCreatePlanMutation = (onError?: (message: string) => void) => {
   return useMutation({
     mutationFn: createPlan,
     onSuccess: (data) => {
-      setUser({ ...data.user, createdAt: new Date(data.user.createdAt) });
+      if (!data.user) return;
+      setUser({
+        ...data.user,
+        createdAt: new Date(data.user.createdAt),
+      } as SafeUser);
       queryClient.invalidateQueries({ queryKey: ["plans"] });
       queryClient.invalidateQueries({
         queryKey: ["plan", data.user.currentPlan],
@@ -153,6 +157,52 @@ export const getPlanByIdQueryOptions = (planId: number) =>
     queryFn: () => getPlanById(planId),
   });
 
+async function getDashboardData(planId: number) {
+  const token = getSession();
+  const res = await client.api.v0.plans[":planId"].dashboard.$get(
+    { param: { planId: planId.toString() } },
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined,
+  );
+  if (!res.ok) throw new Error("Error loading dashboard data");
+  const data = await res.json();
+  return {
+    plan: { ...data.plan, createdAt: new Date(data.plan.createdAt) },
+    incomes: data.incomes.map((i) => ({
+      ...i,
+      createdAt: new Date(i.createdAt),
+    })),
+    expenditures: data.expenditures.map((e) => ({
+      ...e,
+      createdAt: new Date(e.createdAt),
+    })),
+    assets: data.assets.map((a) => ({
+      ...a,
+      createdAt: new Date(a.createdAt),
+    })),
+    liabilities: data.liabilities.map((l) => ({
+      ...l,
+      createdAt: new Date(l.createdAt),
+    })),
+    financialGoals: data.financialGoals.map((g) => ({
+      ...g,
+      targetDate: new Date(g.targetDate),
+      createdAt: new Date(g.createdAt),
+    })),
+  };
+}
+
+export const getDashboardQueryOptions = (planId: number) =>
+  queryOptions({
+    queryKey: ["dashboard", planId],
+    queryFn: () => getDashboardData(planId),
+  });
+
 async function deletePlan(args: DeletePlanArgs) {
   const token = getSession();
   const res = await client.api.v0.plans.delete.$post(
@@ -192,8 +242,11 @@ export const useDeletePlanMutation = (onError?: (message: string) => void) => {
   return useMutation({
     mutationFn: deletePlan,
     onSettled: (data, _error) => {
-      if (!data) return console.log("No data, returning");
-      setUser({ ...data.user, createdAt: new Date(data.user.createdAt) });
+      if (!data || !data.user) return console.log("No data, returning");
+      setUser({
+        ...data.user,
+        createdAt: new Date(data.user.createdAt),
+      } as SafeUser);
       queryClient.invalidateQueries({ queryKey: ["plans"] });
       queryClient.invalidateQueries({
         queryKey: ["plan", data.user.currentPlan],
@@ -248,6 +301,7 @@ export const useUpdatePlanMutation = (onError?: (message: string) => void) => {
       queryClient.invalidateQueries({
         queryKey: ["plan", data?.plan.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -300,6 +354,7 @@ export const useUpdateCurrencyMutation = (
       queryClient.invalidateQueries({
         queryKey: ["plan", data?.plan.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -352,6 +407,7 @@ export const useUpdateYearOfBirthMutation = (
       queryClient.invalidateQueries({
         queryKey: ["plan", data?.plan.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -404,6 +460,7 @@ export const useUpdateLocationMutation = (
       queryClient.invalidateQueries({
         queryKey: ["plan", data?.plan.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {

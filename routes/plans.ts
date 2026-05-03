@@ -8,6 +8,11 @@ import { db } from "../db";
 import { plans as plansTable } from "../schemas/plans";
 import { and, count, eq } from "drizzle-orm";
 import { users as usersTable } from "../schemas/users";
+import { incomes as incomesTable } from "../schemas/incomes";
+import { expenditures as expendituresTable } from "../schemas/expenditures";
+import { assets as assetsTable } from "../schemas/assets";
+import { liabilities as liabilitiesTable } from "../schemas/liabilities";
+import { financialGoals as financialGoalsTable } from "../schemas/financialGoals";
 
 function toSafeUser(user: typeof usersTable.$inferSelect) {
   const { password, ...safeUser } = user;
@@ -430,4 +435,78 @@ export const plansRouter = new Hono()
       });
     }
     return c.json({ plan: planUpdateResult[0] }, 200);
+  })
+  .get("/:planId/dashboard", async (c) => {
+    const decodedUser = requireUser(c);
+    const { planId: planIdString } = c.req.param();
+    const planId = assertIsParsableInt(planIdString);
+    const { result: planResult, error: planError } = await mightFail(
+      db
+        .select()
+        .from(plansTable)
+        .where(
+          and(
+            eq(plansTable.planId, planId),
+            eq(plansTable.userId, decodedUser.id),
+          ),
+        ),
+    );
+    if (planError)
+      throw new HTTPException(500, { message: "Plan lookup failed" });
+    if (!planResult[0])
+      throw new HTTPException(401, { message: "Unauthorized" });
+    const [
+      { result: incomes, error: incomesError },
+      { result: expenditures, error: expendituresError },
+      { result: assets, error: assetsError },
+      { result: liabilities, error: liabilitiesError },
+      { result: financialGoals, error: financialGoalsError },
+    ] = await Promise.all([
+      mightFail(
+        db.select().from(incomesTable).where(eq(incomesTable.planId, planId)),
+      ),
+      mightFail(
+        db
+          .select()
+          .from(expendituresTable)
+          .where(eq(expendituresTable.planId, planId)),
+      ),
+      mightFail(
+        db.select().from(assetsTable).where(eq(assetsTable.planId, planId)),
+      ),
+      mightFail(
+        db
+          .select()
+          .from(liabilitiesTable)
+          .where(eq(liabilitiesTable.planId, planId)),
+      ),
+      mightFail(
+        db
+          .select()
+          .from(financialGoalsTable)
+          .where(eq(financialGoalsTable.planId, planId)),
+      ),
+    ]);
+    if (incomesError)
+      throw new HTTPException(500, { message: "Error querying incomes" });
+    if (expendituresError)
+      throw new HTTPException(500, {
+        message: "Error querying expenditures",
+      });
+    if (assetsError)
+      throw new HTTPException(500, { message: "Error querying assets" });
+    if (liabilitiesError)
+      throw new HTTPException(500, { message: "Error querying liabilities" });
+    if (financialGoalsError)
+      throw new HTTPException(500, {
+        message: "Error querying financial goals",
+      });
+    return c.json({
+      plan: planResult[0],
+      incomes,
+      expenditures,
+      assets,
+      liabilities,
+      financialGoals,
+    });
   });

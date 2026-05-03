@@ -4,21 +4,16 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { LeftNav } from "../components/LeftNav";
 import { TopNav } from "../components/TopNav";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getPlanByIdQueryOptions } from "../lib/api/plans";
+import { getDashboardQueryOptions } from "../lib/api/plans";
 import { CreateIncome } from "../components/CreateIncome";
 import { CreateExpenditure } from "../components/CreateExpenditure";
-import { getIncomesByPlanIdQueryOptions } from "../lib/api/incomes";
 import { IncomeItem } from "../components/IncomeItem";
 import { CreateAsset } from "../components/CreateAsset";
 import { CreateLiability } from "../components/CreateLiability";
 import { CreateFinancialGoal } from "../components/CreateFinancialGoal";
-import { getExpendituresByPlanIdQueryOptions } from "../lib/api/expenditures";
 import { ExpenditureItem } from "../components/ExpenditureItem";
-import { getAssetsByPlanIdQueryOptions } from "../lib/api/assets";
 import { AssetItem } from "../components/AssetItem";
-import { getLiabilitiesByPlanIdQueryOptions } from "../lib/api/liabilities";
 import { LiabilityItem } from "../components/LiabilityItem";
-import { getFinancialGoalsByPlanIdQueryOptions } from "../lib/api/financialGoals";
 import { FinancialGoalItem } from "../components/FinancialGoalItem";
 import {
   getGenerationsInfiniteQueryOptions,
@@ -38,55 +33,34 @@ function Dashboard() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const {
-    data: plan,
+    data: dashboardData,
     isLoading: planLoading,
     error: planError,
-  } = useQuery(getPlanByIdQueryOptions((user && user.currentPlan) || 0));
+  } = useQuery({
+    ...getDashboardQueryOptions(user?.currentPlan ?? 0),
+    enabled: !!user?.currentPlan,
+  });
+  const plan = dashboardData?.plan;
+  const incomes = dashboardData?.incomes;
+  const expenditures = dashboardData?.expenditures;
+  const assets = dashboardData?.assets;
+  const liabilities = dashboardData?.liabilities;
+  const financialGoals = dashboardData?.financialGoals;
   const [createIncomeMode, setCreateIncomeMode] = useState(false);
   const [createExpenditureMode, setCreateExpenditureMode] = useState(false);
   const [createAssetMode, setCreateAssetMode] = useState(false);
   const [createLiabilityMode, setCreateLiabilityMode] = useState(false);
   const [createFinancialGoalMode, setCreateFinancialGoalMode] = useState(false);
-  const {
-    data: incomes,
-    isLoading: incomesLoading,
-    error: incomesError,
-  } = useQuery({
-    ...getIncomesByPlanIdQueryOptions(plan?.planId ?? 0),
-    enabled: !!plan?.planId,
-  });
-  const {
-    data: expenditures,
-    isLoading: expendituresLoading,
-    error: expendituresError,
-  } = useQuery({
-    ...getExpendituresByPlanIdQueryOptions(plan?.planId ?? 0),
-    enabled: !!plan?.planId,
-  });
-  const {
-    data: assets,
-    isLoading: assetsLoading,
-    error: assetsError,
-  } = useQuery({
-    ...getAssetsByPlanIdQueryOptions(plan?.planId ?? 0),
-    enabled: !!plan?.planId,
-  });
-  const {
-    data: liabilities,
-    isLoading: liabilitiesLoading,
-    error: liabilitiesError,
-  } = useQuery({
-    ...getLiabilitiesByPlanIdQueryOptions(plan?.planId ?? 0),
-    enabled: !!plan?.planId,
-  });
-  const {
-    data: financialGoals,
-    isLoading: financialGoalsLoading,
-    error: financialGoalsError,
-  } = useQuery({
-    ...getFinancialGoalsByPlanIdQueryOptions(plan?.planId ?? 0),
-    enabled: !!plan?.planId,
-  });
+  const incomesLoading = planLoading;
+  const incomesError = planError;
+  const expendituresLoading = planLoading;
+  const expendituresError = planError;
+  const assetsLoading = planLoading;
+  const assetsError = planError;
+  const liabilitiesLoading = planLoading;
+  const liabilitiesError = planError;
+  const financialGoalsLoading = planLoading;
+  const financialGoalsError = planError;
   const {
     data: generationsData,
     isLoading: generationsLoading,

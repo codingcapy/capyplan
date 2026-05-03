@@ -75,6 +75,7 @@ export const useCreateLiabilityMutation = (
       queryClient.invalidateQueries({
         queryKey: ["liabilities", data?.liability.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -154,6 +155,7 @@ export const useDeleteLiabilityMutation = (
       queryClient.invalidateQueries({
         queryKey: ["liabilities", data?.liability.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -206,6 +208,7 @@ export const useUpdateLiabilityMutation = (
       queryClient.invalidateQueries({
         queryKey: ["liabilities", data?.liability.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {

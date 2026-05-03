@@ -75,6 +75,7 @@ export const useCreateIncomeMutation = (
       queryClient.invalidateQueries({
         queryKey: ["incomes", data?.plan.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -155,6 +156,7 @@ export const useDeleteIncomeMutation = (
       queryClient.invalidateQueries({
         queryKey: ["incomes", data?.income.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -207,6 +209,7 @@ export const useUpdateIncomeMutation = (
       queryClient.invalidateQueries({
         queryKey: ["incomes", data?.income.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {

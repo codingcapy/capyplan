@@ -71,6 +71,7 @@ export const useCreateAssetMutation = (onError?: (message: string) => void) => {
       queryClient.invalidateQueries({
         queryKey: ["assets", data?.asset.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -148,6 +149,7 @@ export const useDeleteAssetMutation = (onError?: (message: string) => void) => {
       queryClient.invalidateQueries({
         queryKey: ["assets", data?.asset.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -198,6 +200,7 @@ export const useUpdateAssetMutation = (onError?: (message: string) => void) => {
       queryClient.invalidateQueries({
         queryKey: ["assets", data?.asset.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {

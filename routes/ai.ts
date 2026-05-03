@@ -168,7 +168,7 @@ export const aiRouter = new Hono().post(
     const financialGoalsText = financialGoalsQueryResult
       .map(
         (e) =>
-          `${sp(e.name)}: $${(e.amount / 100).toFixed(2)} with target date ${sp(e.targetDate)}`,
+          `${sp(e.name)}: $${(e.amount / 100).toFixed(2)} with target date ${sp(e.targetDate instanceof Date ? e.targetDate.toISOString() : String(e.targetDate))}`,
       )
       .join("\n");
 

@@ -75,6 +75,7 @@ export const useCreateExpenditureMutation = (
       queryClient.invalidateQueries({
         queryKey: ["expenditures", data?.expenditure.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -155,6 +156,7 @@ export const useDeleteExpenditureMutation = (
       queryClient.invalidateQueries({
         queryKey: ["expenditures", data?.expenditure.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -207,6 +209,7 @@ export const useUpdateExpenditureMutation = (
       queryClient.invalidateQueries({
         queryKey: ["expenditures", data?.expenditure.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {

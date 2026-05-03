@@ -76,6 +76,7 @@ export const useCreateFinancialGoalMutation = (
       queryClient.invalidateQueries({
         queryKey: ["financialGoals", data?.financialGoal.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -155,6 +156,7 @@ export const useDeleteFinancialGoalMutation = (
       queryClient.invalidateQueries({
         queryKey: ["financialGoals", data?.financialGoal.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
@@ -207,6 +209,7 @@ export const useUpdateFinancialGoalMutation = (
       queryClient.invalidateQueries({
         queryKey: ["financialGoals", data?.financialGoal.planId],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       if (onError) {
