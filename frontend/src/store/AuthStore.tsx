@@ -1,6 +1,6 @@
 import axios from "axios";
 import { create } from "zustand";
-import { type User } from "../../../schemas/users";
+import { type User } from "@server/schemas/users";
 import { setSession } from "../services/jwt.service";
 
 export type SafeUser = Omit<User, "password">;

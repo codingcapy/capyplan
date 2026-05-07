@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Plan } from "../../../../schemas/plans";
+import { Plan } from "@server/schemas/plans";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import useAuthStore, { type SafeUser } from "../../store/AuthStore";
 

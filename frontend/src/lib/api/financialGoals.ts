@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { FinancialGoal } from "../../../../schemas/financialGoals";
+import { FinancialGoal } from "@server/schemas/financialGoals";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { getSession } from "./plans";
 

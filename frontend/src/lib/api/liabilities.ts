@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Liability } from "../../../../schemas/liabilities";
+import { Liability } from "@server/schemas/liabilities";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { getSession } from "./plans";
 

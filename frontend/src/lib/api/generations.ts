@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Generation } from "../../../../schemas/generations";
+import { Generation } from "@server/schemas/generations";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { getSession } from "./plans";
 

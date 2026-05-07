@@ -1,6 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { useCreateAssetMutation } from "../lib/api/assets";
-import { Plan } from "../../../schemas/plans";
+import { Plan } from "@server/schemas/plans";
 
 export function CreateAsset(props: {
   plan: Plan;

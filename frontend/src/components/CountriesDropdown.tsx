@@ -1,4 +1,4 @@
-import { Plan } from "../../../schemas/plans";
+import { Plan } from "@server/schemas/plans";
 import { useUpdateLocationMutation } from "../lib/api/plans";
 import { countries } from "../lib/utils";
 

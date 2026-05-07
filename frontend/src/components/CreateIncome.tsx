@@ -1,6 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { useCreateIncomeMutation } from "../lib/api/incomes";
-import { Plan } from "../../../schemas/plans";
+import { Plan } from "@server/schemas/plans";
 
 export function CreateIncome(props: {
   plan: Plan;

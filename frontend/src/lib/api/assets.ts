@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { getSession } from "./plans";
-import { Asset } from "../../../../schemas/assets";
+import { Asset } from "@server/schemas/assets";
 
 type CreateAssetArgs = ArgumentTypes<
   typeof client.api.v0.assets.$post

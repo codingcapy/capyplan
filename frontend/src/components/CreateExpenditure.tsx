@@ -1,6 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { useCreateExpenditureMutation } from "../lib/api/expenditures";
-import { Plan } from "../../../schemas/plans";
+import { Plan } from "@server/schemas/plans";
 
 export function CreateExpenditure(props: {
   plan: Plan;

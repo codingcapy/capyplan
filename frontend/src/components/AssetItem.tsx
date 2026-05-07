@@ -1,5 +1,5 @@
 import { MdModeEditOutline } from "react-icons/md";
-import { Asset } from "../../../schemas/assets";
+import { Asset } from "@server/schemas/assets";
 import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
 import {
   useDeleteAssetMutation,

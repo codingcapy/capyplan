@@ -1,4 +1,4 @@
-import { Plan } from "../../../schemas/plans";
+import { Plan } from "@server/schemas/plans";
 import { useUpdateCurrencyMutation } from "../lib/api/plans";
 import { currencySymbols } from "../lib/utils";
 

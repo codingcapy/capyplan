@@ -1,6 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { useCreateLiabilityMutation } from "../lib/api/liabilities";
-import { Plan } from "../../../schemas/plans";
+import { Plan } from "@server/schemas/plans";
 
 export function CreateLiability(props: {
   plan: Plan;

@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { getSession } from "./plans";
-import { Expenditure } from "../../../../schemas/expenditures";
+import { Expenditure } from "@server/schemas/expenditures";
 
 type CreateExpenditureArgs = ArgumentTypes<
   typeof client.api.v0.expenditures.$post
