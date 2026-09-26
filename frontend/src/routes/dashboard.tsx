@@ -96,6 +96,7 @@ function Dashboard() {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [fetchNextGenerationsPageCallback]);
+
   const { mutate: createGeneration, isPending: createGenerationPending } =
     useCreateGenerationMutation();
   const totalIncome =
