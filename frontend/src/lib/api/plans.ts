@@ -6,6 +6,7 @@ import {
 import { Plan } from "@server/schemas/plans";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import useAuthStore, { type SafeUser } from "../../store/AuthStore";
+import { getAccessToken } from "../../services/jwt.service";
 
 type SerializePlan = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.plans.$get>>
@@ -18,10 +19,8 @@ export function mapSerializedPlanToSchema(serialized: SerializePlan): Plan {
   };
 }
 
-const TOKEN_KEY = "jwt_access_token";
-
 export function getSession() {
-  return localStorage.getItem(TOKEN_KEY);
+  return getAccessToken();
 }
 
 type CreatePlanArgs = ArgumentTypes<

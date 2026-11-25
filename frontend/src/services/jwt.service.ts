@@ -1,32 +1,43 @@
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+let accessToken: string | null = null;
 
-export function setSession(token: any) {
-  if (token) {
-    localStorage.setItem("jwt_access_token", token);
-    axios.defaults.headers.common["Authorization"] = "Bearer " + token;
-  } else {
-    localStorage.removeItem("jwt_access_token");
-    delete axios.defaults.headers.common["Authorization"];
-  }
+const API_BASE = import.meta.env.DEV
+  ? "http://localhost:3333"
+  : "https://capyplan.up.railway.app";
+
+export function setSession(token: string | null) {
+  accessToken = token;
 }
 
 export function getAccessToken() {
-  return window.localStorage.getItem("jwt_access_token");
+  return accessToken;
 }
 
-export function getUserIdFromToken() {
-  const token = getAccessToken();
-  if (token) {
-    try {
-      const decodedToken = jwtDecode(token);
-      //@ts-ignore
-      return decodedToken.id;
-    } catch (err) {
-      console.log("Error decoding token: ", err);
-      return null;
-    }
-  } else {
-    return null;
+type RefreshResult = { user: any; token: string } | null;
+let refreshPromise: Promise<RefreshResult> | null = null;
+
+// De-duplicated: concurrent callers share one network request.
+export function refreshSession(): Promise<RefreshResult> {
+  if (!refreshPromise) {
+    refreshPromise = (async (): Promise<RefreshResult> => {
+      try {
+        const res = await fetch(`${API_BASE}/api/v0/user/refresh`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const token = data.result?.token;
+        const user = data.result?.user;
+        if (!token || !user) return null;
+        setSession(token);
+        return { user, token };
+      } catch (err) {
+        console.log(err);
+        return null;
+      }
+    })().finally(() => {
+      refreshPromise = null;
+    });
   }
+  return refreshPromise;
 }

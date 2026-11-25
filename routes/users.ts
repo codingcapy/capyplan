@@ -423,6 +423,7 @@ export const usersRouter = new Hono()
           cause: tokenDeleteError,
         });
       }
+      await revokeAllUserSessions(resetToken.userId);
       return c.json(
         {
           success: true,
