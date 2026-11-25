@@ -15,6 +15,11 @@ import { plans as plansTable } from "../schemas/plans";
 import { Resend } from "resend";
 import { passwordResetTokens as passwordResetTokensTable } from "../schemas/passwordResetTokens";
 import { enforceRateLimit } from "./rateLimit";
+import {
+  clearRefreshCookie,
+  issueRefreshToken,
+  revokeAllUserSessions,
+} from "./session";
 
 const scryptAsync = promisify(scrypt);
 
@@ -268,6 +273,9 @@ export const usersRouter = new Hono()
           cause: updateError,
         });
       }
+      await revokeAllUserSessions(decodedUser.id);
+      clearRefreshCookie(c);
+      await issueRefreshToken(c, decodedUser.id);
       return c.json(
         { user: updateResult[0] ? toSafeUser(updateResult[0]) : null },
         200,
