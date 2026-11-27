@@ -13,7 +13,7 @@ export type ExtractData<T> =
   T extends ClientResponse<infer Data, any, any> ? Data : never;
 
 const devServer = "http://localhost:3333";
-const prodServer = "https://capyplan.up.railway.app";
+const prodServer = window.location.origin;
 
 async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
   const req = new Request(input, init);

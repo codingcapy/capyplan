@@ -2,7 +2,7 @@ let accessToken: string | null = null;
 
 const API_BASE = import.meta.env.DEV
   ? "http://localhost:3333"
-  : "https://capyplan.up.railway.app";
+  : window.location.origin;
 
 export function setSession(token: string | null) {
   accessToken = token;

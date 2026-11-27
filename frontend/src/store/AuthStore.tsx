@@ -7,7 +7,7 @@ export type SafeUser = Omit<User, "password">;
 
 const API_BASE = import.meta.env.DEV
   ? "http://localhost:3333"
-  : "https://capyplan.up.railway.app";
+  : window.location.origin;
 
 const useAuthStore = create<{
   user: SafeUser | null;
